@@ -1,0 +1,520 @@
+<!-- Generated mockup for blog system, design source: /Users/mayang/projects/own/your-blog/DESIGN.md -->
+<!-- 07 Admin Articles List: sidebar + filter row + data table -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>文章管理 — 后台 · 墨记</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Geist', 'PingFang SC', 'Noto Sans SC', 'system-ui', 'sans-serif'], mono: ['"Geist Mono"', 'ui-monospace', 'monospace'] },
+      colors: { canvas: '#FAFAFA', surface: '#FFFFFF', ink: '#0A0A0A', steel: '#525252', whisper: '#E5E5E5', 'whisper-soft': '#F5F5F5', klein: '#0040FF', 'klein-deep': '#0033CC', 'klein-tint': '#EEF2FF', emerald: { signal: '#10B981' } }
+    }}}
+  </script>
+
+  <style>
+    html, body { background: #FAFAFA; color: #0A0A0A; font-family: 'Geist', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+    .t-mono-sm { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.8125rem; letter-spacing: 0.01em; }
+    .t-caption { font-size: 0.75rem; line-height: 1.4; font-weight: 500; letter-spacing: 0.04em; }
+
+    .chip { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 4px; background: #F5F5F5; color: #525252; font-size: 12px; font-weight: 500; letter-spacing: 0.02em; }
+    .status-published { background: #ECFDF5; color: #047857; }
+    .status-draft { background: #FFFBEB; color: #92400E; }
+
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: #0040FF; color: #fff; padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: background 150ms, transform 100ms; }
+    .btn-primary:hover { background: #0033CC; }
+
+    .btn-secondary { display: inline-flex; align-items: center; gap: 6px; background: transparent; color: #0A0A0A; padding: 8px 14px; border: 1px solid #E5E5E5; border-radius: 8px; font-size: 14px; font-weight: 500; transition: border-color 150ms, color 150ms; }
+    .btn-secondary:hover { border-color: #0040FF; color: #0040FF; }
+
+    .btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 6px; color: #525252; transition: background 150ms, color 150ms; }
+    .btn-icon:hover { background: #F5F5F5; color: #0A0A0A; }
+    .btn-icon.danger:hover { background: #FEF2F2; color: #DC2626; }
+
+    .input { background: #fff; border: 1px solid #E5E5E5; border-radius: 8px; padding: 8px 12px; font-size: 14px; color: #0A0A0A; transition: border-color 150ms, box-shadow 150ms; font-family: inherit; height: 36px; }
+    .input:focus { outline: none; border-color: #0040FF; box-shadow: 0 0 0 3px rgba(0, 64, 255, 0.18); }
+
+    .select-wrap { position: relative; display: inline-block; }
+    .select-wrap select { appearance: none; -webkit-appearance: none; padding-right: 30px; cursor: pointer; }
+    .select-wrap::after { content: ''; position: absolute; right: 12px; top: 50%; width: 7px; height: 7px; border-right: 1.5px solid #525252; border-bottom: 1.5px solid #525252; transform: translateY(-75%) rotate(45deg); pointer-events: none; }
+
+    /* === Sidebar (same as dashboard) === */
+    .side-link { display: flex; align-items: center; gap: 10px; padding: 9px 14px; margin-left: 12px; margin-right: 12px; border-radius: 8px; color: #525252; font-size: 14px; transition: background 150ms, color 150ms; position: relative; }
+    .side-link:hover { background: #F5F5F5; color: #0A0A0A; }
+    .side-link.active { background: #EEF2FF; color: #0040FF; font-weight: 500; }
+    .side-link.active::before { content: ''; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 2.5px; background: #0040FF; border-radius: 2px; }
+    .side-section-label { padding: 0 26px; margin-top: 20px; margin-bottom: 8px; font-family: 'Geist Mono', monospace; font-size: 10px; color: #A3A3A3; letter-spacing: 0.08em; }
+
+    /* === Data table === */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table th { text-align: left; font-family: 'Geist Mono', monospace; font-weight: 500; font-size: 11px; color: #525252; letter-spacing: 0.08em; padding: 12px 16px; border-bottom: 1px solid #E5E5E5; background: #FAFAFA; }
+    .data-table td { padding: 16px 16px; border-bottom: 1px solid #E5E5E5; color: #0A0A0A; vertical-align: middle; }
+    .data-table tr:hover td { background: #FAFAFA; }
+    .data-table tr.selected td { background: #F0F4FF; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table th.tight, .data-table td.tight { padding-left: 16px; padding-right: 8px; }
+
+    /* Checkbox */
+    .cb { width: 16px; height: 16px; border: 1.5px solid #E5E5E5; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color 150ms, background 150ms; flex-shrink: 0; }
+    .cb:hover { border-color: #0040FF; }
+    .cb.checked { background: #0040FF; border-color: #0040FF; color: #fff; }
+    .cb.indeterminate { background: #0040FF; border-color: #0040FF; color: #fff; }
+
+    /* Filter pill */
+    .filter-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #F5F5F5; border-radius: 999px; font-size: 13px; color: #525252; }
+    .filter-pill button { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 3px; opacity: 0.6; transition: opacity 150ms; }
+    .filter-pill button:hover { opacity: 1; background: rgba(0,0,0,0.08); }
+
+    /* User pill */
+    .user-pill { display: inline-flex; align-items: center; gap: 10px; padding: 4px 12px 4px 4px; border: 1px solid #E5E5E5; border-radius: 999px; background: #fff; cursor: pointer; transition: border-color 150ms; }
+    .user-pill:hover { border-color: #0040FF; }
+
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+  </style>
+</head>
+
+<body class="bg-canvas text-ink antialiased min-h-[100dvh]">
+
+  <div class="flex min-h-[100dvh]">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="w-[240px] bg-white border-r border-whisper shrink-0 flex flex-col">
+
+      <div class="px-6 py-5 border-b border-whisper">
+        <a href="#" class="text-[19px] font-semibold tracking-tight">墨记 <span class="text-steel text-xs font-mono">/ADMIN</span></a>
+      </div>
+
+      <nav class="flex-1 py-4">
+        <p class="side-section-label">OVERVIEW</p>
+        <a href="06-admin-dashboard.html" class="side-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          仪表盘
+        </a>
+
+        <p class="side-section-label">CONTENT</p>
+        <a href="#" class="side-link active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+          文章
+          <span class="ml-auto t-mono-sm" style="color: inherit; opacity: 0.7;">43</span>
+        </a>
+        <a href="#" class="side-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          评论
+          <span class="ml-auto t-mono-sm text-steel">312</span>
+        </a>
+        <a href="#" class="side-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" x2="7.01" y1="7" y2="7"/></svg>
+          分类
+          <span class="ml-auto t-mono-sm text-steel">12</span>
+        </a>
+        <a href="#" class="side-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H2v7"/><path d="M16.5 13.5 5 2"/><path d="M17 9H22V2"/><path d="M14.5 10.5 22 18l-7 5-9-9 .5-7"/></svg>
+          标签
+          <span class="ml-auto t-mono-sm text-steel">86</span>
+        </a>
+
+        <p class="side-section-label">USERS</p>
+        <a href="#" class="side-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          用户
+          <span class="ml-auto t-mono-sm text-steel">1.2k</span>
+        </a>
+
+        <p class="side-section-label">SYSTEM</p>
+        <a href="#" class="side-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          设置
+        </a>
+        <a href="#" class="side-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          退出登录
+        </a>
+      </nav>
+
+      <div class="px-6 py-4 border-t border-whisper">
+        <div class="flex items-center gap-2 t-mono-sm text-steel">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-signal" style="animation: pulse 2s infinite;"></span>
+          <span>SYSTEM HEALTHY</span>
+        </div>
+        <p class="t-mono-sm text-steel mt-1">v1.0.0 · build 1247</p>
+      </div>
+
+    </aside>
+
+    <!-- ===================== MAIN ===================== -->
+    <main class="flex-1 min-w-0 flex flex-col">
+
+      <!-- Top bar -->
+      <div class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-whisper">
+        <div class="px-8 h-16 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <a href="06-admin-dashboard.html" class="t-mono-sm text-steel hover:text-ink">仪表盘</a>
+            <span class="t-mono-sm text-whisper">/</span>
+            <h1 class="text-lg font-semibold">文章管理</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="btn-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            </button>
+            <div class="user-pill">
+              <img src="https://picsum.photos/seed/admin/64/64" class="w-7 h-7 rounded-full" alt="" />
+              <span class="text-sm font-medium">管理员</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="text-steel"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="p-8 space-y-5 flex-1">
+
+        <!-- Page header -->
+        <div class="flex items-end justify-between flex-wrap gap-4">
+          <div>
+            <h2 class="text-2xl font-semibold tracking-tight">所有文章</h2>
+            <p class="mt-1 text-steel">管理平台所有文章 · 共 <span class="font-mono text-ink">43</span> 篇,其中 <span class="text-emerald-signal">36 已发布</span> · <span style="color:#92400E;">7 草稿</span></p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              导出 CSV
+            </button>
+            <button class="btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              新建文章
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter row -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="relative w-[280px]">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-steel" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="搜索标题..." class="input pl-9 w-full" />
+          </div>
+
+          <div class="select-wrap">
+            <select class="input">
+              <option>所有状态</option>
+              <option>已发布</option>
+              <option>草稿</option>
+            </select>
+          </div>
+
+          <div class="select-wrap">
+            <select class="input">
+              <option>所有分类</option>
+              <option>前端</option>
+              <option>后端</option>
+              <option>工具</option>
+              <option>思考</option>
+            </select>
+          </div>
+
+          <div class="select-wrap">
+            <select class="input">
+              <option>所有作者</option>
+              <option>林知微</option>
+              <option>陈墨</option>
+              <option>顾远舟</option>
+              <option>苏砚</option>
+            </select>
+          </div>
+
+          <!-- Active filters as pills -->
+          <span class="filter-pill">
+            分类 = 前端
+            <button>×</button>
+          </span>
+
+          <div class="ml-auto t-mono-sm text-steel">
+            筛选结果 <span class="text-ink">23 / 43</span>
+          </div>
+        </div>
+
+        <!-- Bulk action bar (visible only when selected, but we show statically) -->
+        <div class="flex items-center gap-3 px-4 py-2 bg-klein-tint border border-klein rounded-lg text-sm">
+          <span class="t-mono-sm text-klein-deep font-medium">已选中 2 篇</span>
+          <span class="w-px h-4 bg-klein opacity-30"></span>
+          <button class="text-sm text-klein hover:text-klein-deep">批量发布</button>
+          <button class="text-sm text-klein hover:text-klein-deep">批量取消发布</button>
+          <button class="text-sm text-red-600 hover:text-red-700">批量删除</button>
+          <button class="ml-auto text-klein-deep hover:opacity-80 t-mono-sm">清除选择 ×</button>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white border border-whisper rounded-xl overflow-hidden">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="tight" style="width: 40px;">
+                  <span class="cb indeterminate">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </span>
+                </th>
+                <th>TITLE</th>
+                <th>AUTHOR</th>
+                <th>CATEGORY</th>
+                <th>STATUS</th>
+                <th class="text-right">VIEWS</th>
+                <th class="text-right">LIKES</th>
+                <th>DATE</th>
+                <th class="text-right" style="width: 100px;">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr class="selected">
+                <td class="tight"><span class="cb checked"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td>
+                  <p class="font-medium text-ink" style="display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:340px;">TanStack Query 缓存策略:从 staleTime 到失效设计</p>
+                  <p class="t-mono-sm text-steel mt-0.5">#tanstack-query-staletime</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/seed/gu/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+                    <span class="text-sm">顾远舟</span>
+                  </div>
+                </td>
+                <td><span class="chip">前端</span></td>
+                <td><span class="chip status-published">PUBLISHED</span></td>
+                <td class="text-right t-mono-sm">1,247</td>
+                <td class="text-right t-mono-sm">128</td>
+                <td class="t-mono-sm text-steel">2026/05/20</td>
+                <td class="text-right">
+                  <div class="inline-flex items-center gap-1">
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></a>
+                    <button class="btn-icon danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="selected">
+                <td class="tight"><span class="cb checked"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td>
+                  <p class="font-medium text-ink" style="display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:340px;">用 Vite 5 重构两年前的 React 项目踩到的几个坑</p>
+                  <p class="t-mono-sm text-steel mt-0.5">#vite-react-migration</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/seed/lin/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+                    <span class="text-sm">林知微</span>
+                  </div>
+                </td>
+                <td><span class="chip">前端</span></td>
+                <td><span class="chip status-published">PUBLISHED</span></td>
+                <td class="text-right t-mono-sm">586</td>
+                <td class="text-right t-mono-sm">67</td>
+                <td class="t-mono-sm text-steel">2026/05/22</td>
+                <td class="text-right">
+                  <div class="inline-flex items-center gap-1">
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></a>
+                    <button class="btn-icon danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="tight"><span class="cb"></span></td>
+                <td>
+                  <p class="font-medium text-ink" style="display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:340px;">Tailwind v4 的 @theme 指令实战</p>
+                  <p class="t-mono-sm text-steel mt-0.5">#tailwind-v4-theme</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/seed/lin/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+                    <span class="text-sm">林知微</span>
+                  </div>
+                </td>
+                <td><span class="chip">前端</span></td>
+                <td><span class="chip status-draft">DRAFT</span></td>
+                <td class="text-right t-mono-sm text-steel">—</td>
+                <td class="text-right t-mono-sm text-steel">—</td>
+                <td class="t-mono-sm text-steel">2026/05/17</td>
+                <td class="text-right">
+                  <div class="inline-flex items-center gap-1">
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></a>
+                    <button class="btn-icon" title="发布"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+                    <button class="btn-icon danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="tight"><span class="cb"></span></td>
+                <td>
+                  <p class="font-medium text-ink" style="display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:340px;">为什么我又把 Redux 换回了 Context</p>
+                  <p class="t-mono-sm text-steel mt-0.5">#redux-vs-context</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/seed/chen/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+                    <span class="text-sm">陈墨</span>
+                  </div>
+                </td>
+                <td><span class="chip">前端</span></td>
+                <td><span class="chip status-published">PUBLISHED</span></td>
+                <td class="text-right t-mono-sm">892</td>
+                <td class="text-right t-mono-sm">93</td>
+                <td class="t-mono-sm text-steel">2026/05/19</td>
+                <td class="text-right">
+                  <div class="inline-flex items-center gap-1">
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></a>
+                    <button class="btn-icon danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="tight"><span class="cb"></span></td>
+                <td>
+                  <p class="font-medium text-ink" style="display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:340px;">我是怎么用 Prisma + MySQL 8 处理多对多的</p>
+                  <p class="t-mono-sm text-steel mt-0.5">#prisma-mysql-m2m</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/seed/su/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+                    <span class="text-sm">苏砚</span>
+                  </div>
+                </td>
+                <td><span class="chip">后端</span></td>
+                <td><span class="chip status-published">PUBLISHED</span></td>
+                <td class="text-right t-mono-sm">892</td>
+                <td class="text-right t-mono-sm">112</td>
+                <td class="t-mono-sm text-steel">2026/05/15</td>
+                <td class="text-right">
+                  <div class="inline-flex items-center gap-1">
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></a>
+                    <button class="btn-icon danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="tight"><span class="cb"></span></td>
+                <td>
+                  <p class="font-medium text-ink" style="display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:340px;">React 19 的新 hook 真的有用吗</p>
+                  <p class="t-mono-sm text-steel mt-0.5">#react-19-hooks</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/seed/chen/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+                    <span class="text-sm">陈墨</span>
+                  </div>
+                </td>
+                <td><span class="chip">思考</span></td>
+                <td><span class="chip status-published">PUBLISHED</span></td>
+                <td class="text-right t-mono-sm">432</td>
+                <td class="text-right t-mono-sm">28</td>
+                <td class="t-mono-sm text-steel">2026/05/12</td>
+                <td class="text-right">
+                  <div class="inline-flex items-center gap-1">
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></a>
+                    <button class="btn-icon danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="tight"><span class="cb"></span></td>
+                <td>
+                  <p class="font-medium text-ink" style="display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:340px;">CSS Grid vs Flexbox:什么时候用哪个</p>
+                  <p class="t-mono-sm text-steel mt-0.5">#css-grid-vs-flex</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/seed/he/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+                    <span class="text-sm">何川</span>
+                  </div>
+                </td>
+                <td><span class="chip">前端</span></td>
+                <td><span class="chip status-published">PUBLISHED</span></td>
+                <td class="text-right t-mono-sm">324</td>
+                <td class="text-right t-mono-sm">19</td>
+                <td class="t-mono-sm text-steel">2026/05/08</td>
+                <td class="text-right">
+                  <div class="inline-flex items-center gap-1">
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></a>
+                    <button class="btn-icon danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="tight"><span class="cb"></span></td>
+                <td>
+                  <p class="font-medium text-ink" style="display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;max-width:340px;">写 SQL 时我学到的几个反直觉点</p>
+                  <p class="t-mono-sm text-steel mt-0.5">#sql-counterintuitive</p>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <img src="https://picsum.photos/seed/su/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+                    <span class="text-sm">苏砚</span>
+                  </div>
+                </td>
+                <td><span class="chip">后端</span></td>
+                <td><span class="chip status-draft">DRAFT</span></td>
+                <td class="text-right t-mono-sm text-steel">—</td>
+                <td class="text-right t-mono-sm text-steel">—</td>
+                <td class="t-mono-sm text-steel">2026/05/06</td>
+                <td class="text-right">
+                  <div class="inline-flex items-center gap-1">
+                    <a href="#" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></a>
+                    <button class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+                    <button class="btn-icon danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <p class="t-mono-sm text-steel">显示 1 - 8 / 共 43 条</p>
+          <div class="flex items-center gap-1">
+            <button class="btn-icon" disabled style="opacity: 0.4;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button class="btn-icon" style="background:#0040FF;color:#fff;font-family:'Geist Mono',monospace;font-size:12px;">1</button>
+            <button class="btn-icon" style="font-family:'Geist Mono',monospace;font-size:12px;">2</button>
+            <button class="btn-icon" style="font-family:'Geist Mono',monospace;font-size:12px;">3</button>
+            <span class="text-steel text-sm px-1">…</span>
+            <button class="btn-icon" style="font-family:'Geist Mono',monospace;font-size:12px;">6</button>
+            <button class="btn-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+          <div class="flex items-center gap-2 t-mono-sm text-steel">
+            <span>每页</span>
+            <div class="select-wrap">
+              <select class="input" style="height:30px;padding-top:4px;padding-bottom:4px;font-size:12px;">
+                <option>8</option><option>16</option><option>32</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

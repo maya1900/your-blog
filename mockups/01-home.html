@@ -1,0 +1,545 @@
+<!-- Generated mockup for blog system, design source: /Users/mayang/projects/own/your-blog/DESIGN.md -->
+<!-- v2: Klein Electric accent + centered hero + zigzag article list + no filter bar -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>墨记 — 一个慢工出细活的技术博客</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Geist', 'PingFang SC', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+            mono: ['"Geist Mono"', '"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            canvas: '#FAFAFA',
+            surface: '#FFFFFF',
+            ink: '#0A0A0A',
+            steel: '#525252',
+            whisper: '#E5E5E5',
+            'whisper-soft': '#F5F5F5',
+            klein: '#0040FF',
+            'klein-deep': '#0033CC',
+            'klein-soft': '#3D5AFE',
+            cyan: { signal: '#06B6D4' },
+            emerald: { signal: '#10B981' },
+            amber: { signal: '#F59E0B' },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html, body { background: #FAFAFA; color: #0A0A0A; font-family: 'Geist', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+    .t-display-hero { font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 700; line-height: 1.02; letter-spacing: -0.035em; }
+    .t-display-md { font-size: 1.75rem; font-weight: 600; line-height: 1.15; letter-spacing: -0.02em; }
+    .t-heading-lg { font-size: 1.875rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; }
+    .t-heading-md { font-size: 1.25rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
+    .t-body-lg  { font-size: 1.0625rem; line-height: 1.7; }
+    .t-body     { font-size: 1rem; line-height: 1.6; }
+    .t-body-sm  { font-size: 0.875rem; line-height: 1.5; }
+    .t-caption  { font-size: 0.75rem; line-height: 1.4; font-weight: 500; letter-spacing: 0.04em; }
+    .t-mono-sm  { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.8125rem; letter-spacing: 0.01em; }
+
+    /* === Hairline 12-col grid backdrop (strong) === */
+    .hairline-grid {
+      background-image:
+        linear-gradient(to right, #E5E5E5 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(229, 229, 229, 0.4) 1px, transparent 1px);
+      background-size: calc(100% / 12) 96px;
+    }
+
+    /* === Aurora blobs (multi, animated) === */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(110px);
+      pointer-events: none;
+      mix-blend-mode: multiply;
+    }
+    .blob-1 { width: 720px; height: 720px; background: radial-gradient(circle, #0040FF 0%, transparent 70%); opacity: 0.35; left: -180px; top: -180px; animation: drift-a 26s ease-in-out infinite; }
+    .blob-2 { width: 560px; height: 560px; background: radial-gradient(circle, #06B6D4 0%, transparent 70%); opacity: 0.28; right: -120px; top: 40px;  animation: drift-b 32s ease-in-out infinite; }
+    .blob-3 { width: 440px; height: 440px; background: radial-gradient(circle, #3D5AFE 0%, transparent 70%); opacity: 0.22; left: 40%;     bottom: -160px; animation: drift-c 36s ease-in-out infinite; }
+    @keyframes drift-a { 0%,100% { transform: translate(0,0) } 50% { transform: translate(40px,30px) } }
+    @keyframes drift-b { 0%,100% { transform: translate(0,0) } 50% { transform: translate(-30px,50px) } }
+    @keyframes drift-c { 0%,100% { transform: translate(0,0) } 50% { transform: translate(20px,-40px) } }
+
+    /* === Chip === */
+    .chip {
+      display: inline-flex; align-items: center;
+      height: 22px; padding: 0 8px;
+      border-radius: 4px;
+      background: #F5F5F5;
+      color: #525252;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
+    }
+    .chip-strong { background: #0040FF; color: #fff; }
+
+    /* === Buttons === */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #0040FF; color: #fff;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-size: 15px; font-weight: 500;
+      transition: background 150ms, transform 100ms;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+    }
+    .btn-primary:hover { background: #0033CC; }
+    .btn-primary:active { transform: translateY(1px); background: #002999; }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; color: #0A0A0A;
+      padding: 11px 18px;
+      border: 1px solid #E5E5E5;
+      border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      transition: border-color 150ms, color 150ms, background 150ms;
+    }
+    .btn-secondary:hover { border-color: #0040FF; color: #0040FF; background: #fff; }
+
+    .btn-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      border-radius: 6px;
+      color: #525252;
+      transition: background 150ms, color 150ms;
+    }
+    .btn-icon:hover { background: #F5F5F5; color: #0A0A0A; }
+
+    /* === Nav link === */
+    .nav-link { position: relative; color: #0A0A0A; font-size: 15px; padding: 6px 2px; transition: color 150ms; }
+    .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: #0040FF; transform: scaleX(0); transform-origin: left; transition: transform 200ms ease-out; }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* === Zigzag row hover === */
+    .zig {
+      position: relative;
+      padding: 64px 0;
+      transition: background 300ms;
+    }
+    .zig-img-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #E5E5E5;
+      background: #F5F5F5;
+    }
+    .zig-img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      transition: transform 600ms cubic-bezier(.16,.84,.34,1);
+    }
+    .zig:hover .zig-img { transform: scale(1.025); }
+    .zig:hover .zig-title { color: #0040FF; }
+    .zig-title {
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: #0A0A0A;
+      transition: color 200ms;
+    }
+    .zig-num {
+      font-family: 'Geist Mono', monospace;
+      font-size: 0.875rem;
+      color: #0040FF;
+      letter-spacing: 0.04em;
+    }
+    .read-arrow { transition: transform 250ms ease-out; }
+    .zig:hover .read-arrow { transform: translateX(6px); }
+
+    /* === Latest badge === */
+    .latest-badge { background: #FAFAFA; padding: 0 14px; color: #525252; }
+
+    /* === Pagination === */
+    .page-link { color: #525252; padding: 6px 8px; font-size: 14px; transition: color 150ms; }
+    .page-link:hover { color: #0040FF; }
+
+    /* === Hero ticker (mono caps marquee static) === */
+    .ticker {
+      display: flex; align-items: center; gap: 18px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 0.75rem; color: #525252;
+      letter-spacing: 0.06em;
+    }
+    .ticker .dot { width: 6px; height: 6px; border-radius: 50%; background: #0040FF; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
+  </style>
+</head>
+
+<body class="bg-canvas text-ink antialiased">
+
+  <!-- ===================== TOP NAV ===================== -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/75 border-b border-whisper">
+    <div class="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+      <a href="#" class="text-[22px] font-semibold tracking-tight text-ink">墨记</a>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#" class="nav-link">文章</a>
+        <a href="#" class="nav-link">分类</a>
+        <a href="#" class="nav-link">标签</a>
+        <a href="#" class="nav-link text-steel">关于</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button class="btn-icon" aria-label="搜索">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <a href="#" class="btn-primary !py-2 !px-4 text-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>
+          写文章
+        </a>
+        <button class="ml-2 w-8 h-8 rounded-full ring-1 ring-whisper overflow-hidden">
+          <img src="https://picsum.photos/seed/me/64/64" alt="" class="w-full h-full object-cover" />
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== HERO (CENTERED, NO RIGHT CARD) ===================== -->
+  <section class="relative overflow-hidden border-b border-whisper">
+    <!-- Strong hairline grid -->
+    <div class="absolute inset-0 hairline-grid pointer-events-none"></div>
+    <!-- Multi aurora blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="relative max-w-[1280px] mx-auto px-6 md:px-10 py-28 md:py-36">
+      <div class="max-w-3xl mx-auto text-center">
+
+        <p class="t-caption text-steel font-mono mb-8 flex items-center justify-center gap-3">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-klein" style="box-shadow: 0 0 0 4px rgba(0,64,255,0.12);"></span>
+          EST. 2026 · A SLOW BLOG
+        </p>
+
+        <h1 class="t-display-hero text-ink">
+          写点
+          <span class="inline-flex items-center align-middle mx-2" style="vertical-align: -8px;">
+            <img src="https://picsum.photos/seed/author/64/64" alt="" class="w-14 h-14 md:w-16 md:h-16 rounded-full ring-1 ring-whisper shadow-sm" />
+          </span>
+          想说的<br />
+          做点想做的事。
+        </h1>
+
+        <p class="mt-8 text-steel text-lg max-w-md mx-auto leading-relaxed">
+          一个慢工出细活的技术博客。<br/>这里写代码、写思考、写做错的事。
+        </p>
+
+        <div class="mt-10 flex items-center justify-center gap-3 flex-wrap">
+          <a href="#latest" class="btn-primary">
+            开始阅读
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="#" class="btn-secondary">订阅 RSS</a>
+        </div>
+
+        <div class="mt-14 flex items-center justify-center gap-6 t-mono-sm text-steel flex-wrap">
+          <span><span class="text-ink font-medium">43</span>&nbsp;&nbsp;ARTICLES</span>
+          <span class="w-px h-3 bg-whisper"></span>
+          <span><span class="text-ink font-medium">12</span>&nbsp;&nbsp;CATEGORIES</span>
+          <span class="w-px h-3 bg-whisper"></span>
+          <span><span class="text-ink font-medium">2.1k</span>&nbsp;&nbsp;SUBSCRIBERS</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Hero ticker -->
+    <div class="relative border-t border-whisper bg-white/40 backdrop-blur-sm">
+      <div class="max-w-[1280px] mx-auto px-6 md:px-10 h-12 flex items-center justify-between">
+        <div class="ticker">
+          <span class="dot"></span>
+          <span>NOW READING</span>
+          <span class="text-ink">TanStack Query 缓存策略</span>
+          <span class="text-whisper">·</span>
+          <span>+ 18 OTHERS</span>
+        </div>
+        <div class="ticker hidden md:flex">
+          <span>LAST UPDATED</span>
+          <span class="text-ink">2026-05-22 09:14 UTC+8</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DIVIDER WITH BADGE ===================== -->
+  <div class="relative max-w-[1280px] mx-auto px-6 md:px-10 pt-20" id="latest">
+    <div class="relative">
+      <div class="flex items-baseline justify-between mb-2">
+        <h2 class="t-heading-lg text-ink">最新文章</h2>
+        <span class="t-mono-sm text-steel">12 / 43</span>
+      </div>
+      <p class="t-body-sm text-steel max-w-md">按时间倒序排列。每一篇都是慢慢写出来的,值得慢慢读。</p>
+    </div>
+    <div class="mt-8 border-t border-whisper"></div>
+  </div>
+
+  <!-- ===================== ZIGZAG ARTICLE LIST ===================== -->
+  <main class="max-w-[1280px] mx-auto px-6 md:px-10">
+
+    <!-- Row 1 : image LEFT -->
+    <a href="#" class="zig grid md:grid-cols-12 gap-8 md:gap-12 items-center group border-b border-whisper">
+      <div class="md:col-span-6 zig-img-wrap">
+        <img src="https://picsum.photos/seed/vite5/960/600" alt="" class="zig-img" />
+      </div>
+      <div class="md:col-span-6">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="zig-num">01 / 06</span>
+          <span class="w-8 h-px bg-whisper"></span>
+          <span class="t-caption text-steel font-mono uppercase">前端 · VITE</span>
+        </div>
+        <h3 class="zig-title">用 Vite 5 重构两年前的 React 项目踩到的几个坑</h3>
+        <p class="mt-4 t-body-lg text-steel line-clamp-3 max-w-xl">
+          CRA 项目迁移到 Vite,看起来只要装个 plugin,实际上 PostCSS、SVG import、绝对路径全要重新捋。把踩到的五个坑和绕过的方案都记下来。
+        </p>
+        <div class="mt-6 flex items-center gap-2">
+          <span class="chip">React</span>
+          <span class="chip">Vite</span>
+          <span class="chip">迁移</span>
+        </div>
+        <div class="mt-6 flex items-center justify-between max-w-xl">
+          <div class="flex items-center gap-2 t-body-sm text-steel">
+            <img src="https://picsum.photos/seed/lin/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+            <span>林知微</span>
+            <span class="text-whisper">·</span>
+            <span class="t-mono-sm">12 分钟 · 05/22</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 text-ink text-sm font-medium">
+            阅读
+            <svg class="read-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Row 2 : image RIGHT -->
+    <a href="#" class="zig grid md:grid-cols-12 gap-8 md:gap-12 items-center group border-b border-whisper">
+      <div class="md:col-span-6 md:order-2 zig-img-wrap">
+        <img src="https://picsum.photos/seed/redux-ctx/960/600" alt="" class="zig-img" />
+      </div>
+      <div class="md:col-span-6 md:order-1">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="zig-num">02 / 06</span>
+          <span class="w-8 h-px bg-whisper"></span>
+          <span class="t-caption text-steel font-mono uppercase">前端 · STATE</span>
+        </div>
+        <h3 class="zig-title">为什么我又把 Redux 换回了 Context</h3>
+        <p class="mt-4 t-body-lg text-steel line-clamp-3 max-w-xl">
+          三个项目以后,我发现自己写的 Redux 80% 都是远程数据。该交给 TanStack Query 的事,不要让 store 背锅。最后剩下的客户端状态,Context 完全够用。
+        </p>
+        <div class="mt-6 flex items-center gap-2">
+          <span class="chip">React</span>
+          <span class="chip">状态管理</span>
+        </div>
+        <div class="mt-6 flex items-center justify-between max-w-xl">
+          <div class="flex items-center gap-2 t-body-sm text-steel">
+            <img src="https://picsum.photos/seed/chen/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+            <span>陈墨</span>
+            <span class="text-whisper">·</span>
+            <span class="t-mono-sm">6 分钟 · 05/19</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 text-ink text-sm font-medium">
+            阅读
+            <svg class="read-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Row 3 : image LEFT -->
+    <a href="#" class="zig grid md:grid-cols-12 gap-8 md:gap-12 items-center group border-b border-whisper">
+      <div class="md:col-span-6 zig-img-wrap">
+        <img src="https://picsum.photos/seed/staletime/960/600" alt="" class="zig-img" />
+      </div>
+      <div class="md:col-span-6">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="zig-num">03 / 06</span>
+          <span class="w-8 h-px bg-whisper"></span>
+          <span class="t-caption text-steel font-mono uppercase">前端 · CACHE</span>
+        </div>
+        <h3 class="zig-title">TanStack Query 缓存策略:从 staleTime 到失效设计</h3>
+        <p class="mt-4 t-body-lg text-steel line-clamp-3 max-w-xl">
+          默认 staleTime: 0 不是 bug 是 feature。捋清楚 stale、gc、refetch 三个时间窗口怎么配,缓存就稳了。附一份在三个项目里沉淀出来的选型表。
+        </p>
+        <div class="mt-6 flex items-center gap-2">
+          <span class="chip">React</span>
+          <span class="chip">TanStack</span>
+          <span class="chip">缓存</span>
+        </div>
+        <div class="mt-6 flex items-center justify-between max-w-xl">
+          <div class="flex items-center gap-2 t-body-sm text-steel">
+            <img src="https://picsum.photos/seed/gu/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+            <span>顾远舟</span>
+            <span class="text-whisper">·</span>
+            <span class="t-mono-sm">8 分钟 · 05/20</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 text-ink text-sm font-medium">
+            阅读
+            <svg class="read-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Row 4 : image RIGHT -->
+    <a href="#" class="zig grid md:grid-cols-12 gap-8 md:gap-12 items-center group border-b border-whisper">
+      <div class="md:col-span-6 md:order-2 zig-img-wrap">
+        <img src="https://picsum.photos/seed/tw4/960/600" alt="" class="zig-img" />
+      </div>
+      <div class="md:col-span-6 md:order-1">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="zig-num">04 / 06</span>
+          <span class="w-8 h-px bg-whisper"></span>
+          <span class="t-caption text-steel font-mono uppercase">前端 · CSS</span>
+        </div>
+        <h3 class="zig-title">Tailwind v4 的 @theme 指令实战</h3>
+        <p class="mt-4 t-body-lg text-steel line-clamp-3 max-w-xl">
+          告别 tailwind.config.js,所有 token 都进 CSS。看起来好,但有几个边角细节得自己补:plugin 怎么写、dark mode 怎么挂、与设计系统 token 怎么映射。
+        </p>
+        <div class="mt-6 flex items-center gap-2">
+          <span class="chip">Tailwind</span>
+          <span class="chip">CSS</span>
+        </div>
+        <div class="mt-6 flex items-center justify-between max-w-xl">
+          <div class="flex items-center gap-2 t-body-sm text-steel">
+            <img src="https://picsum.photos/seed/lin/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+            <span>林知微</span>
+            <span class="text-whisper">·</span>
+            <span class="t-mono-sm">10 分钟 · 05/17</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 text-ink text-sm font-medium">
+            阅读
+            <svg class="read-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Row 5 : image LEFT -->
+    <a href="#" class="zig grid md:grid-cols-12 gap-8 md:gap-12 items-center group border-b border-whisper">
+      <div class="md:col-span-6 zig-img-wrap">
+        <img src="https://picsum.photos/seed/prisma-mysql/960/600" alt="" class="zig-img" />
+      </div>
+      <div class="md:col-span-6">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="zig-num">05 / 06</span>
+          <span class="w-8 h-px bg-whisper"></span>
+          <span class="t-caption text-steel font-mono uppercase">后端 · ORM</span>
+        </div>
+        <h3 class="zig-title">我是怎么用 Prisma + MySQL 8 处理多对多的</h3>
+        <p class="mt-4 t-body-lg text-steel line-clamp-3 max-w-xl">
+          implicit 与 explicit 多对多,选错了会写出一堆 join 重复字段。结合 schema 与查询场景一起决定。文章里给三个真实案例,一步步推到结论。
+        </p>
+        <div class="mt-6 flex items-center gap-2">
+          <span class="chip">Prisma</span>
+          <span class="chip">MySQL</span>
+          <span class="chip">数据建模</span>
+        </div>
+        <div class="mt-6 flex items-center justify-between max-w-xl">
+          <div class="flex items-center gap-2 t-body-sm text-steel">
+            <img src="https://picsum.photos/seed/su/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+            <span>苏砚</span>
+            <span class="text-whisper">·</span>
+            <span class="t-mono-sm">14 分钟 · 05/15</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 text-ink text-sm font-medium">
+            阅读
+            <svg class="read-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Row 6 : image RIGHT -->
+    <a href="#" class="zig grid md:grid-cols-12 gap-8 md:gap-12 items-center group">
+      <div class="md:col-span-6 md:order-2 zig-img-wrap">
+        <img src="https://picsum.photos/seed/react19/960/600" alt="" class="zig-img" />
+      </div>
+      <div class="md:col-span-6 md:order-1">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="zig-num">06 / 06</span>
+          <span class="w-8 h-px bg-whisper"></span>
+          <span class="t-caption text-steel font-mono uppercase">思考 · REACT</span>
+        </div>
+        <h3 class="zig-title">React 19 的新 hook 真的有用吗</h3>
+        <p class="mt-4 t-body-lg text-steel line-clamp-3 max-w-xl">
+          useOptimistic 看起来很美好,真用起来会发现:你以为它给你减压,实际上它让你想清楚一切边界。聊一聊用了三周后我对 React 19 hook 的不同看法。
+        </p>
+        <div class="mt-6 flex items-center gap-2">
+          <span class="chip">React</span>
+          <span class="chip">思考</span>
+        </div>
+        <div class="mt-6 flex items-center justify-between max-w-xl">
+          <div class="flex items-center gap-2 t-body-sm text-steel">
+            <img src="https://picsum.photos/seed/chen/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+            <span>陈墨</span>
+            <span class="text-whisper">·</span>
+            <span class="t-mono-sm">7 分钟 · 05/12</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 text-ink text-sm font-medium">
+            阅读
+            <svg class="read-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Pagination -->
+    <nav class="py-16 flex items-center justify-center gap-2">
+      <a href="#" class="page-link inline-flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        上一页
+      </a>
+      <span class="t-mono-sm text-steel mx-3">
+        <span class="text-ink font-medium">1</span>
+        <span class="mx-1.5 text-whisper">/</span>
+        <span>12</span>
+      </span>
+      <a href="#" class="page-link inline-flex items-center gap-1.5 text-ink">
+        下一页
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+    </nav>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="border-t border-whisper">
+    <div class="max-w-[1280px] mx-auto px-6 md:px-10 py-12">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div>
+          <p class="text-[22px] font-semibold tracking-tight text-ink">墨记</p>
+          <p class="mt-2 t-body-sm text-steel">用 React + Express + Prisma 写的。慢一点,但写完每一行都想清楚了。</p>
+        </div>
+        <div class="flex items-center gap-6 t-body-sm text-steel">
+          <a href="#" class="hover:text-ink transition">关于</a>
+          <a href="#" class="hover:text-ink transition">归档</a>
+          <a href="#" class="hover:text-ink transition">RSS</a>
+          <a href="#" class="hover:text-ink transition">GitHub</a>
+        </div>
+      </div>
+      <div class="mt-10 pt-6 border-t border-whisper flex items-center justify-between">
+        <p class="t-mono-sm text-steel">© 2026 墨记 · MOJI.WORKS</p>
+        <p class="t-mono-sm text-steel">v1.0.0</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

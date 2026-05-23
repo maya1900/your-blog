@@ -1,0 +1,125 @@
+<!-- Mockup index for blog system Aurora AI design v2 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mockups · 墨记</title>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { background: #FAFAFA; font-family: 'Geist', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif; color: #0A0A0A; }
+    .hairline-grid {
+      background-image:
+        linear-gradient(to right, #E5E5E5 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(229, 229, 229, 0.4) 1px, transparent 1px);
+      background-size: calc(100% / 12) 96px;
+    }
+    .blob { position: absolute; border-radius: 50%; filter: blur(110px); pointer-events: none; mix-blend-mode: multiply; }
+    .blob-1 { width: 600px; height: 600px; background: radial-gradient(circle, #0040FF 0%, transparent 70%); opacity: 0.32; left: -150px; top: -150px; }
+    .blob-2 { width: 500px; height: 500px; background: radial-gradient(circle, #06B6D4 0%, transparent 70%); opacity: 0.25; right: -100px; bottom: -50px; }
+    .card { background: #fff; border: 1px solid #E5E5E5; border-radius: 12px; transition: border-color 200ms, transform 200ms; }
+    .card:hover { border-color: #0040FF; transform: translateY(-2px); }
+    .num { font-family: 'Geist Mono', monospace; font-size: 0.875rem; color: #0040FF; letter-spacing: 0.04em; font-weight: 500; }
+  </style>
+</head>
+<body class="min-h-[100dvh] relative overflow-hidden">
+
+  <div class="absolute inset-0 hairline-grid pointer-events-none"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="relative max-w-5xl mx-auto px-6 md:px-10 py-20">
+
+    <header class="mb-12">
+      <p class="font-mono text-xs text-neutral-500 mb-4 inline-flex items-center gap-2" style="letter-spacing: 0.04em;">
+        <span class="inline-block w-1.5 h-1.5 rounded-full" style="background: #0040FF; box-shadow: 0 0 0 4px rgba(0,64,255,0.12);"></span>
+        MOCKUPS · AURORA AI · v2
+      </p>
+      <h1 class="text-4xl font-semibold tracking-tight">墨记 · 屏幕草稿</h1>
+      <p class="mt-3 text-neutral-600 max-w-xl">基于 <a href="../DESIGN.md" class="text-[#0040FF] hover:underline">DESIGN.md</a> 生成的 7 张高保真静态 HTML mockup,作为后续 React 开发的视觉参考。点击进入查看。</p>
+    </header>
+
+    <div class="grid md:grid-cols-2 gap-4">
+
+      <a href="01-home.html" class="card p-6 group">
+        <div class="flex items-start justify-between mb-3">
+          <span class="num">01</span>
+          <span class="font-mono text-xs text-neutral-500" style="letter-spacing: 0.04em;">PUBLIC</span>
+        </div>
+        <h3 class="text-lg font-semibold">首页</h3>
+        <p class="text-sm text-neutral-600 mt-1">居中 hero + 多极光 blob + zigzag 文章列表</p>
+        <p class="font-mono text-xs text-neutral-400 mt-3">/</p>
+      </a>
+
+      <a href="02-article-detail.html" class="card p-6 group">
+        <div class="flex items-start justify-between mb-3">
+          <span class="num">02</span>
+          <span class="font-mono text-xs text-neutral-500" style="letter-spacing: 0.04em;">PUBLIC</span>
+        </div>
+        <h3 class="text-lg font-semibold">文章详情</h3>
+        <p class="text-sm text-neutral-600 mt-1">统一容器宽 · Markdown 渲染 + TOC + 评论</p>
+        <p class="font-mono text-xs text-neutral-400 mt-3">/articles/:slug</p>
+      </a>
+
+      <a href="03-write.html" class="card p-6 group">
+        <div class="flex items-start justify-between mb-3">
+          <span class="num">03</span>
+          <span class="font-mono text-xs text-neutral-500" style="letter-spacing: 0.04em;">USER</span>
+        </div>
+        <h3 class="text-lg font-semibold">写文章</h3>
+        <p class="text-sm text-neutral-600 mt-1">设置表单 + Markdown 双栏编辑 + sticky 行动条</p>
+        <p class="font-mono text-xs text-neutral-400 mt-3">/write · /write/:id</p>
+      </a>
+
+      <a href="04-login.html" class="card p-6 group">
+        <div class="flex items-start justify-between mb-3">
+          <span class="num">04</span>
+          <span class="font-mono text-xs text-neutral-500" style="letter-spacing: 0.04em;">PUBLIC</span>
+        </div>
+        <h3 class="text-lg font-semibold">登录 / 注册</h3>
+        <p class="text-sm text-neutral-600 mt-1">极光背景上居中卡片 · tab 切换</p>
+        <p class="font-mono text-xs text-neutral-400 mt-3">/login · /register</p>
+      </a>
+
+      <a href="05-me.html" class="card p-6 group">
+        <div class="flex items-start justify-between mb-3">
+          <span class="num">05</span>
+          <span class="font-mono text-xs text-neutral-500" style="letter-spacing: 0.04em;">USER</span>
+        </div>
+        <h3 class="text-lg font-semibold">个人中心</h3>
+        <p class="text-sm text-neutral-600 mt-1">资料头部 + tab + 紧凑型文章行</p>
+        <p class="font-mono text-xs text-neutral-400 mt-3">/me</p>
+      </a>
+
+      <a href="06-admin-dashboard.html" class="card p-6 group">
+        <div class="flex items-start justify-between mb-3">
+          <span class="num">06</span>
+          <span class="font-mono text-xs text-neutral-500" style="letter-spacing: 0.04em;">ADMIN</span>
+        </div>
+        <h3 class="text-lg font-semibold">后台仪表盘</h3>
+        <p class="text-sm text-neutral-600 mt-1">侧边栏 + Bento stat 卡片 + 最近活动</p>
+        <p class="font-mono text-xs text-neutral-400 mt-3">/admin</p>
+      </a>
+
+      <a href="07-admin-articles.html" class="card p-6 group md:col-span-2">
+        <div class="flex items-start justify-between mb-3">
+          <span class="num">07</span>
+          <span class="font-mono text-xs text-neutral-500" style="letter-spacing: 0.04em;">ADMIN</span>
+        </div>
+        <h3 class="text-lg font-semibold">后台文章列表</h3>
+        <p class="text-sm text-neutral-600 mt-1">筛选条 + 批量操作 + 数据表 + 分页</p>
+        <p class="font-mono text-xs text-neutral-400 mt-3">/admin/articles</p>
+      </a>
+
+    </div>
+
+    <footer class="mt-12 pt-6 border-t border-neutral-200 flex items-center justify-between text-xs text-neutral-500 font-mono" style="letter-spacing: 0.04em;">
+      <span>v2.0 · KLEIN ELECTRIC · 2026.05.23</span>
+      <span>SOURCE: <a href="../DESIGN.md" class="text-[#0040FF] hover:underline">DESIGN.md</a></span>
+    </footer>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# coverage
+coverage/
+.nyc_output/
+
+# runtime uploads (keep folder, ignore contents)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# prisma local artifacts
+server/prisma/dev.db
+server/prisma/*.db-journal

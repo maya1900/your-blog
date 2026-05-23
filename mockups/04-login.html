@@ -1,0 +1,171 @@
+<!-- Generated mockup for blog system, design source: /Users/mayang/projects/own/your-blog/DESIGN.md -->
+<!-- 04 Login / Register: centered card on hairline grid + aurora backdrop -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>登录 — 墨记</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Geist', 'PingFang SC', 'Noto Sans SC', 'system-ui', 'sans-serif'], mono: ['"Geist Mono"', 'ui-monospace', 'monospace'] },
+      colors: { canvas: '#FAFAFA', surface: '#FFFFFF', ink: '#0A0A0A', steel: '#525252', whisper: '#E5E5E5', 'whisper-soft': '#F5F5F5', klein: '#0040FF', 'klein-deep': '#0033CC', 'klein-soft': '#3D5AFE' }
+    }}}
+  </script>
+
+  <style>
+    html, body { background: #FAFAFA; color: #0A0A0A; font-family: 'Geist', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+    .t-mono-sm { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.8125rem; letter-spacing: 0.01em; }
+    .t-caption { font-size: 0.75rem; line-height: 1.4; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hairline grid */
+    .hairline-grid {
+      background-image:
+        linear-gradient(to right, #E5E5E5 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(229, 229, 229, 0.4) 1px, transparent 1px);
+      background-size: calc(100% / 12) 96px;
+    }
+
+    .blob { position: absolute; border-radius: 50%; filter: blur(110px); pointer-events: none; mix-blend-mode: multiply; }
+    .blob-1 { width: 720px; height: 720px; background: radial-gradient(circle, #0040FF 0%, transparent 70%); opacity: 0.32; left: -200px; top: -180px; animation: drift-a 26s ease-in-out infinite; }
+    .blob-2 { width: 600px; height: 600px; background: radial-gradient(circle, #06B6D4 0%, transparent 70%); opacity: 0.28; right: -120px; bottom: -80px; animation: drift-b 32s ease-in-out infinite; }
+    .blob-3 { width: 440px; height: 440px; background: radial-gradient(circle, #3D5AFE 0%, transparent 70%); opacity: 0.22; right: 25%; top: 30%; animation: drift-c 36s ease-in-out infinite; }
+    @keyframes drift-a { 0%,100% { transform: translate(0,0) } 50% { transform: translate(40px,30px) } }
+    @keyframes drift-b { 0%,100% { transform: translate(0,0) } 50% { transform: translate(-30px,50px) } }
+    @keyframes drift-c { 0%,100% { transform: translate(0,0) } 50% { transform: translate(20px,-40px) } }
+
+    .input { width: 100%; background: #fff; border: 1px solid #E5E5E5; border-radius: 8px; padding: 11px 14px; font-size: 15px; color: #0A0A0A; transition: border-color 150ms, box-shadow 150ms; font-family: inherit; }
+    .input:focus { outline: none; border-color: #0040FF; box-shadow: 0 0 0 3px rgba(0, 64, 255, 0.18); }
+
+    .field-label { display: block; font-size: 0.75rem; font-weight: 500; color: #525252; letter-spacing: 0.04em; margin-bottom: 6px; font-family: 'Geist Mono', monospace; }
+
+    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #0040FF; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 15px; font-weight: 500; transition: background 150ms, transform 100ms; width: 100%; }
+    .btn-primary:hover { background: #0033CC; }
+    .btn-primary:active { transform: translateY(1px); }
+
+    /* Tab */
+    .tab {
+      flex: 1; padding: 10px 0; text-align: center;
+      font-size: 14px; font-weight: 500;
+      color: #525252; cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 150ms, border-color 150ms;
+    }
+    .tab:hover { color: #0A0A0A; }
+    .tab.active { color: #0040FF; border-bottom-color: #0040FF; }
+
+    /* Bottom info pill */
+    .info-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid #E5E5E5;
+      border-radius: 999px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px;
+      color: #525252;
+    }
+    .info-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: #10B981; }
+  </style>
+</head>
+
+<body class="bg-canvas text-ink antialiased min-h-[100dvh] relative overflow-hidden">
+
+  <!-- Backdrop -->
+  <div class="absolute inset-0 hairline-grid pointer-events-none"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <!-- Top bar (minimal) -->
+  <header class="relative z-10">
+    <div class="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+      <a href="#" class="text-[22px] font-semibold tracking-tight text-ink">墨记</a>
+      <a href="#" class="t-mono-sm text-steel hover:text-ink transition inline-flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        返回首页
+      </a>
+    </div>
+  </header>
+
+  <!-- Centered card -->
+  <main class="relative z-10 flex items-center justify-center px-6" style="min-height: calc(100dvh - 64px);">
+
+    <div class="w-full max-w-[440px]">
+
+      <!-- Branding -->
+      <div class="text-center mb-10">
+        <p class="t-caption text-steel font-mono mb-4 inline-flex items-center justify-center gap-2">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-klein" style="box-shadow: 0 0 0 4px rgba(0,64,255,0.12);"></span>
+          EST. 2026 · A SLOW BLOG
+        </p>
+        <h1 class="text-3xl font-semibold tracking-tight">欢迎回来</h1>
+        <p class="mt-2 text-steel">登录账号继续写点想说的</p>
+      </div>
+
+      <!-- Card -->
+      <div class="bg-white border border-whisper rounded-xl p-8" style="box-shadow: 0 1px 0 rgba(0,0,0,0.02);">
+
+        <!-- Tabs -->
+        <div class="flex border-b border-whisper -mt-2 mb-7">
+          <button class="tab active">登录</button>
+          <button class="tab">注册</button>
+        </div>
+
+        <!-- Form -->
+        <form class="space-y-5">
+
+          <div>
+            <label class="field-label">USERNAME / EMAIL</label>
+            <input type="text" class="input" placeholder="username 或 you@example.com" />
+          </div>
+
+          <div>
+            <div class="flex items-baseline justify-between mb-1.5">
+              <label class="field-label" style="margin-bottom:0;">PASSWORD</label>
+              <a href="#" class="text-xs text-steel hover:text-klein">忘记密码?</a>
+            </div>
+            <input type="password" class="input" placeholder="••••••••••" />
+          </div>
+
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="w-4 h-4 accent-klein rounded" />
+            <span class="text-sm text-steel">记住我 · 7 天免登录</span>
+          </label>
+
+          <button type="submit" class="btn-primary">
+            登录
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </button>
+
+        </form>
+
+      </div>
+
+      <!-- Below card link -->
+      <p class="text-center mt-6 text-sm text-steel">
+        还没有账号? <a href="#" class="text-klein hover:text-klein-deep font-medium">立即注册 →</a>
+      </p>
+
+    </div>
+  </main>
+
+  <!-- Bottom info pill -->
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-10">
+    <div class="info-pill">
+      <span class="dot" style="animation: pulse 2s ease-in-out infinite;"></span>
+      <span>SECURE · TLS 1.3 · JWT HS256</span>
+    </div>
+  </div>
+  <style>@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }</style>
+
+</body>
+</html>

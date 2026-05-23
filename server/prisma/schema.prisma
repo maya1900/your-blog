@@ -1,0 +1,126 @@
+// Prisma schema for 墨记 blog system
+// Reference: REQUIREMENTS.md §5, ARCHITECTURE.md §4
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ Enums ============
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// ============ Models ============
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  avatar       String?
+  bio          String?  @db.VarChar(200)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  articles  Article[]
+  comments  Comment[]
+  likes     Like[]
+  favorites Favorite[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  slug     String    @unique
+  articles Article[]
+}
+
+model Tag {
+  id       Int          @id @default(autoincrement())
+  name     String       @unique
+  articles ArticleTag[]
+}
+
+model Article {
+  id          Int           @id @default(autoincrement())
+  title       String        @db.VarChar(100)
+  slug        String        @unique
+  summary     String?       @db.VarChar(200)
+  content     String        @db.LongText
+  coverUrl    String?
+  status      ArticleStatus @default(DRAFT)
+  viewCount   Int           @default(0)
+  authorId    Int
+  categoryId  Int
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  author    User         @relation(fields: [authorId], references: [id])
+  category  Category     @relation(fields: [categoryId], references: [id])
+  tags      ArticleTag[]
+  comments  Comment[]
+  likes     Like[]
+  favorites Favorite[]
+
+  @@index([status, publishedAt])
+  @@index([authorId])
+}
+
+model ArticleTag {
+  articleId Int
+  tagId     Int
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([articleId, tagId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.VarChar(1000)
+  articleId Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([articleId])
+}
+
+model Like {
+  userId    Int
+  articleId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, articleId])
+}
+
+model Favorite {
+  userId    Int
+  articleId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, articleId])
+}

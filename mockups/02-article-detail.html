@@ -1,0 +1,519 @@
+<!-- Generated mockup for blog system, design source: /Users/mayang/projects/own/your-blog/DESIGN.md -->
+<!-- v2: Klein Electric accent + unified container width (cover/header/body all aligned) -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TanStack Query 缓存策略 — 墨记</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Geist', 'PingFang SC', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+            mono: ['"Geist Mono"', '"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            canvas: '#FAFAFA',
+            surface: '#FFFFFF',
+            ink: '#0A0A0A',
+            steel: '#525252',
+            whisper: '#E5E5E5',
+            'whisper-soft': '#F5F5F5',
+            klein: '#0040FF',
+            'klein-deep': '#0033CC',
+            'klein-soft': '#3D5AFE',
+            cyan: { signal: '#06B6D4' },
+            emerald: { signal: '#10B981' },
+            amber: { signal: '#F59E0B' },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html, body { background: #FAFAFA; color: #0A0A0A; font-family: 'Geist', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+    .t-display-lg { font-size: clamp(2rem, 4.5vw, 3.25rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.025em; }
+    .t-heading-lg { font-size: 1.5rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.015em; }
+    .t-heading-md { font-size: 1.25rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
+    .t-body-lg  { font-size: 1.0625rem; line-height: 1.75; }
+    .t-body     { font-size: 1rem; line-height: 1.6; }
+    .t-body-sm  { font-size: 0.875rem; line-height: 1.5; }
+    .t-caption  { font-size: 0.75rem; line-height: 1.4; font-weight: 500; letter-spacing: 0.04em; }
+    .t-mono-sm  { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.8125rem; letter-spacing: 0.01em; }
+
+    .chip {
+      display: inline-flex; align-items: center;
+      height: 22px; padding: 0 8px;
+      border-radius: 4px;
+      background: #F5F5F5;
+      color: #525252;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
+    }
+    .chip-strong { background: #0040FF; color: #fff; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #0040FF; color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 15px; font-weight: 500;
+      transition: background 150ms, transform 100ms;
+    }
+    .btn-primary:hover { background: #0033CC; }
+    .btn-primary:active { transform: translateY(1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; color: #0A0A0A;
+      padding: 9px 16px;
+      border: 1px solid #E5E5E5;
+      border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      transition: border-color 150ms, color 150ms;
+    }
+    .btn-secondary:hover { border-color: #0040FF; color: #0040FF; }
+
+    .btn-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      border-radius: 6px;
+      color: #525252;
+      transition: background 150ms, color 150ms;
+    }
+    .btn-icon:hover { background: #F5F5F5; color: #0A0A0A; }
+
+    .nav-link { position: relative; color: #0A0A0A; font-size: 15px; padding: 6px 2px; transition: color 150ms; }
+    .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: #0040FF; transform: scaleX(0); transform-origin: left; transition: transform 200ms ease-out; }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    /* === Article prose styles === */
+    .prose h2 { font-size: 1.625rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.02em; margin-top: 3.5rem; margin-bottom: 1.25rem; color: #0A0A0A; scroll-margin-top: 96px; }
+    .prose h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; margin-top: 2.5rem; margin-bottom: 0.75rem; color: #0A0A0A; scroll-margin-top: 96px; }
+    .prose p { font-size: 1.0625rem; line-height: 1.8; margin-bottom: 1.4rem; color: #0A0A0A; }
+    .prose a { color: #0040FF; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .prose a:hover { color: #0033CC; }
+    .prose ul, .prose ol { margin: 1.25rem 0; padding-left: 1.5rem; font-size: 1.0625rem; line-height: 1.8; }
+    .prose ul { list-style: disc; }
+    .prose ol { list-style: decimal; }
+    .prose li { margin-bottom: 0.5rem; }
+    .prose li::marker { color: #525252; }
+    .prose blockquote { border-left: 4px solid #0040FF; padding-left: 1.25rem; margin: 1.75rem 0; font-style: italic; color: #525252; font-size: 1.0625rem; line-height: 1.7; }
+    .prose code:not(pre code) { background: #F5F5F5; padding: 2px 6px; border-radius: 4px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.875em; color: #0A0A0A; }
+    .prose pre { background: #0A0A0A; color: #FAFAFA; padding: 22px 24px; border-radius: 12px; overflow-x: auto; margin: 1.75rem 0; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.8125rem; line-height: 1.75; }
+    .prose pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+    .prose figure { margin: 2rem 0; }
+    .prose figure img { border-radius: 12px; width: 100%; }
+    .prose figcaption { text-align: center; color: #525252; font-size: 0.875rem; margin-top: 0.75rem; }
+
+    .tok-kw  { color: #06B6D4; }
+    .tok-str { color: #10B981; }
+    .tok-num { color: #F59E0B; }
+    .tok-com { color: #737373; }
+    .tok-fn  { color: #FAFAFA; }
+    .tok-pr  { color: #A3A3A3; }
+
+    .toc-link { display: block; padding: 6px 0 6px 12px; font-size: 14px; color: #525252; border-left: 2px solid transparent; transition: color 150ms, border-color 150ms; }
+    .toc-link:hover { color: #0A0A0A; }
+    .toc-link.active { color: #0040FF; border-left-color: #0040FF; }
+
+    .action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; color: #525252; transition: background 150ms, color 150ms; }
+    .action-btn:hover { background: #F5F5F5; color: #0A0A0A; }
+    .action-btn.active { color: #0040FF; }
+
+    .comment-action { color: #525252; font-size: 12px; transition: color 150ms; }
+    .comment-action:hover { color: #0040FF; }
+  </style>
+</head>
+
+<body class="bg-canvas text-ink antialiased">
+
+  <!-- ===================== TOP NAV ===================== -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/75 border-b border-whisper">
+    <div class="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+      <a href="#" class="text-[22px] font-semibold tracking-tight text-ink">墨记</a>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#" class="nav-link">文章</a>
+        <a href="#" class="nav-link">分类</a>
+        <a href="#" class="nav-link">标签</a>
+        <a href="#" class="nav-link text-steel">关于</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button class="btn-icon" aria-label="搜索">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <a href="#" class="btn-primary !py-2 !px-4 text-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>
+          写文章
+        </a>
+        <button class="ml-2 w-8 h-8 rounded-full ring-1 ring-whisper overflow-hidden">
+          <img src="https://picsum.photos/seed/me/64/64" alt="" class="w-full h-full object-cover" />
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== UNIFIED ARTICLE CONTAINER ===================== -->
+  <!--
+    SAME outer container for: cover image / header / body grid / comments.
+    All elements share max-w-[1080px] + identical horizontal padding.
+  -->
+  <div class="max-w-[1080px] mx-auto px-6 md:px-10">
+
+    <!-- Breadcrumb -->
+    <p class="t-mono-sm text-steel pt-8 mb-6">
+      <a href="#" class="hover:text-ink">文章</a>
+      <span class="mx-2 text-whisper">/</span>
+      <a href="#" class="hover:text-ink">前端</a>
+    </p>
+
+    <!-- COVER -->
+    <div class="overflow-hidden rounded-xl border border-whisper" style="max-height: 480px;">
+      <img src="https://picsum.photos/seed/staletime/1600/720" alt="" class="w-full object-cover" style="max-height: 480px;" />
+    </div>
+
+    <!-- ARTICLE HEADER (same width as cover) -->
+    <header class="mt-10">
+      <div class="flex items-center gap-2 mb-5 flex-wrap">
+        <span class="chip chip-strong">前端</span>
+        <span class="chip">React</span>
+        <span class="chip">TanStack</span>
+        <span class="chip">缓存</span>
+      </div>
+
+      <h1 class="t-display-lg text-ink">
+        TanStack Query 缓存策略:从 staleTime 到失效设计
+      </h1>
+
+      <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-steel">
+        <div class="flex items-center gap-2">
+          <img src="https://picsum.photos/seed/gu/40/40" class="w-6 h-6 rounded-full ring-1 ring-whisper" alt="" />
+          <a href="#" class="text-ink hover:text-klein t-body-sm font-medium">顾远舟</a>
+        </div>
+        <span class="t-mono-sm">2026/05/20</span>
+        <span class="t-mono-sm flex items-center gap-1.5">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          8 分钟阅读
+        </span>
+        <span class="t-mono-sm flex items-center gap-1.5">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          1,247 阅读
+        </span>
+      </div>
+
+      <p class="mt-7 text-steel" style="font-size:1.125rem; line-height:1.7;">
+        默认的 <code style="background:#F5F5F5;padding:1px 6px;border-radius:4px;font-family:'Geist Mono',monospace;font-size:0.9em;color:#0A0A0A;">staleTime: 0</code> 不是 bug,是 feature。但 90% 的项目都不想要这个 feature。这篇文章捋清楚 stale、gc、refetch 三个时间窗口怎么配,缓存就稳了。
+      </p>
+    </header>
+
+    <!-- BODY GRID (same outer width; sub-divides) -->
+    <div class="mt-12 grid gap-12 border-t border-whisper pt-12" style="grid-template-columns: minmax(0, 1fr) 240px;">
+
+      <!-- ARTICLE BODY -->
+      <article class="prose min-w-0">
+
+        <p>
+          上周 review 一个组员的 PR,改的是个列表页接口请求。她把所有 query 都加了 <code>refetchOnWindowFocus: false</code>,理由是"切回标签页就刷数据太烦了"。我看完没说话,只问了一句:那你 <code>staleTime</code> 怎么设的?她说没设过,默认就好。
+        </p>
+
+        <p>
+          这是 TanStack Query 用户里最常见的误解之一 — 把<strong>"何时认为数据过期"</strong>(stale)和<strong>"何时重新拉数据"</strong>(refetch)混为一谈。实际上文档里写得明明白白,它们是两个独立的旋钮。
+        </p>
+
+        <h2 id="why-staletime">为什么需要 staleTime</h2>
+
+        <p>
+          Query 的生命周期里有三个状态:<code>fresh</code>、<code>stale</code>、<code>inactive</code>。<code>staleTime</code> 控制的是 fresh → stale 的过渡时间,<code>gcTime</code>(旧名 <code>cacheTime</code>)控制的是 inactive → garbage collected 的过渡时间。两个时间互不影响。
+        </p>
+
+        <h3 id="default-trap">默认值的陷阱</h3>
+
+        <p>
+          默认 <code>staleTime: 0</code> 的设计哲学是"数据一拿到就过期",所以任何重新挂载、窗口聚焦、网络重连都会触发 refetch。这在数据高度动态的场景(交易盘口、协作编辑)是对的,但在博客文章详情、用户资料这种"几小时内根本不会变"的场景下,纯粹是浪费。
+        </p>
+
+        <pre><code><span class="tok-kw">const</span> queryClient = <span class="tok-kw">new</span> <span class="tok-fn">QueryClient</span>({
+  <span class="tok-pr">defaultOptions</span>: {
+    <span class="tok-pr">queries</span>: {
+      <span class="tok-com">// 5 分钟内数据视为新鲜,不会触发 refetch</span>
+      <span class="tok-pr">staleTime</span>: <span class="tok-num">5</span> * <span class="tok-num">60</span> * <span class="tok-num">1000</span>,
+      <span class="tok-com">// 10 分钟没人订阅就 GC,腾出内存</span>
+      <span class="tok-pr">gcTime</span>: <span class="tok-num">10</span> * <span class="tok-num">60</span> * <span class="tok-num">1000</span>,
+      <span class="tok-pr">refetchOnWindowFocus</span>: <span class="tok-kw">true</span>,
+      <span class="tok-pr">retry</span>: <span class="tok-num">2</span>,
+    },
+  },
+})</code></pre>
+
+        <p>
+          注意我没有关 <code>refetchOnWindowFocus</code>。原因是:有了 <code>staleTime</code>,窗口聚焦时 Query 会先看数据是否还 fresh,fresh 就什么都不做。所以关键不是关 refetch,而是定义"什么时候才算 stale"。
+        </p>
+
+        <h2 id="strategy">实战策略</h2>
+
+        <p>下面是我在三个不同项目里沉淀出来的 staleTime 选型表:</p>
+
+        <ol>
+          <li><strong>静态资源类</strong>(分类列表、标签云、配置项):<code>Infinity</code>,手动失效</li>
+          <li><strong>低频变动类</strong>(文章详情、用户资料):<code>5 分钟</code>,允许 refetchOnWindowFocus</li>
+          <li><strong>实时性中等</strong>(评论列表、文章列表):<code>30 秒</code>,允许 refetchOnReconnect</li>
+          <li><strong>实时性强</strong>(在线状态、协作光标):<code>0</code>,配合 <code>refetchInterval</code></li>
+        </ol>
+
+        <p>对应的失效触发,我习惯只用三种方式:</p>
+
+        <ul>
+          <li>Mutation 成功后 <code>invalidateQueries</code> 精准命中相关 key</li>
+          <li>路由切换时清理某个 namespace 的 queries</li>
+          <li>用户主动刷新(下拉、按钮)时调 <code>refetch</code></li>
+        </ul>
+
+        <blockquote>
+          缓存最难的不是何时拉数据,而是何时<em>不要</em>拉数据。staleTime 是你给自己设的边界,refetchOnWindowFocus 是你给用户的恩典 — 不要把这两件事弄混。
+        </blockquote>
+
+        <figure>
+          <img src="https://picsum.photos/seed/cache-diagram/1440/720" alt="缓存状态机示意图" />
+          <figcaption>Query 缓存三态机:fresh → stale → inactive → garbage collected</figcaption>
+        </figure>
+
+        <p>
+          这套策略落到代码上,关键不在 config 多花哨,而在 query key 怎么设计。后面会单独写一篇讲 key 的层级化命名 — 让 <code>invalidateQueries</code> 能像 <code>rm -rf ./posts/*</code> 一样精确。
+        </p>
+
+        <p>
+          那个组员后来把 PR 改了。我们一起把 <code>defaultOptions</code> 抽到了 <code>queryClient.ts</code>,各 page 不再传一堆零散参数。代码少了 60 行,bug 少了一类。
+        </p>
+
+        <!-- Footer of article -->
+        <div class="mt-12 pt-8 border-t border-whisper not-prose">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="t-caption text-steel font-mono">TAGS</span>
+              <span class="chip">React</span>
+              <span class="chip">TanStack</span>
+              <span class="chip">缓存</span>
+              <span class="chip">性能</span>
+            </div>
+            <button class="btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+              分享
+            </button>
+          </div>
+          <p class="mt-4 t-mono-sm text-steel">
+            本文链接:<a href="#" class="text-klein hover:text-klein-deep">moji.works/tanstack-query-staletime</a>
+          </p>
+        </div>
+      </article>
+
+      <!-- RIGHT RAIL -->
+      <aside class="hidden lg:block">
+        <div class="sticky top-24 space-y-8">
+
+          <div>
+            <p class="t-caption text-steel font-mono mb-3">目录 / TOC</p>
+            <nav class="border-l border-whisper">
+              <a href="#why-staletime" class="toc-link active">为什么需要 staleTime</a>
+              <a href="#default-trap" class="toc-link pl-6">└ 默认值的陷阱</a>
+              <a href="#strategy" class="toc-link">实战策略</a>
+            </nav>
+          </div>
+
+          <div class="border border-whisper rounded-xl p-5 bg-white">
+            <div class="flex items-center gap-3">
+              <img src="https://picsum.photos/seed/gu/96/96" class="w-12 h-12 rounded-full ring-1 ring-whisper" alt="" />
+              <div>
+                <p class="font-semibold text-ink">顾远舟</p>
+                <p class="t-mono-sm text-steel">@guyz</p>
+              </div>
+            </div>
+            <p class="mt-3 t-body-sm text-steel">
+              前端工程师,写代码十年。喜欢把简单的事做对。
+            </p>
+            <a href="#" class="mt-4 inline-flex items-center gap-1 text-sm text-klein hover:text-klein-deep">
+              查看作者所有文章
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          <div class="bg-white border border-whisper rounded-xl p-3">
+            <p class="t-caption text-steel font-mono px-2 pb-2">REACTIONS</p>
+            <div class="flex items-center justify-around">
+              <button class="action-btn active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0040FF" stroke="#0040FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <span class="t-mono-sm">128</span>
+              </button>
+              <button class="action-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                <span class="t-mono-sm">34</span>
+              </button>
+              <button class="action-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+    </div>
+
+    <!-- ===================== COMMENTS (same container) ===================== -->
+    <section class="mt-20 border-t border-whisper pt-16">
+      <div class="flex items-baseline justify-between mb-8">
+        <h2 class="t-heading-lg">评论 <span class="t-mono-sm text-steel ml-2">12</span></h2>
+        <a href="#" class="t-body-sm text-steel hover:text-ink">最新 ↓</a>
+      </div>
+
+      <div class="border border-whisper rounded-xl bg-white p-5 mb-10 max-w-[768px]">
+        <div class="flex items-start gap-3">
+          <img src="https://picsum.photos/seed/me/64/64" class="w-8 h-8 rounded-full ring-1 ring-whisper" alt="" />
+          <div class="flex-1">
+            <textarea rows="3" placeholder="说点什么..." class="w-full text-sm text-ink placeholder-steel resize-none outline-none bg-transparent"></textarea>
+            <div class="mt-3 flex items-center justify-between">
+              <p class="t-mono-sm text-steel">支持 Markdown · Cmd+Enter 发送</p>
+              <button class="btn-primary !py-2 !px-4 text-sm">发布评论</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ul class="space-y-6 max-w-[768px]">
+
+        <li class="pb-6 border-b border-whisper">
+          <div class="flex items-start gap-3">
+            <img src="https://picsum.photos/seed/lin/64/64" class="w-9 h-9 rounded-full ring-1 ring-whisper flex-shrink-0" alt="" />
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-ink">林知微</span>
+                <span class="t-mono-sm text-steel">· 2 小时前</span>
+              </div>
+              <p class="text-[15px] text-ink leading-relaxed">
+                第二段说到点子上了。我们组之前为了"切回标签页不刷",直接全局关了 <code style="background:#F5F5F5;padding:1px 5px;border-radius:3px;font-family:'Geist Mono',monospace;font-size:0.875em;">refetchOnWindowFocus</code>,结果协作场景下数据老是过期。后面才意识到该调 staleTime。
+              </p>
+              <div class="mt-2 flex items-center gap-3">
+                <button class="comment-action">回复</button>
+                <button class="comment-action">点赞 · 8</button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="pb-6 border-b border-whisper">
+          <div class="flex items-start gap-3">
+            <img src="https://picsum.photos/seed/chen/64/64" class="w-9 h-9 rounded-full ring-1 ring-whisper flex-shrink-0" alt="" />
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-ink">陈墨</span>
+                <span class="t-mono-sm text-steel">· 5 小时前</span>
+              </div>
+              <p class="text-[15px] text-ink leading-relaxed">
+                想问下 query key 的层级化命名,有没有现成的范式可以抄?我们项目现在是约定俗成,但每个人手感不一样。
+              </p>
+              <div class="mt-2 flex items-center gap-3">
+                <button class="comment-action">回复</button>
+                <button class="comment-action">点赞 · 3</button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="pb-6 border-b border-whisper">
+          <div class="flex items-start gap-3">
+            <img src="https://picsum.photos/seed/su/64/64" class="w-9 h-9 rounded-full ring-1 ring-whisper flex-shrink-0" alt="" />
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-ink">苏砚</span>
+                <span class="t-mono-sm text-steel">· 8 小时前</span>
+              </div>
+              <p class="text-[15px] text-ink leading-relaxed">
+                图里那个三态机画得很清楚,我转走存了。期待 key 那篇。
+              </p>
+              <div class="mt-2 flex items-center gap-3">
+                <button class="comment-action">回复</button>
+                <button class="comment-action">点赞 · 12</button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="pb-6 border-b border-whisper">
+          <div class="flex items-start gap-3">
+            <img src="https://picsum.photos/seed/me/64/64" class="w-9 h-9 rounded-full ring-1 ring-whisper flex-shrink-0" alt="" />
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-ink">我</span>
+                <span class="t-mono-sm text-steel">· 昨天</span>
+              </div>
+              <p class="text-[15px] text-ink leading-relaxed">
+                第三类(实时性中等)我一般用 60 秒,30 秒在评论列表会有点频繁触发 invalidate,看大家场景。
+              </p>
+              <div class="mt-2 flex items-center gap-3">
+                <button class="comment-action">回复</button>
+                <button class="comment-action">点赞 · 1</button>
+                <button class="comment-action text-steel hover:!text-red-500">删除</button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="pb-6 border-b border-whisper">
+          <div class="flex items-start gap-3">
+            <img src="https://picsum.photos/seed/visitor1/64/64" class="w-9 h-9 rounded-full ring-1 ring-whisper flex-shrink-0" alt="" />
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-ink">何川</span>
+                <span class="t-mono-sm text-steel">· 2 天前</span>
+              </div>
+              <p class="text-[15px] text-ink leading-relaxed">
+                想问一句,gcTime 设短会有什么问题?我以为越短越省内存就 OK。
+              </p>
+              <div class="mt-2 flex items-center gap-3">
+                <button class="comment-action">回复</button>
+                <button class="comment-action">点赞 · 0</button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+      </ul>
+
+      <div class="mt-10 max-w-[768px]">
+        <button class="btn-secondary w-full justify-center">加载更多评论</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="border-t border-whisper mt-20">
+    <div class="max-w-[1280px] mx-auto px-6 md:px-10 py-12">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div>
+          <p class="text-[22px] font-semibold tracking-tight text-ink">墨记</p>
+          <p class="mt-2 t-body-sm text-steel">用 React + Express + Prisma 写的。慢一点,但写完每一行都想清楚了。</p>
+        </div>
+        <div class="flex items-center gap-6 t-body-sm text-steel">
+          <a href="#" class="hover:text-ink transition">关于</a>
+          <a href="#" class="hover:text-ink transition">归档</a>
+          <a href="#" class="hover:text-ink transition">RSS</a>
+          <a href="#" class="hover:text-ink transition">GitHub</a>
+        </div>
+      </div>
+      <div class="mt-10 pt-6 border-t border-whisper flex items-center justify-between">
+        <p class="t-mono-sm text-steel">© 2026 墨记 · MOJI.WORKS</p>
+        <p class="t-mono-sm text-steel">v1.0.0</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

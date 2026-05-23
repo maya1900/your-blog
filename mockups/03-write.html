@@ -1,0 +1,372 @@
+<!-- Generated mockup for blog system, design source: /Users/mayang/projects/own/your-blog/DESIGN.md -->
+<!-- 03 Write Article: Markdown editor + settings form + sticky action bar -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>写文章 — 墨记</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Geist', 'PingFang SC', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+            mono: ['"Geist Mono"', '"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            canvas: '#FAFAFA', surface: '#FFFFFF', ink: '#0A0A0A', steel: '#525252',
+            whisper: '#E5E5E5', 'whisper-soft': '#F5F5F5',
+            klein: '#0040FF', 'klein-deep': '#0033CC', 'klein-soft': '#3D5AFE',
+            cyan: { signal: '#06B6D4' }, emerald: { signal: '#10B981' }, amber: { signal: '#F59E0B' },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html, body { background: #FAFAFA; color: #0A0A0A; font-family: 'Geist', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+    .t-caption  { font-size: 0.75rem; line-height: 1.4; font-weight: 500; letter-spacing: 0.04em; }
+    .t-mono-sm  { font-family: 'Geist Mono', monospace; font-size: 0.8125rem; letter-spacing: 0.01em; }
+
+    .chip { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 4px; background: #F5F5F5; color: #525252; font-size: 12px; font-weight: 500; letter-spacing: 0.02em; gap: 4px; }
+    .chip-strong { background: #0040FF; color: #fff; }
+    .chip-removable button { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 3px; opacity: 0.6; transition: opacity 150ms; }
+    .chip-removable button:hover { opacity: 1; background: rgba(0,0,0,0.08); }
+
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: #0040FF; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 15px; font-weight: 500; transition: background 150ms, transform 100ms; }
+    .btn-primary:hover { background: #0033CC; }
+    .btn-primary:active { transform: translateY(1px); }
+
+    .btn-secondary { display: inline-flex; align-items: center; gap: 6px; background: transparent; color: #0A0A0A; padding: 9px 16px; border: 1px solid #E5E5E5; border-radius: 8px; font-size: 14px; font-weight: 500; transition: border-color 150ms, color 150ms; }
+    .btn-secondary:hover { border-color: #0040FF; color: #0040FF; }
+
+    .btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 6px; color: #525252; transition: background 150ms, color 150ms; }
+    .btn-icon:hover { background: #F5F5F5; color: #0A0A0A; }
+
+    .input { width: 100%; background: #fff; border: 1px solid #E5E5E5; border-radius: 8px; padding: 10px 14px; font-size: 15px; color: #0A0A0A; transition: border-color 150ms, box-shadow 150ms; font-family: inherit; }
+    .input:focus { outline: none; border-color: #0040FF; box-shadow: 0 0 0 3px rgba(0, 64, 255, 0.18); }
+    .input.title-xl { font-size: 1.875rem; font-weight: 600; letter-spacing: -0.015em; padding: 14px 16px; line-height: 1.2; }
+    .input.summary-md { font-size: 1rem; line-height: 1.6; resize: vertical; min-height: 72px; }
+
+    .select-wrap { position: relative; }
+    .select-wrap select { appearance: none; -webkit-appearance: none; padding-right: 36px; cursor: pointer; }
+    .select-wrap::after { content: ''; position: absolute; right: 14px; top: 50%; width: 8px; height: 8px; border-right: 1.5px solid #525252; border-bottom: 1.5px solid #525252; transform: translateY(-75%) rotate(45deg); pointer-events: none; }
+
+    .nav-link { position: relative; color: #0A0A0A; font-size: 15px; padding: 6px 2px; transition: color 150ms; }
+    .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: #0040FF; transform: scaleX(0); transform-origin: left; transition: transform 200ms ease-out; }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    /* === Editor toolbar === */
+    .toolbar { display: flex; align-items: center; gap: 2px; padding: 6px; border-bottom: 1px solid #E5E5E5; background: #FAFAFA; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+    .tool-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 6px; color: #525252; transition: background 150ms, color 150ms; }
+    .tool-btn:hover { background: #fff; color: #0A0A0A; }
+    .tool-btn.active { background: #fff; color: #0040FF; }
+    .tool-divider { width: 1px; height: 18px; background: #E5E5E5; margin: 0 6px; }
+
+    /* === Editor split pane === */
+    .editor-shell { background: #fff; border: 1px solid #E5E5E5; border-radius: 12px; overflow: hidden; }
+    .editor-split { display: grid; grid-template-columns: 1fr; min-height: 520px; transition: grid-template-columns 200ms ease-out; }
+    @media (min-width: 768px) {
+      .editor-split { grid-template-columns: 1fr 1fr; }
+      .editor-pane { border-right: 1px solid #E5E5E5; }
+    }
+    .editor-shell.no-preview .editor-split { grid-template-columns: 1fr !important; }
+    .editor-shell.no-preview .editor-pane { border-right: none; }
+    .editor-shell.no-preview .editor-preview { display: none; }
+    .editor-pane { min-height: 520px; min-width: 0; }
+    .editor-textarea { width: 100%; height: 100%; min-height: 520px; padding: 24px; resize: none; outline: none; border: none; background: transparent; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.875rem; line-height: 1.8; color: #0A0A0A; }
+    .editor-preview { padding: 24px 28px; background: #FAFAFA; overflow-y: auto; max-height: 600px; min-width: 0; }
+    .editor-preview h2 { font-size: 1.375rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; letter-spacing: -0.015em; }
+    .editor-preview h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+    .editor-preview p { font-size: 1rem; line-height: 1.75; margin-bottom: 1rem; color: #0A0A0A; }
+    .editor-preview code { background: #F5F5F5; padding: 1px 5px; border-radius: 3px; font-family: 'Geist Mono', monospace; font-size: 0.875em; }
+    .editor-preview ul { list-style: disc; padding-left: 1.5rem; }
+    .editor-preview li { margin-bottom: 0.25rem; line-height: 1.7; }
+    .editor-preview blockquote { border-left: 3px solid #0040FF; padding-left: 1rem; font-style: italic; color: #525252; margin: 1rem 0; }
+
+    /* === Dropzone === */
+    .dropzone { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px dashed #E5E5E5; border-radius: 10px; background: #fff; cursor: pointer; transition: border-color 150ms, background 150ms; }
+    .dropzone:hover { border-color: #0040FF; background: #F5F8FF; }
+    .dropzone-preview { width: 96px; height: 64px; border-radius: 6px; overflow: hidden; flex-shrink: 0; border: 1px solid #E5E5E5; }
+    .dropzone-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* === Field label === */
+    .field-label { display: block; font-size: 0.75rem; font-weight: 500; color: #525252; letter-spacing: 0.04em; margin-bottom: 6px; font-family: 'Geist Mono', monospace; }
+
+    /* === Saved indicator === */
+    .save-indicator { display: inline-flex; align-items: center; gap: 6px; font-family: 'Geist Mono', monospace; font-size: 12px; color: #525252; }
+    .save-indicator .dot { width: 6px; height: 6px; border-radius: 50%; background: #10B981; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+  </style>
+</head>
+
+<body class="bg-canvas text-ink antialiased min-h-[100dvh] flex flex-col">
+
+  <!-- ===================== TOP NAV ===================== -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/75 border-b border-whisper">
+    <div class="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+      <a href="#" class="text-[22px] font-semibold tracking-tight text-ink">墨记</a>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#" class="nav-link">文章</a>
+        <a href="#" class="nav-link">分类</a>
+        <a href="#" class="nav-link">标签</a>
+        <a href="#" class="nav-link text-steel">关于</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button class="btn-icon" aria-label="搜索">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button class="ml-2 w-8 h-8 rounded-full ring-1 ring-whisper overflow-hidden">
+          <img src="https://picsum.photos/seed/me/64/64" alt="" class="w-full h-full object-cover" />
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== PAGE HEAD ===================== -->
+  <div class="max-w-[1280px] w-full mx-auto px-6 md:px-10 pt-10">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <p class="t-mono-sm text-steel mb-2">
+          <a href="#" class="hover:text-ink">个人中心</a>
+          <span class="mx-2 text-whisper">/</span>
+          <span class="text-ink">写文章</span>
+        </p>
+        <h1 class="text-3xl font-semibold tracking-tight">新文章</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="save-indicator"><span class="dot"></span>已保存 · 14:32</span>
+        <span class="chip" style="background:#FFFBEB;color:#92400E;">DRAFT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== FORM + EDITOR ===================== -->
+  <main class="max-w-[1280px] w-full mx-auto px-6 md:px-10 mt-10 pb-32 flex-1">
+
+    <!-- Title input -->
+    <div class="mb-5">
+      <label class="field-label">TITLE</label>
+      <input type="text" class="input title-xl" value="TanStack Query 缓存策略:从 staleTime 到失效设计" />
+    </div>
+
+    <!-- Summary -->
+    <div class="mb-8">
+      <label class="field-label">SUMMARY <span class="text-whisper">·</span> <span class="normal-case tracking-normal text-steel" style="font-weight:400;text-transform:none;">可选,留空将自动截取正文前 120 字</span></label>
+      <textarea class="input summary-md" rows="3">默认 staleTime: 0 不是 bug 是 feature。捋清楚 stale、gc、refetch 三个时间窗口怎么配,缓存就稳了。附一份在三个项目里沉淀出来的选型表。</textarea>
+    </div>
+
+    <!-- Settings grid -->
+    <div class="grid md:grid-cols-12 gap-4 mb-8">
+
+      <!-- Cover image -->
+      <div class="md:col-span-5">
+        <label class="field-label">COVER IMAGE</label>
+        <div class="dropzone">
+          <div class="dropzone-preview">
+            <img src="https://picsum.photos/seed/staletime/640/360" alt="" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-ink font-medium truncate">cover-staletime.jpg</p>
+            <p class="t-mono-sm text-steel">1600 × 900 · 124 KB</p>
+          </div>
+          <button class="btn-icon" aria-label="移除">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="md:col-span-3">
+        <label class="field-label">CATEGORY</label>
+        <div class="select-wrap">
+          <select class="input">
+            <option>前端</option>
+            <option>后端</option>
+            <option>工具</option>
+            <option>思考</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="md:col-span-2">
+        <label class="field-label">STATUS</label>
+        <div class="select-wrap">
+          <select class="input">
+            <option>草稿</option>
+            <option>已发布</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Read time auto -->
+      <div class="md:col-span-2">
+        <label class="field-label">READ TIME</label>
+        <div class="input flex items-center gap-2 text-steel" style="cursor:default;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="t-mono-sm">约 8 分钟</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tags input -->
+    <div class="mb-10">
+      <label class="field-label">TAGS <span class="text-whisper">·</span> <span class="normal-case tracking-normal text-steel" style="font-weight:400;text-transform:none;">回车添加,最多 6 个</span></label>
+      <div class="input flex items-center flex-wrap gap-2" style="padding: 8px 10px; min-height: 44px;">
+        <span class="chip chip-removable">React <button>×</button></span>
+        <span class="chip chip-removable">TanStack <button>×</button></span>
+        <span class="chip chip-removable">缓存 <button>×</button></span>
+        <span class="chip chip-removable">性能 <button>×</button></span>
+        <input type="text" placeholder="输入标签..." class="flex-1 min-w-[120px] outline-none bg-transparent text-sm" />
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div>
+      <label class="field-label mb-3">MARKDOWN BODY</label>
+
+      <div class="editor-shell" id="editor-shell">
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <button class="tool-btn active" title="书写">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>
+          </button>
+          <button class="tool-btn" title="H1">
+            <span style="font-size:11px;font-weight:700;">H1</span>
+          </button>
+          <button class="tool-btn" title="H2">
+            <span style="font-size:11px;font-weight:700;">H2</span>
+          </button>
+          <button class="tool-btn" title="H3">
+            <span style="font-size:11px;font-weight:700;">H3</span>
+          </button>
+          <span class="tool-divider"></span>
+          <button class="tool-btn" title="粗体"><span style="font-weight:800;">B</span></button>
+          <button class="tool-btn" title="斜体"><span style="font-style:italic;font-weight:600;">I</span></button>
+          <button class="tool-btn" title="行内代码">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </button>
+          <span class="tool-divider"></span>
+          <button class="tool-btn" title="链接">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </button>
+          <button class="tool-btn" title="图片">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          </button>
+          <button class="tool-btn" title="代码块">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+          </button>
+          <button class="tool-btn" title="引用">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 .986 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>
+          </button>
+          <button class="tool-btn" title="列表">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+          </button>
+
+          <div class="ml-auto flex items-center gap-1">
+            <span class="t-mono-sm text-steel mr-3">1,847 字 · 8 分钟</span>
+            <button class="tool-btn active" title="切换预览(显示 / 收起)" onclick="document.getElementById('editor-shell').classList.toggle('no-preview'); this.classList.toggle('active');">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="tool-btn" title="全屏">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Split panes -->
+        <div class="editor-split">
+          <div class="editor-pane">
+<textarea class="editor-textarea" spellcheck="false"># 为什么需要 staleTime
+
+上周 review 一个组员的 PR,改的是个列表页接口请求。她把所有 query 都加了 `refetchOnWindowFocus: false`,理由是"切回标签页就刷数据太烦了"。
+
+我看完没说话,只问了一句:那你 `staleTime` 怎么设的?她说没设过,默认就好。
+
+## 默认值的陷阱
+
+默认 `staleTime: 0` 的设计哲学是"数据一拿到就过期"。
+
+```ts
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    },
+  },
+})
+```
+
+> 缓存最难的不是何时拉数据,而是何时**不要**拉数据。
+
+## 实战策略
+
+我习惯把场景分成四类:
+
+- 静态资源类:`Infinity`,手动失效
+- 低频变动类:5 分钟
+- 中等实时性:30 秒
+- 强实时:0 配合 refetchInterval
+</textarea>
+          </div>
+          <div class="editor-preview">
+            <h2>为什么需要 staleTime</h2>
+            <p>上周 review 一个组员的 PR,改的是个列表页接口请求。她把所有 query 都加了 <code>refetchOnWindowFocus: false</code>,理由是"切回标签页就刷数据太烦了"。</p>
+            <p>我看完没说话,只问了一句:那你 <code>staleTime</code> 怎么设的?她说没设过,默认就好。</p>
+            <h3>默认值的陷阱</h3>
+            <p>默认 <code>staleTime: 0</code> 的设计哲学是"数据一拿到就过期"。</p>
+            <div style="background:#0A0A0A;color:#FAFAFA;padding:14px 18px;border-radius:8px;font-family:'Geist Mono',monospace;font-size:12px;line-height:1.7;overflow-x:auto;margin:0.75rem 0;">
+              <span style="color:#06B6D4;">const</span> queryClient = <span style="color:#06B6D4;">new</span> QueryClient({...})
+            </div>
+            <blockquote>缓存最难的不是何时拉数据,而是何时<em>不要</em>拉数据。</blockquote>
+            <h3>实战策略</h3>
+            <p>我习惯把场景分成四类:</p>
+            <ul>
+              <li>静态资源类:<code>Infinity</code>,手动失效</li>
+              <li>低频变动类:5 分钟</li>
+              <li>中等实时性:30 秒</li>
+              <li>强实时:0 配合 refetchInterval</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-3 t-mono-sm text-steel">
+        提示 · 粘贴图片或拖入文件,会自动上传并插入 Markdown 链接
+      </p>
+    </div>
+
+  </main>
+
+  <!-- ===================== STICKY ACTION BAR ===================== -->
+  <div class="sticky bottom-0 z-30 backdrop-blur-md bg-white/85 border-t border-whisper">
+    <div class="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3 text-steel">
+        <span class="save-indicator"><span class="dot"></span>已自动保存 · 14:32</span>
+        <span class="text-whisper">·</span>
+        <span class="t-mono-sm">Cmd+S 手动保存 · Cmd+Enter 发布</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="btn-secondary">保存草稿</button>
+        <button class="btn-primary">
+          发布
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Edit3, Eye, PenSquare, Heart, Calendar, FileText } from 'lucide-react'
-import { listArticles } from '@/api/articles'
+import { Bookmark, Edit3, Eye, PenSquare, Calendar, FileText } from 'lucide-react'
+import { listArticles, listMyFavorites } from '@/api/articles'
 import { useAuthStore } from '@/stores/auth.store'
 import { StatusBadge } from '@/components/StatusBadge'
 import { EmptyState } from '@/components/EmptyState'
@@ -38,6 +38,12 @@ export function MePage() {
     enabled: !!user,
   })
 
+  const favoritesQuery = useQuery({
+    queryKey: ['my-favorites', user?.id],
+    queryFn: () => listMyFavorites({ pageSize: 50 }),
+    enabled: !!user,
+  })
+
   if (!user) {
     return (
       <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-16">
@@ -48,6 +54,7 @@ export function MePage() {
 
   const publishedCount = publishedQuery.data?.total ?? 0
   const draftsCount = draftsQuery.data?.total ?? 0
+  const favoritesCount = favoritesQuery.data?.total ?? 0
 
   return (
     <>
@@ -85,7 +92,7 @@ export function MePage() {
               <div className="flex items-start gap-10">
                 <Stat label="ARTICLES" value={publishedCount} />
                 <Stat label="DRAFTS" value={draftsCount} />
-                <Stat label="FAVORITES" value="—" />
+                <Stat label="FAVORITES" value={favoritesCount} />
               </div>
               <Link to="/write" className="btn-primary !py-2 !px-4 text-sm">
                 <PenSquare size={14} />
@@ -115,7 +122,7 @@ export function MePage() {
             active={tab === 'favorites'}
             onClick={() => setTab('favorites')}
             label="我的收藏"
-            placeholder
+            count={favoritesCount}
           />
           <TabItem active={tab === 'profile'} onClick={() => setTab('profile')} label="资料" />
         </nav>
@@ -130,11 +137,7 @@ export function MePage() {
           <ArticleList query={draftsQuery} emptyMessage="还没有草稿" tinted />
         )}
         {tab === 'favorites' && (
-          <EmptyState
-            icon={<Heart size={28} strokeWidth={1.5} />}
-            title="M4 待实现"
-            description="点赞与收藏将在 M4 阶段上线"
-          />
+          <FavoritesList query={favoritesQuery} />
         )}
         {tab === 'profile' && <ProfileView />}
       </main>
@@ -160,13 +163,11 @@ function TabItem({
   onClick,
   label,
   count,
-  placeholder,
 }: {
   active: boolean
   onClick: () => void
   label: string
   count?: number
-  placeholder?: boolean
 }) {
   return (
     <button
@@ -186,9 +187,6 @@ function TabItem({
         >
           {count}
         </span>
-      )}
-      {placeholder && (
-        <span className="font-mono text-[10px] text-steel/60">M4</span>
       )}
       {active && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-klein" />}
     </button>
@@ -295,6 +293,86 @@ function ArticleList({ query, emptyMessage, tinted }: ArticleListProps) {
             </Link>
             <Link to={`/write/${a.id}`} className="btn-icon !w-8 !h-8" title="编辑">
               <Edit3 size={14} />
+            </Link>
+          </div>
+        </article>
+      ))}
+    </div>
+  )
+}
+
+function FavoritesList({ query }: { query: ReturnType<typeof useQuery<Awaited<ReturnType<typeof listMyFavorites>>>> }) {
+  if (query.isLoading) {
+    return <p className="text-steel font-mono text-sm py-8">LOADING…</p>
+  }
+  if (query.isError) {
+    return <p className="text-red-600 py-8">{(query.error as Error).message}</p>
+  }
+  const items = query.data?.items ?? []
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon={<Bookmark size={28} strokeWidth={1.5} />}
+        title="还没有收藏"
+        description="在文章详情页点击书签图标收藏一篇"
+        action={
+          <Link to="/" className="btn-secondary">
+            去逛文章
+          </Link>
+        }
+      />
+    )
+  }
+  return (
+    <div className="space-y-3">
+      {items.map((a) => (
+        <article
+          key={a.id}
+          className="grid grid-cols-[160px_1fr_auto] gap-6 p-5 rounded-xl border bg-white border-whisper transition-colors hover:border-klein"
+        >
+          <Link
+            to={`/articles/${a.slug}`}
+            className="w-40 h-24 rounded-lg overflow-hidden border border-whisper bg-whisper-soft block"
+          >
+            {a.coverUrl ? (
+              <img src={a.coverUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-steel">
+                <FileText size={20} strokeWidth={1.5} />
+              </div>
+            )}
+          </Link>
+
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="chip">{a.category.name}</span>
+              {a.tags.slice(0, 2).map((t) => (
+                <span key={t.id} className="chip">
+                  {t.name}
+                </span>
+              ))}
+            </div>
+            <h3 className="text-lg font-semibold leading-snug">
+              <Link to={`/articles/${a.slug}`} className="hover:text-klein">
+                {a.title}
+              </Link>
+            </h3>
+            {a.summary && (
+              <p className="mt-1 text-sm text-steel line-clamp-2">{a.summary}</p>
+            )}
+            <div className="mt-3 flex items-center gap-3 font-mono text-xs text-steel">
+              <span>作者 · {a.author.username}</span>
+              <span className="text-whisper">·</span>
+              <span className="inline-flex items-center gap-1">
+                <Bookmark size={12} />
+                收藏于 {formatDate(a.favoritedAt)}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 self-start">
+            <Link to={`/articles/${a.slug}`} className="btn-icon !w-8 !h-8" title="查看">
+              <Eye size={14} />
             </Link>
           </div>
         </article>

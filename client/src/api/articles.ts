@@ -23,6 +23,11 @@ export interface ArticleInput {
 
 export type ArticleUpdateInput = Partial<ArticleInput>
 
+/** Article shape returned by `/users/me/favorites` (adds favoritedAt) */
+export interface FavoritedArticle extends Article {
+  favoritedAt: string
+}
+
 export async function listArticles(params: ListArticlesParams = {}): Promise<PagedResult<Article>> {
   const { data } = await http.get<{ data: PagedResult<Article> }>('/articles', { params })
   return data.data
@@ -54,5 +59,15 @@ export async function deleteArticle(id: number): Promise<void> {
 
 export async function publishArticle(id: number): Promise<Article> {
   const { data } = await http.post<{ data: Article }>(`/articles/${id}/publish`)
+  return data.data
+}
+
+export async function listMyFavorites(
+  params: { page?: number; pageSize?: number } = {},
+): Promise<PagedResult<FavoritedArticle>> {
+  const { data } = await http.get<{ data: PagedResult<FavoritedArticle> }>(
+    '/users/me/favorites',
+    { params },
+  )
   return data.data
 }

@@ -53,6 +53,18 @@ export interface Article {
     likes: number
     favorites: number
   }
+  /** Present only on the detail endpoint; reflects the current viewer */
+  liked?: boolean
+  favorited?: boolean
+}
+
+export interface Comment {
+  id: number
+  content: string
+  articleId: number
+  userId: number
+  createdAt: string
+  user: AuthorSummary
 }
 
 export interface PagedResult<T> {

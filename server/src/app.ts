@@ -9,6 +9,8 @@ import { authRouter } from './routes/auth.routes.js'
 import { articleRouter } from './routes/article.routes.js'
 import { categoryRouter } from './routes/category.routes.js'
 import { tagRouter } from './routes/tag.routes.js'
+import { commentRouter } from './routes/comment.routes.js'
+import { userRouter } from './routes/user.routes.js'
 
 export function createApp(): Express {
   const app = express()
@@ -33,8 +35,10 @@ export function createApp(): Express {
   app.use('/api', healthRouter)
   app.use('/api/auth', authRouter)
   app.use('/api/articles', articleRouter)
+  app.use('/api/articles/:articleId/comments', commentRouter)
   app.use('/api/categories', categoryRouter)
   app.use('/api/tags', tagRouter)
+  app.use('/api/users', userRouter)
 
   // 404 fallthrough
   app.use((_req, res) => {

@@ -1,7 +1,7 @@
 # 开发计划
 
 > 配套阅读:[REQUIREMENTS.md](REQUIREMENTS.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [UI_DESIGN.md](UI_DESIGN.md) · [DESIGN.md](DESIGN.md)  
-> 版本:v1.3 · 2026-05-23(M3 完成,准备进 M4)
+> 版本:v1.4 · 2026-05-23(M4 完成,准备进 M5)
 
 ---
 
@@ -14,14 +14,14 @@
 | M0 | 工程脚手架 | ✅ 完成 | `93f1ac5` | 前后端可启动空壳 + DB 通 |
 | M1 | 用户体系 | ✅ 完成 | `a216bf9` | 注册/登录/JWT/角色守卫 |
 | M2 | 文章 CRUD | ✅ 完成 | `ec9ae9a` / `798163f` / `5afa4cd` | 写、改、删、看文章 |
-| M3 | 列表 / 搜索 / 分类标签 | ✅ 完成 | (this) | 首页可用 |
-| **M4** | **评论与互动** | ⏳ **下一步** | — | 评论 + 点赞 + 收藏 |
-| M5 | 文件上传 | ⏳ 待开始 | — | 封面图、正文图 |
+| M3 | 列表 / 搜索 / 分类标签 | ✅ 完成 | `67b9328` | 首页可用 |
+| M4 | 评论与互动 | ✅ 完成 | (this) | 评论 + 点赞 + 收藏 |
+| **M5** | **文件上传** | ⏳ **下一步** | — | 封面图、正文图 |
 | M6 | 管理后台 | ⏳ 待开始 | — | `/admin` 全套 |
 | M7 | 部署准备 | ⏳ 待开始 | — | Dockerfile + env 分层 |
 
 **总计预估**:约 7 天工作量(单人,全职)。  
-**实际进度**:M0 / M1 / M2 / M3 完成,准备进 M4。
+**实际进度**:M0 / M1 / M2 / M3 / M4 完成,准备进 M5。
 
 ---
 
@@ -192,27 +192,44 @@
 
 ---
 
-## M4 · 评论与互动
+## M4 · 评论与互动 ✅
 
 **目标**:登录用户能评论、点赞、收藏。
 
 ### 后端
-- [ ] `services/comment.service.ts`:list / create / delete(权限:评论者 / 文章作者 / 管理员)
-- [ ] `routes/comment.routes.ts` 挂在 `/api/articles/:articleId/comments`
-- [ ] `services/interaction.service.ts`:`toggleLike` / `toggleFavorite`
-- [ ] 详情页接口返回 `likeCount` / `favoriteCount` / `liked` / `favorited`(后两者需登录态)
-- [ ] `/api/users/me/favorites` 列表
+- [x] `services/comment.service.ts`:list / create / delete(权限:评论者 / 文章作者 / 管理员)
+- [x] `services/interaction.service.ts`:`toggleLike` / `toggleFavorite`,基于 (userId, articleId) 复合主键,天然 idempotent
+- [x] `controllers/comment.controller.ts` + `controllers/interaction.controller.ts`
+- [x] `routes/comment.routes.ts`:挂在 `/api/articles/:articleId/comments`
+- [x] interaction 路由**合并进 article router**(`POST /api/articles/:id/like` `POST /api/articles/:id/favorite`),避免路由前缀歧义
+- [x] `getArticleBySlug` 扩展:viewer 在场时返回 `liked` / `favorited`(detail 接口一次给齐,前端不用二次请求)
+- [x] `/api/users/me/favorites`:登录用户的收藏文章列表(`routes/user.routes.ts`)
+- [x] `scripts/test-m4-server.sh`:**17 项 e2e 全过**(创建/删除评论 + 权限边界 + like/fav toggle + 详情接口反映状态 + favorites 列表)
 
 ### 前端
-- [ ] `components/CommentList.tsx` + `CommentForm.tsx`(参考 mockup `02-article-detail.html`)
-- [ ] 详情页右栏 reactions 卡片:点赞/收藏/分享按钮(图标 + 计数)
-- [ ] `pages/Me.tsx` 加"我的收藏"tab
+- [x] `api/comments.ts` + `api/interactions.ts` + `api/articles.listMyFavorites`
+- [x] `types/api.ts`:`Article` 加 `liked?` / `favorited?` 可选字段;新增 `Comment` 类型
+- [x] `components/ReactionsCard.tsx`:右栏点赞 / 收藏 / 分享,**乐观更新**(立刻翻图标 + 改计数,失败回滚),分享走 Web Share API,无则复制链接
+- [x] `components/CommentsSection.tsx`:登录可发,Cmd+Enter 发送,作者评论加「作者」徽章,Trash 图标删除(评论者 / 文章作者 / 管理员可见),未登录见空 composer + 引导跳登录
+- [x] `pages/ArticleDetail.tsx`:接入 ReactionsCard + CommentsSection,元信息行加评论计数图标
+- [x] `pages/Me.tsx`:`favorites` tab 接通 `listMyFavorites`,顶部 stat 卡片显示真实收藏数
 
-### 验收
-- 未登录看到评论列表但不能发(composer 引导跳登录)
-- 登录后能发、能删自己的;文章作者能删自己文章下任何评论
-- 点赞/收藏 toggle 正常
-- "我的收藏"显示收藏过的文章
+### 实际验收
+- ✅ 未登录看评论列表 ✓,composer 引导跳登录
+- ✅ 登录后能发能删自己的;文章作者能删自己文章下任意评论;管理员能删任何评论
+- ✅ 点赞 / 收藏 toggle 乐观更新,失败回滚
+- ✅ 详情页 `liked` / `favorited` / counts 都准
+- ✅ 收藏后立刻出现在 `/me?tab=favorites`
+- ✅ Typecheck 双包零错误
+- ✅ Server e2e 17/17
+
+### M4 关键设计决策
+1. **交互状态塞进 detail 接口** — `liked` / `favorited` 跟着 article 一起返回,前端不用二次请求;非常便宜(两个复合 PK lookup)
+2. **乐观更新** — 点赞按钮 onMutate 立即翻状态,onSuccess 用服务端真实计数对齐;onError 用 ctx.prev 回滚
+3. **interaction 不开独立 router** — 之前想 mount `/api/articles/:id` 到独立 interactionRouter,但会和 articleRouter 的 `:slug` / `:id` 路径打架;最终把两个 toggle 直接挂进 articleRouter,清晰简洁
+4. **`mergeParams: true`** — comment subrouter 必须开,否则 `req.params.articleId` 拿不到
+5. **`/me/favorites` 数据形状** — 故意拍平成 Article 结构(只额外加 `favoritedAt`),让 ArticleList / 类似组件可以无缝复用
+6. **未登录点赞 → 跳登录,state 带 from** — 登录后还能回来继续操作,而不是把人扔回首页
 
 ---
 
@@ -325,7 +342,7 @@
 - [x] M1 用户体系 ✅
 - [x] M2 文章 CRUD ✅
 - [x] M3 列表 / 搜索 / 分类标签 ✅
-- [ ] **M4 评论与互动 📍 你在这里**
-- [ ] M5 文件上传
+- [x] M4 评论与互动 ✅
+- [ ] **M5 文件上传 📍 你在这里**
 - [ ] M6 管理后台
 - [ ] M7 部署准备

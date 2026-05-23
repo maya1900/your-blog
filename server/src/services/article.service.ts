@@ -139,7 +139,23 @@ export async function getArticleBySlug(slug: string, viewer?: { id: number; role
       .catch(() => undefined)
   }
 
-  return flattenTags(article)
+  // Viewer-specific interaction state (cheap lookups by composite PK)
+  let liked = false
+  let favorited = false
+  if (viewer) {
+    const [likeRow, favRow] = await Promise.all([
+      prisma.like.findUnique({
+        where: { userId_articleId: { userId: viewer.id, articleId: article.id } },
+      }),
+      prisma.favorite.findUnique({
+        where: { userId_articleId: { userId: viewer.id, articleId: article.id } },
+      }),
+    ])
+    liked = !!likeRow
+    favorited = !!favRow
+  }
+
+  return { ...flattenTags(article), liked, favorited }
 }
 
 export async function getArticleById(id: number) {

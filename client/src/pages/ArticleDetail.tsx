@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Clock, Eye, PenSquare, ArrowLeft } from 'lucide-react'
+import { Clock, Eye, PenSquare, ArrowLeft, MessageSquare } from 'lucide-react'
 import { getArticleBySlug } from '@/api/articles'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { StatusBadge } from '@/components/StatusBadge'
+import { ReactionsCard } from '@/components/ReactionsCard'
+import { CommentsSection } from '@/components/CommentsSection'
 import { formatDate, estimateReadTime } from '@/utils/format'
 import { useAuthStore } from '@/stores/auth.store'
 
@@ -117,6 +119,10 @@ export function ArticleDetailPage() {
             <Eye size={13} />
             {data.viewCount.toLocaleString()} 阅读
           </span>
+          <span className="font-mono text-xs flex items-center gap-1.5">
+            <MessageSquare size={13} />
+            {data._count.comments} 评论
+          </span>
 
           {canEdit && (
             <Link
@@ -190,19 +196,16 @@ export function ArticleDetailPage() {
                 </div>
               </div>
               <p className="mt-4 font-mono text-xs text-steel">
-                M4 将在这里加入「关注 / 查看作者所有文章」
+                M6 将在这里加入「关注 / 查看作者所有文章」
               </p>
             </div>
 
-            <div className="border border-whisper rounded-xl p-3 bg-white">
-              <p className="font-mono text-xs text-steel tracking-[0.04em] px-2 pb-2">REACTIONS</p>
-              <div className="px-2 py-3 font-mono text-xs text-steel text-center">
-                M4 · 点赞 / 收藏
-              </div>
-            </div>
+            <ReactionsCard article={data} />
           </div>
         </aside>
       </div>
+
+      <CommentsSection article={data} />
     </div>
   )
 }

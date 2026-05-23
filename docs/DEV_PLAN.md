@@ -1,7 +1,7 @@
 # 开发计划
 
 > 配套阅读:[REQUIREMENTS.md](REQUIREMENTS.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [UI_DESIGN.md](UI_DESIGN.md) · [DESIGN.md](DESIGN.md)  
-> 版本:v1.4 · 2026-05-23(M4 完成,准备进 M5)
+> 版本:v1.5 · 2026-05-23(M5 完成,准备进 M6)
 
 ---
 
@@ -16,12 +16,12 @@
 | M2 | 文章 CRUD | ✅ 完成 | `ec9ae9a` / `798163f` / `5afa4cd` | 写、改、删、看文章 |
 | M3 | 列表 / 搜索 / 分类标签 | ✅ 完成 | `67b9328` | 首页可用 |
 | M4 | 评论与互动 | ✅ 完成 | `1d9e320` | 评论 + 点赞 + 收藏 |
-| **M5** | **文件上传** | ⏳ **下一步** | — | 封面图、正文图 |
-| M6 | 管理后台 | ⏳ 待开始 | — | `/admin` 全套 |
+| M5 | 文件上传 | ✅ 完成 | — | 封面图、正文图 |
+| **M6** | **管理后台** | ⏳ **下一步** | — | `/admin` 全套 |
 | M7 | 部署准备 | ⏳ 待开始 | — | Dockerfile + env 分层 |
 
 **总计预估**:约 7 天工作量(单人,全职)。  
-**实际进度**:M0 / M1 / M2 / M3 / M4 完成,准备进 M5。
+**实际进度**:M0 / M1 / M2 / M3 / M4 / M5 完成,准备进 M6。
 
 ---
 
@@ -233,27 +233,42 @@
 
 ---
 
-## M5 · 文件上传
+## M5 · 文件上传 ✅
 
 **目标**:写文章时能传封面图,Markdown 编辑器内能粘贴/拖入图片自动上传。
 
 ### 后端
-- [ ] `middlewares/upload.ts`:multer 配置(磁盘 + 类型 + 大小 ≤ 5MB)
-- [ ] `routes/upload.routes.ts`:`POST /api/upload/image` 必须登录
-- [x] ~~`app.ts`:`app.use('/uploads', express.static(...))`~~ 已在 M0 完成
-- [ ] 文件命名:`uploads/yyyymm/<nanoid>.<ext>`
+- [x] `middlewares/upload.ts`:multer diskStorage + 月度目录 + nanoid 命名 + 类型双校验(mime ∧ ext)+ 5MB 上限,内置错误翻译(LIMIT_FILE_SIZE → 413、不支持的类型 → 400)
+- [x] `controllers/upload.controller.ts`:返回 `{ url, filename, size, mimeType }`
+- [x] `routes/upload.routes.ts`:`POST /api/upload/image`,`requireAuth` + `uploadSingleImage` 链路
+- [x] `app.ts`:挂载 `/api/upload` 路由
+- [x] ~~`app.use('/uploads', express.static(...))`~~ 已在 M0 完成
+- [x] 文件命名:`uploads/yyyymm/<nanoid14>.<ext>`
+- [x] `scripts/test-m5-server.sh`:**8 项 e2e 全过**(匿名 401 / 空表单 400 / 合法 PNG 201 + 静态 200 / PDF 400 / 假扩展名 .txt 400 / 6MB 413)
 
 ### 前端
-- [ ] `api/upload.ts`:`FormData` 上传
-- [ ] `pages/Write.tsx`:
-  - [ ] 封面图区域:拖拽 / 点选,上传完显示预览(参考 mockup `03-write.html` 的 dropzone)
-  - [ ] Markdown 编辑器集成:粘贴/拖入图片自动上传,插入 `![](url)`
+- [x] `api/upload.ts`:`uploadImage(file)` —— `FormData` 提交,本地预校验类型 + 大小,30s 超时
+- [x] `components/CoverDropzone.tsx`:拖拽 / 点选 / 键盘可达,带加载态、错误提示、移除按钮、文件名 + 体积展示
+- [x] `pages/Write.tsx`:
+  - [x] 旧的 "封面 URL 输入框" 换成 `CoverDropzone`,独占一行
+  - [x] MDEditor 接入 `textareaProps.onPaste / onDrop`:粘贴/拖入图片 → 先插入 `![uploading…](filename)` 占位 → 上传完替换为真实 URL,失败回滚
+  - [x] 用 `contentRef` 同步最新 content,避免连续粘多张时拼接旧值
 
-### 验收
-- 上传 png/jpg/webp ≤ 5MB 成功,返回 URL
-- 上传 PDF 报错 400
-- 上传 6MB 文件报错 413(或 400)
-- 预览图能看到
+### 实际验收
+- ✅ 上传 png ≤ 5MB → 201 + URL,静态访问 200
+- ✅ 上传 PDF → 400(fileFilter 拒绝)
+- ✅ 上传 6MB → 413(multer LIMIT_FILE_SIZE 翻译)
+- ✅ 上传 .txt 假扮 image/png → 400(双校验生效)
+- ✅ 匿名请求 → 401
+- ✅ Typecheck 双包零错误
+
+### M5 关键设计决策
+1. **multer 错误本地翻译** —— 把 `multer.single` 包一层,在回调里把 `LIMIT_FILE_SIZE` 直接 413 / 其它 MulterError 转 400,避免变成 500;非 multer 错误正常 next 到全局 error 中间件
+2. **mime ∧ ext 双校验** —— 只验 mimetype 会被伪造的 Content-Type 绕过,只验扩展名又卡不到改后缀的 PDF;两个都要白名单命中才放行
+3. **目录按月分桶** —— `uploads/yyyymm/` 一年 12 个目录,文件操作和备份都比扁平好;每次落盘前 `mkdirSync({ recursive: true })`
+4. **占位符上传策略** —— 粘贴图片立刻在光标位置塞 `![uploading…](filename)`,服务端返回后用 `setContent(prev => prev.replace(...))` 替换;就算用户在等待期间继续打字、移动光标也不会错位
+5. **CoverDropzone 自包含** —— 内部管理上传态 / 错误 / 元数据,对外只暴露 `value / onChange`,Write 不用关心上传 lifecycle
+6. **本地预校验 + 服务端兜底** —— 客户端 `api/upload.ts` 先看 type / size 给出即时报错,不等网络;服务端再做权威校验,两层防线
 
 ---
 
@@ -343,6 +358,6 @@
 - [x] M2 文章 CRUD ✅
 - [x] M3 列表 / 搜索 / 分类标签 ✅
 - [x] M4 评论与互动 ✅
-- [ ] **M5 文件上传 📍 你在这里**
-- [ ] M6 管理后台
+- [x] M5 文件上传 ✅
+- [ ] **M6 管理后台 📍 你在这里**
 - [ ] M7 部署准备

@@ -11,6 +11,7 @@ import { categoryRouter } from './routes/category.routes.js'
 import { tagRouter } from './routes/tag.routes.js'
 import { commentRouter } from './routes/comment.routes.js'
 import { userRouter } from './routes/user.routes.js'
+import { uploadRouter } from './routes/upload.routes.js'
 
 export function createApp(): Express {
   const app = express()
@@ -39,6 +40,7 @@ export function createApp(): Express {
   app.use('/api/categories', categoryRouter)
   app.use('/api/tags', tagRouter)
   app.use('/api/users', userRouter)
+  app.use('/api/upload', uploadRouter)
 
   // 404 fallthrough
   app.use((_req, res) => {

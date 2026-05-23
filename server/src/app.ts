@@ -6,6 +6,9 @@ import { auth } from './middlewares/auth.js'
 import { errorMiddleware } from './middlewares/error.js'
 import { healthRouter } from './routes/health.js'
 import { authRouter } from './routes/auth.routes.js'
+import { articleRouter } from './routes/article.routes.js'
+import { categoryRouter } from './routes/category.routes.js'
+import { tagRouter } from './routes/tag.routes.js'
 
 export function createApp(): Express {
   const app = express()
@@ -29,6 +32,9 @@ export function createApp(): Express {
   // API routes
   app.use('/api', healthRouter)
   app.use('/api/auth', authRouter)
+  app.use('/api/articles', articleRouter)
+  app.use('/api/categories', categoryRouter)
+  app.use('/api/tags', tagRouter)
 
   // 404 fallthrough
   app.use((_req, res) => {

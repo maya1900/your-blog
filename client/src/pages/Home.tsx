@@ -92,77 +92,80 @@ export function HomePage() {
                 <Link
                   to={`/articles/${a.slug}`}
                   key={a.id}
-                  className="group grid md:grid-cols-12 gap-8 md:gap-12 items-center py-12 border-b border-whisper last:border-b-0 transition"
+                  className="group grid md:grid-cols-12 gap-6 md:gap-10 items-center py-8 border-b border-whisper last:border-b-0 transition"
                 >
                   <div
-                    className={`md:col-span-6 rounded-2xl overflow-hidden border border-whisper bg-whisper-soft ${imageRight ? 'md:order-2' : ''}`}
+                    className={`md:col-span-5 rounded-xl overflow-hidden border border-whisper bg-whisper-soft ${imageRight ? 'md:order-2' : ''}`}
                   >
                     {a.coverUrl ? (
                       <img
                         src={a.coverUrl}
                         alt=""
-                        className="w-full aspect-[16/10] object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                        className="w-full aspect-[16/9] object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                       />
                     ) : (
-                      <div className="w-full aspect-[16/10] flex items-center justify-center text-steel font-mono text-xs">
+                      <div className="w-full aspect-[16/9] flex items-center justify-center text-steel font-mono text-xs">
                         NO COVER
                       </div>
                     )}
                   </div>
 
-                  <div className={`md:col-span-6 ${imageRight ? 'md:order-1' : ''}`}>
-                    <div className="flex items-center gap-3 mb-4 flex-wrap">
+                  <div className={`md:col-span-7 ${imageRight ? 'md:order-1' : ''}`}>
+                    <div className="flex items-center gap-3 mb-3 flex-wrap">
                       <span className="font-mono text-xs text-klein tracking-[0.04em]">
                         {String(idx + 1).padStart(2, '0')} / {String(data.items.length).padStart(2, '0')}
                       </span>
-                      <span className="w-8 h-px bg-whisper" />
+                      <span className="w-6 h-px bg-whisper" />
                       <span className="font-mono text-xs text-steel tracking-[0.04em] uppercase">
                         {a.category.name}
                       </span>
                       {a.status === 'DRAFT' && <StatusBadge status="DRAFT" />}
                     </div>
-                    <h3 className="text-[clamp(1.5rem,2.5vw,2rem)] font-semibold leading-[1.2] tracking-[-0.02em] transition-colors group-hover:text-klein">
+                    <h3 className="text-[clamp(1.25rem,2vw,1.625rem)] font-semibold leading-[1.25] tracking-[-0.015em] transition-colors group-hover:text-klein">
                       {a.title}
                     </h3>
                     {a.summary && (
-                      <p className="mt-4 text-[1.0625rem] leading-[1.7] text-steel line-clamp-3 max-w-xl">
+                      <p className="mt-3 text-[0.9375rem] leading-[1.6] text-steel line-clamp-2 max-w-xl">
                         {a.summary}
                       </p>
                     )}
-                    <div className="mt-6 flex items-center gap-2 flex-wrap">
+                    <div className="mt-4 flex items-center gap-2 flex-wrap">
                       {a.tags.slice(0, 3).map((t) => (
                         <span key={t.id} className="chip">
                           {t.name}
                         </span>
                       ))}
                     </div>
-                    <div className="mt-6 flex items-center justify-between max-w-xl">
+                    <div className="mt-4 flex items-center justify-between max-w-xl">
                       <div className="flex items-center gap-2 text-sm text-steel">
-                        <div className="w-6 h-6 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft">
+                        <div className="w-5 h-5 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft">
                           {a.author.avatar && (
                             <img src={a.author.avatar} alt="" className="w-full h-full object-cover" />
                           )}
                         </div>
-                        <span>{a.author.username}</span>
+                        <span className="text-[13px]">{a.author.username}</span>
                         <span className="text-whisper">·</span>
                         <span className="font-mono text-xs">
                           {estimateReadTime(a.content)} 分钟 · {formatDate(a.publishedAt ?? a.createdAt)}
                         </span>
+                        {a.viewCount > 0 && (
+                          <>
+                            <span className="text-whisper">·</span>
+                            <span className="font-mono text-xs inline-flex items-center gap-1">
+                              <Eye size={12} />
+                              {a.viewCount.toLocaleString()}
+                            </span>
+                          </>
+                        )}
                       </div>
                       <span className="inline-flex items-center gap-1.5 text-sm font-medium text-ink">
                         <span className="hidden sm:inline">阅读</span>
                         <ArrowRight
-                          size={16}
+                          size={15}
                           className="transition-transform duration-200 group-hover:translate-x-1.5"
                         />
                       </span>
                     </div>
-                    {a.viewCount > 0 && (
-                      <div className="mt-2 font-mono text-xs text-steel inline-flex items-center gap-1">
-                        <Eye size={12} />
-                        {a.viewCount.toLocaleString()}
-                      </div>
-                    )}
                   </div>
                 </Link>
               )

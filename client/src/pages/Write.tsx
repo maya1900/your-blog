@@ -1,4 +1,4 @@
-import { useEffect, useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import MDEditor from '@uiw/react-md-editor'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -37,6 +37,23 @@ export function WritePage() {
   const [tagDraft, setTagDraft] = useState('')
   const [showPreview, setShowPreview] = useState(true)
   const [formError, setFormError] = useState<string | null>(null)
+  const [editorHeight, setEditorHeight] = useState(720)
+  const editorWrapRef = useRef<HTMLDivElement>(null)
+
+  // Sync MDEditor's `height` prop with any user-resize on the wrapper.
+  // We rely on the wrapper having `resize: vertical` (set in className).
+  useEffect(() => {
+    const el = editorWrapRef.current
+    if (!el) return
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const h = Math.round(entry.contentRect.height)
+        if (h >= 300) setEditorHeight(h)
+      }
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   // Load categories
   const catQuery = useQuery({
@@ -211,22 +228,19 @@ export function WritePage() {
 
   return (
     <div className="flex flex-col min-h-[100dvh]">
-      <main className="flex-1 max-w-[1280px] w-full mx-auto px-6 md:px-10 pt-10 pb-28">
-        {/* Page head */}
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-10">
-          <div>
-            <p className="font-mono text-xs text-steel tracking-[0.04em] mb-2">
+      <main className="flex-1 max-w-[1280px] w-full mx-auto px-6 md:px-10 pt-6 pb-28">
+        {/* Page head — compact */}
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
+          <div className="flex items-center gap-3">
+            <p className="font-mono text-xs text-steel tracking-[0.04em]">
               <Link to="/me" className="hover:text-ink">
                 个人中心
               </Link>
               <span className="mx-2 text-whisper">/</span>
               <span className="text-ink">{isEdit ? '编辑文章' : '写文章'}</span>
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              {isEdit ? title || '编辑文章' : '新文章'}
-            </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <StatusBadge status={status} />
             {isEdit && (
               <button
@@ -235,52 +249,47 @@ export function WritePage() {
                 className="btn-icon hover:!bg-red-50 hover:!text-red-600"
                 title="删除文章"
               >
-                <Trash2 size={16} />
+                <Trash2 size={15} />
               </button>
             )}
           </div>
         </div>
 
-        {/* Title */}
-        <div className="mb-5">
-          <label className="field-label">TITLE</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="给文章起一个标题"
-            maxLength={100}
-            className="input !text-[28px] !font-semibold tracking-tight !py-3.5"
-          />
-        </div>
+        {/* Title — compact, single-line, looks like a heading not a hero input */}
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="给文章起一个标题"
+          maxLength={100}
+          className="w-full bg-transparent border-none outline-none text-2xl md:text-[28px] font-semibold tracking-tight text-ink placeholder:text-steel/40 mb-4 pb-2 border-b border-transparent focus:border-whisper transition-colors"
+        />
 
-        {/* Summary */}
-        <div className="mb-8">
-          <label className="field-label">
-            SUMMARY{' '}
-            <span className="text-whisper">·</span>{' '}
-            <span className="font-sans normal-case tracking-normal text-steel font-normal">
-              可选,留空将自动截取正文前 120 字
-            </span>
-          </label>
-          <textarea
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            rows={3}
-            maxLength={200}
-            placeholder="一句话概括,在列表和分享时展示"
-            className="input resize-y min-h-[72px]"
-          />
-        </div>
+        {/* Settings strip — single row, dense */}
+        <div className="grid md:grid-cols-12 gap-3 mb-4">
+          {/* Category */}
+          <div className="md:col-span-2">
+            <select
+              value={categoryId ?? ''}
+              onChange={(e) => setCategoryId(Number(e.target.value))}
+              className="input cursor-pointer !py-2 !text-sm h-[36px]"
+            >
+              <option value="" disabled>
+                选择分类
+              </option>
+              {catQuery.data?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {/* Settings grid */}
-        <div className="grid md:grid-cols-12 gap-4 mb-8">
           {/* Cover URL */}
-          <div className="md:col-span-7">
-            <label className="field-label">COVER URL</label>
-            <div className="flex items-center gap-3">
+          <div className="md:col-span-6">
+            <div className="flex items-center gap-2">
               {coverUrl && (
-                <div className="w-24 h-16 rounded-md overflow-hidden border border-whisper bg-whisper-soft flex-shrink-0">
+                <div className="w-9 h-9 rounded-md overflow-hidden border border-whisper bg-whisper-soft flex-shrink-0">
                   <img
                     src={coverUrl}
                     alt=""
@@ -295,81 +304,57 @@ export function WritePage() {
                 type="url"
                 value={coverUrl}
                 onChange={(e) => setCoverUrl(e.target.value)}
-                placeholder="https://… (M5 后支持本地上传)"
-                className="input"
+                placeholder="封面图 URL · 留空也可"
+                className="input !py-2 !text-sm h-[36px]"
               />
             </div>
           </div>
 
-          {/* Category */}
-          <div className="md:col-span-3">
-            <label className="field-label">CATEGORY</label>
-            <select
-              value={categoryId ?? ''}
-              onChange={(e) => setCategoryId(Number(e.target.value))}
-              className="input cursor-pointer"
-            >
-              <option value="" disabled>
-                选择分类
-              </option>
-              {catQuery.data?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
+          {/* Tags */}
+          <div className="md:col-span-4">
+            <div className="input flex items-center flex-wrap gap-1.5 !py-1 !px-2 h-[36px] overflow-hidden">
+              {tags.map((t) => (
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-1 h-[22px] px-2 rounded-chip bg-whisper-soft text-steel text-xs font-medium tracking-[0.02em] shrink-0"
+                >
+                  {t}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(t)}
+                    className="w-3.5 h-3.5 inline-flex items-center justify-center rounded-sm opacity-60 hover:opacity-100 hover:bg-black/10"
+                    aria-label={`移除 ${t}`}
+                  >
+                    ×
+                  </button>
+                </span>
               ))}
-            </select>
-          </div>
-
-          {/* Read time (auto) */}
-          <div className="md:col-span-2">
-            <label className="field-label">READ TIME</label>
-            <div className="input flex items-center justify-center text-steel font-mono text-sm cursor-default">
-              约 {readTime} 分钟
+              <input
+                type="text"
+                value={tagDraft}
+                onChange={(e) => setTagDraft(e.target.value)}
+                onKeyDown={handleTagKeydown}
+                placeholder={tags.length === 0 ? '标签 · 回车添加' : ''}
+                className="flex-1 min-w-[80px] outline-none bg-transparent text-sm"
+              />
             </div>
           </div>
         </div>
 
-        {/* Tags */}
-        <div className="mb-10">
-          <label className="field-label">
-            TAGS{' '}
-            <span className="text-whisper">·</span>{' '}
-            <span className="font-sans normal-case tracking-normal text-steel font-normal">
-              回车或逗号添加,最多 {TAG_MAX} 个
-            </span>
-          </label>
-          <div className="input flex items-center flex-wrap gap-2 !py-2 !px-2.5 min-h-[44px]">
-            {tags.map((t) => (
-              <span
-                key={t}
-                className="inline-flex items-center gap-1 h-[22px] px-2 rounded-chip bg-whisper-soft text-steel text-xs font-medium tracking-[0.02em]"
-              >
-                {t}
-                <button
-                  type="button"
-                  onClick={() => removeTag(t)}
-                  className="w-3.5 h-3.5 inline-flex items-center justify-center rounded-sm opacity-60 hover:opacity-100 hover:bg-black/10"
-                  aria-label={`移除 ${t}`}
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-            <input
-              type="text"
-              value={tagDraft}
-              onChange={(e) => setTagDraft(e.target.value)}
-              onKeyDown={handleTagKeydown}
-              placeholder={tags.length === 0 ? '输入标签后回车' : ''}
-              className="flex-1 min-w-[140px] outline-none bg-transparent text-sm"
-            />
-          </div>
-        </div>
+        {/* Summary — collapsed by default, can be a single small textarea */}
+        <textarea
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+          rows={2}
+          maxLength={200}
+          placeholder="可选 · 一句话摘要,留空将自动截取正文前 120 字"
+          className="input resize-y min-h-[52px] !py-2 !text-sm mb-5"
+        />
 
         {/* Editor */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="field-label !mb-0">MARKDOWN BODY</label>
+          <div className="flex items-center justify-between mb-2.5">
+            <label className="font-mono text-xs text-steel tracking-[0.04em]">MARKDOWN BODY</label>
             <div className="flex items-center gap-3">
               <span className="font-mono text-xs text-steel">
                 {wordCount.toLocaleString()} 字 · {readTime} 分钟
@@ -385,24 +370,31 @@ export function WritePage() {
             </div>
           </div>
 
-          {/* MDEditor: data-color-mode forces light theme regardless of OS pref. */}
-          <div data-color-mode="light" className="md-editor-shell">
+          {/* Resizable wrapper. User drags the bottom-right handle;
+              ResizeObserver picks up the new height and passes it to MDEditor.
+              data-color-mode forces light theme regardless of OS pref. */}
+          <div
+            ref={editorWrapRef}
+            data-color-mode="light"
+            className="md-editor-shell resize-y overflow-hidden"
+            style={{ height: 720, minHeight: 320, maxHeight: '85vh' }}
+          >
             <MDEditor
               value={content}
               onChange={(v) => setContent(v ?? '')}
-              height={520}
+              height={editorHeight}
               preview={showPreview ? 'live' : 'edit'}
               visibleDragbar={false}
             />
           </div>
 
-          <p className="mt-3 font-mono text-xs text-steel">
-            提示 · 粘贴图片或拖入文件功能将在 M5 接入
+          <p className="mt-2 font-mono text-xs text-steel">
+            提示 · 右下角可拖拽调整高度 · 工具栏最右可全屏 · 粘贴上传 (M5)
           </p>
         </div>
 
         {formError && (
-          <p className="mt-6 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
             {formError}
           </p>
         )}

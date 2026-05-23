@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "prisma": "dotenv -e ../.env -- prisma",
-    "db:seed": "dotenv -e ../.env -- tsx prisma/seed.ts"
+    "db:seed": "dotenv -e ../.env -- tsx prisma/seed.ts",
+    "db:seed-articles": "dotenv -e ../.env -- tsx prisma/seed-articles.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

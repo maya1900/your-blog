@@ -4,6 +4,8 @@ import { HomePage } from './pages/Home'
 import { LoginPage } from './pages/Login'
 import { RegisterPage } from './pages/Register'
 import { MePage } from './pages/Me'
+import { WritePage } from './pages/Write'
+import { ArticleDetailPage } from './pages/ArticleDetail'
 import { AdminPlaceholder } from './pages/AdminPlaceholder'
 import { RequireAuth } from './components/RequireAuth'
 
@@ -17,11 +19,16 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { path: '/', element: <HomePage /> },
+      { path: '/articles/:slug', element: <ArticleDetailPage /> },
 
       // User-only routes
       {
         element: <RequireAuth />,
-        children: [{ path: '/me', element: <MePage /> }],
+        children: [
+          { path: '/me', element: <MePage /> },
+          { path: '/write', element: <WritePage /> },
+          { path: '/write/:id', element: <WritePage /> },
+        ],
       },
     ],
   },

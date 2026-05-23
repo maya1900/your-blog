@@ -1,3 +1,8 @@
+/* highlight.js theme for code blocks (GitHub-light feel, accent uses Klein) */
+@import 'highlight.js/styles/github.css';
+/* @uiw/react-md-editor uses its own CSS classes (preview styles included) */
+@import '@uiw/react-md-editor/markdown-editor.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -109,4 +114,159 @@
   50% {
     transform: translate(-30px, 50px);
   }
+}
+
+/* === Markdown article prose === */
+.prose-article {
+  color: #0a0a0a;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+.prose-article h1,
+.prose-article h2,
+.prose-article h3,
+.prose-article h4 {
+  color: #0a0a0a;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  scroll-margin-top: 96px;
+}
+.prose-article h1 {
+  font-size: 1.875rem;
+  margin: 2.5rem 0 1rem;
+}
+.prose-article h2 {
+  font-size: 1.625rem;
+  margin: 3rem 0 1.25rem;
+  letter-spacing: -0.02em;
+}
+.prose-article h3 {
+  font-size: 1.25rem;
+  margin: 2.25rem 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+.prose-article h4 {
+  font-size: 1.0625rem;
+  margin: 1.75rem 0 0.5rem;
+}
+.prose-article p {
+  margin: 0 0 1.4rem;
+}
+.prose-article a {
+  color: #0040ff;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.prose-article a:hover {
+  color: #0033cc;
+}
+.prose-article ul,
+.prose-article ol {
+  margin: 1.25rem 0;
+  padding-left: 1.5rem;
+}
+.prose-article ul {
+  list-style: disc;
+}
+.prose-article ol {
+  list-style: decimal;
+}
+.prose-article li {
+  margin-bottom: 0.5rem;
+}
+.prose-article li::marker {
+  color: #525252;
+}
+.prose-article blockquote {
+  border-left: 4px solid #0040ff;
+  padding-left: 1.25rem;
+  margin: 1.75rem 0;
+  font-style: italic;
+  color: #525252;
+}
+.prose-article :not(pre) > code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.875em;
+  color: #0a0a0a;
+}
+.prose-article pre {
+  background: #0a0a0a;
+  color: #fafafa;
+  padding: 22px 24px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 1.75rem 0;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.75;
+}
+.prose-article pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+/* Override the highlight.js light theme inside dark code blocks */
+.prose-article pre code.hljs,
+.prose-article pre code .hljs-keyword,
+.prose-article pre code .hljs-built_in,
+.prose-article pre code .hljs-type,
+.prose-article pre code .hljs-literal,
+.prose-article pre code .hljs-number,
+.prose-article pre code .hljs-string,
+.prose-article pre code .hljs-comment,
+.prose-article pre code .hljs-function {
+  background: transparent;
+}
+.prose-article pre .hljs-keyword,
+.prose-article pre .hljs-type,
+.prose-article pre .hljs-built_in {
+  color: #06b6d4;
+}
+.prose-article pre .hljs-string,
+.prose-article pre .hljs-attr {
+  color: #10b981;
+}
+.prose-article pre .hljs-number,
+.prose-article pre .hljs-literal {
+  color: #f59e0b;
+}
+.prose-article pre .hljs-comment {
+  color: #737373;
+  font-style: italic;
+}
+.prose-article pre .hljs-title,
+.prose-article pre .hljs-function {
+  color: #fafafa;
+}
+.prose-article img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+}
+.prose-article hr {
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  margin: 2rem 0;
+}
+.prose-article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9375rem;
+}
+.prose-article th,
+.prose-article td {
+  border: 1px solid #e5e5e5;
+  padding: 8px 12px;
+  text-align: left;
+}
+.prose-article th {
+  background: #fafafa;
+  font-weight: 500;
 }

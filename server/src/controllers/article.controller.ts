@@ -26,6 +26,25 @@ export const getBySlug: RequestHandler = async (req, res, next) => {
   }
 }
 
+/**
+ * Fetch by primary key, for the edit page. Requires auth and that the viewer is
+ * either the author or an admin — drafts must not leak through this route.
+ */
+export const getById: RequestHandler = async (req, res, next) => {
+  try {
+    if (!req.user) throw new UnauthorizedError()
+    const { id } = IdParam.parse(req.params)
+    const article = await articleService.getArticleById(id)
+    if (article.authorId !== req.user.id && req.user.role !== 'ADMIN') {
+      // Mirror service-layer guard for consistency
+      throw new UnauthorizedError('无权查看该文章')
+    }
+    res.json({ data: article })
+  } catch (err) {
+    next(err)
+  }
+}
+
 export const create: RequestHandler = async (req, res, next) => {
   try {
     if (!req.user) throw new UnauthorizedError()

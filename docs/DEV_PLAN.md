@@ -1,7 +1,7 @@
 # 开发计划
 
 > 配套阅读:[REQUIREMENTS.md](REQUIREMENTS.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [UI_DESIGN.md](UI_DESIGN.md) · [DESIGN.md](DESIGN.md)  
-> 版本:v1.1 · 2026-05-23(同步至 M2-server)
+> 版本:v1.2 · 2026-05-23(M2 完成,准备进 M3)
 
 ---
 
@@ -13,15 +13,15 @@
 |---|---|---|---|---|
 | M0 | 工程脚手架 | ✅ 完成 | `93f1ac5` | 前后端可启动空壳 + DB 通 |
 | M1 | 用户体系 | ✅ 完成 | `a216bf9` | 注册/登录/JWT/角色守卫 |
-| **M2** | **文章 CRUD** | 🟡 后端完成 / 前端待做 | `ec9ae9a` (server) | 写、改、删、看文章 |
-| M3 | 列表 / 搜索 / 分类标签 | ⏳ 待开始 | — | 首页可用 |
+| M2 | 文章 CRUD | ✅ 完成 | `ec9ae9a` + (this) | 写、改、删、看文章 |
+| **M3** | **列表 / 搜索 / 分类标签** | ⏳ **下一步** | — | 首页可用 |
 | M4 | 评论与互动 | ⏳ 待开始 | — | 评论 + 点赞 + 收藏 |
 | M5 | 文件上传 | ⏳ 待开始 | — | 封面图、正文图 |
 | M6 | 管理后台 | ⏳ 待开始 | — | `/admin` 全套 |
 | M7 | 部署准备 | ⏳ 待开始 | — | Dockerfile + env 分层 |
 
 **总计预估**:约 7 天工作量(单人,全职)。  
-**实际进度**:M0 / M1 / M2-server 已完成,M2-client 待做。
+**实际进度**:M0 / M1 / M2 完成,准备进 M3。
 
 ---
 
@@ -86,11 +86,11 @@
 
 ---
 
-## M2 · 文章 CRUD
+## M2 · 文章 CRUD ✅
 
 **目标**:登录用户能创建、编辑、删除自己的文章,所有人能看详情。
 
-### 后端 ✅(commit `ec9ae9a`)
+### 后端 ✅(commit `ec9ae9a` + by-id route)
 - [x] `services/article.service.ts`:
   - [x] `listArticles({page, pageSize, keyword, categoryId, tag, status, authorId})`:支持权限感知的草稿可见性
   - [x] `getArticleBySlug(slug, viewer?)`:草稿仅作者 / 管理员可见;published 自增 viewCount
@@ -104,29 +104,49 @@
 - [x] `utils/pagination.ts`:统一返回 `{items, total, page, pageSize, pageCount}`
 - [x] `controllers/article.controller.ts`
 - [x] `routes/article.routes.ts`:7 个接口
+- [x] **新增** `GET /api/articles/by-id/:id`:auth-only,编辑模式用
 - [x] `routes/category.routes.ts`:GET 列表(含 article 计数)
 - [x] `routes/tag.routes.ts`:GET 列表(含 article 计数)
 - [x] Zod schema 校验:title 1–100、content 必填、categoryId 必须存在、tags 最多 6 等
 - [x] `scripts/test-m2-server.sh`:**18 项 e2e 断言全部通过**
+- [x] `server/prisma/seed-articles.ts`:5 篇真实示例文章 + 1 篇草稿,幂等可重复运行
 
-### 前端 ⏳ 待做
-- [ ] `api/articles.ts` + Query Hooks(useArticle / useCreateArticle / useUpdateArticle 等)
-- [ ] `api/categories.ts` + `api/tags.ts`
-- [ ] `pages/Write.tsx`:
-  - [ ] 集成 `@uiw/react-md-editor`(左写右预览,预览可收起)
-  - [ ] 表单:标题、摘要、分类下拉、标签输入(支持回车添加 + 删除)、封面图 URL(M5 前先用 URL 输入)
-  - [ ] 底部 sticky 行动条:保存草稿 / 发布
-- [ ] `pages/ArticleDetail.tsx`:Markdown 渲染 + 高亮 + sanitize
-- [ ] `pages/Me.tsx`:我的文章 / 草稿 tab
-- [ ] 编辑模式:`/write/:id` 复用写文章页
+### 前端 ✅
+- [x] `api/articles.ts`:list / getBySlug / getById / create / update / delete / publish
+- [x] `api/taxonomy.ts`:listCategories / listTags
+- [x] `types/api.ts`:Article / Category / Tag / PagedResult 等完整类型
+- [x] `utils/format.ts`:formatDate / estimateReadTime
+- [x] `utils/cn.ts`:轻量 classnames
+- [x] `components/MarkdownRenderer.tsx`:react-markdown + remark-gfm + rehype-highlight + rehype-sanitize(白名单 className 让高亮幸存)
+- [x] `components/StatusBadge.tsx`:PUBLISHED / DRAFT 状态徽章
+- [x] `components/EmptyState.tsx`:统一空态组件
+- [x] `pages/Write.tsx`:
+  - [x] 集成 `@uiw/react-md-editor`(双栏 + 预览可收起)
+  - [x] 表单:标题 / 摘要 / 分类下拉 / 标签输入(回车 + 逗号添加,Backspace 删除)/ 封面图 URL
+  - [x] 底部 sticky 行动条:保存草稿 / 发布(已发布时为 "保存修改" + "更新发布")
+  - [x] 自动估算阅读时长(中文 + 英文混排)
+  - [x] 删除按钮(仅编辑模式)
+- [x] `pages/ArticleDetail.tsx`:Markdown 渲染 + 代码高亮 + sanitize + TOC(从正文 ## ### 抓)+ 作者卡 + 编辑入口(作者/admin 可见)
+- [x] `pages/Me.tsx`:tabs(我的文章 / 草稿 / 我的收藏 M4 占位 / 资料)+ 紧凑型文章行
+- [x] `pages/Home.tsx`:zigzag 列表(参考 mockup,左右图片交替)+ Klein hero
+- [x] `router.tsx`:`/write` / `/write/:id` / `/articles/:slug` 路由
+- [x] `index.css`:`.prose-article` 完整 Markdown 样式 + highlight.js + md-editor CSS
 
-### 验收
-- 后端:✅ 已通过(18/18 断言)
-- 前端待做:
-  - [ ] 写一篇文章保存为草稿 → `/me` 草稿 tab 可见、详情页他人 404
-  - [ ] 发布后他人能在详情页看到
-  - [ ] 编辑后保存,内容更新
-  - [ ] 删除后详情页 404
+### 实际验收
+- ✅ 草稿创建后:`/me` 草稿 tab 可见、详情页他人 404、作者自己 200
+- ✅ 发布后他人能在详情页看到、首页能看到
+- ✅ 编辑后保存,内容更新(标签 diff、status 切换都对)
+- ✅ 删除后详情页 404
+- ✅ 浏览量自增正常
+- ✅ Vite proxy + JWT 头自动注入跑通
+- ✅ Typecheck 零错误
+
+### M2 关键设计决策
+1. **Write page 不用 RHF** — MDEditor 对受控 props 比较挑剔,简单 useState 反而清爽
+2. **publish 是两步原子操作** — 先 update 拿最新字段,再 flip status,避免"我改了但发布的是旧版"
+3. **TOC 是正则扫 `^## / ^###` 出来的**,不用额外的 markdown AST 库;锚点哈希用同样的 slugify 规则
+4. **rehype 顺序**:`highlight` → `sanitize`,sanitize schema 白名单 `code.className` / `span.className`,否则高亮 token 全被剥
+5. **草稿可见性 — by-id 路由必须放 `/:slug` 前面**,否则 "by-id" 会被当 slug 处理
 
 ---
 
@@ -286,9 +306,8 @@
 - [x] 7 张 HTML mockup ✅
 - [x] M0 工程脚手架 ✅
 - [x] M1 用户体系 ✅
-- [x] M2 后端 ✅(commit `ec9ae9a`)
-- [ ] **M2 前端 📍 你在这里**
-- [ ] M3 列表 / 搜索 / 分类标签
+- [x] M2 文章 CRUD ✅(server + client + 5 篇种子文章 + 1 篇草稿)
+- [ ] **M3 列表 / 搜索 / 分类标签 📍 你在这里**
 - [ ] M4 评论与互动
 - [ ] M5 文件上传
 - [ ] M6 管理后台

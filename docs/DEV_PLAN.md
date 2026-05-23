@@ -1,7 +1,7 @@
 # 开发计划
 
 > 配套阅读:[REQUIREMENTS.md](REQUIREMENTS.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [UI_DESIGN.md](UI_DESIGN.md) · [DESIGN.md](DESIGN.md)  
-> 版本:v1.5 · 2026-05-23(M5 完成,准备进 M6)
+> 版本:v1.6 · 2026-05-23(M6 完成,准备进 M7)
 
 ---
 
@@ -17,11 +17,11 @@
 | M3 | 列表 / 搜索 / 分类标签 | ✅ 完成 | `67b9328` | 首页可用 |
 | M4 | 评论与互动 | ✅ 完成 | `1d9e320` | 评论 + 点赞 + 收藏 |
 | M5 | 文件上传 | ✅ 完成 | `a95074d` | 封面图、正文图 |
-| **M6** | **管理后台** | ⏳ **下一步** | — | `/admin` 全套 |
-| M7 | 部署准备 | ⏳ 待开始 | — | Dockerfile + env 分层 |
+| M6 | 管理后台 | ✅ 完成 | — | `/admin` 全套 |
+| **M7** | **部署准备** | ⏳ **下一步** | — | Dockerfile + env 分层 |
 
 **总计预估**:约 7 天工作量(单人,全职)。  
-**实际进度**:M0 / M1 / M2 / M3 / M4 / M5 完成,准备进 M6。
+**实际进度**:M0 / M1 / M2 / M3 / M4 / M5 / M6 完成,准备进 M7。
 
 ---
 
@@ -272,32 +272,56 @@
 
 ---
 
-## M6 · 管理后台
+## M6 · 管理后台 ✅
 
 **目标**:`/admin` 全套(独立路由),管理员能管理一切。
 
 ### 后端
-- [ ] `services/admin.service.ts`:
-  - [ ] `stats()`:文章数、用户数、评论数、近 7 日发文趋势
-  - [ ] `listUsers({page, keyword})`
-  - [ ] `updateUser(id, {role?, isActive?})`
-  - [ ] `listComments({page, keyword})`
-- [ ] 分类增删改:`POST/PUT/DELETE /api/categories`(此前 M2 只做了 GET)
-- [ ] 标签删除:`DELETE /api/tags/:id`
-- [ ] `routes/admin.routes.ts`:全套挂 `requireRole('ADMIN')`
+- [x] `services/admin.service.ts`:
+  - [x] `getStats()`:用户/文章/评论/分类/标签计数 + 30 天发文趋势 + topCategories + 最近文章 + 最近评论
+  - [x] `listUsers({page, pageSize, keyword, role})`:含 `_count.articles / comments`
+  - [x] `updateUser(viewerId, id, {role?, isActive?})`:**自我保护** — admin 不能改自己的角色,也不能禁用自己
+  - [x] `listAllComments({page, pageSize, keyword})`:跨文章评论 + 关联文章信息
+  - [x] 分类 CRUD:`createCategory` / `updateCategory` / `deleteCategory`(非空分类拒绝删除)
+  - [x] `deleteTag(id)`:事务里先清 `ArticleTag` 再删 Tag,避免外键约束
+- [x] `controllers/admin.controller.ts`:`stats / listUsers / updateUser / listAllComments / createCategory / updateCategory / deleteCategory / deleteTag`
+- [x] `routes/admin.routes.ts`:整个子路由都套 `requireAuth` + `requireRole('ADMIN')`
+- [x] `app.ts` 挂 `/api/admin`(GET 分类/标签的公共接口保留在 `/api/categories` `/api/tags`)
+- [x] `scripts/test-m6-server.sh`:**17 项 e2e 全过**(authz / stats shape / users 列表+搜索 / isActive 切换+登录拦截 / 自我降级 403 / 评论列表 / 分类增删改+409 重复+400 非空 / 标签删除)
 
 ### 前端
-- [ ] `layouts/AdminLayout.tsx`:侧边栏 + 顶部 + 内容区(参考 mockup `06-admin-dashboard.html`)
-- [ ] `pages/admin/Dashboard.tsx`:Bento stat 卡片 + 趋势图(SVG path 手绘 或 recharts)
-- [ ] `pages/admin/Articles.tsx`:全平台文章表格 + 批量操作 + 筛选(参考 mockup `07-admin-articles.html`)
-- [ ] `pages/admin/Categories.tsx`:CRUD 表格
-- [ ] `pages/admin/Tags.tsx`:列表 + 删除
-- [ ] `pages/admin/Users.tsx`:列表 + 改角色 / 禁用切换
-- [ ] `pages/admin/Comments.tsx`:全平台评论 + 删除
+- [x] `api/admin.ts`:`getStats / listUsers / updateUser / listAllComments` + 完整类型
+- [x] `api/taxonomy.ts` 扩展:`createCategory / updateCategory / deleteCategory / deleteTag`
+- [x] `layouts/AdminLayout.tsx`:240px 侧边栏(OVERVIEW / CONTENT / USERS / SYSTEM 分组 + 当前页 klein 左竖条)+ 顶部 breadcrumb + 用户菜单
+- [x] `pages/admin/Dashboard.tsx`:
+  - [x] 自适应问候语(早/午/晚/深夜)+ this-week 增量
+  - [x] Hero stat:30 天发文总数 + 自绘 SVG sparkline(line + area gradient)
+  - [x] Bento:USERS / COMMENTS / DRAFTS / VIEWS / LIKES (tinted klein) / CATEGORIES
+  - [x] 最近 6 篇文章表格 + 最近 6 条评论 feed(timeAgo)
+- [x] `pages/admin/Articles.tsx`:全平台文章表 + URL-driven 关键词/状态/分类筛选 + 智能页码 + 多选 + 批量发布 / 批量删除 + 行内操作(查看/编辑/发布/删除)
+- [x] `pages/admin/Categories.tsx`:列表 + 模态弹窗新建/编辑 + 删除(非空拒绝 → 友好错提示)
+- [x] `pages/admin/Tags.tsx`:列表 + 客户端搜索 + 删除(确认对话框告知 N 篇文章会被解除关联)
+- [x] `pages/admin/Users.tsx`:列表 + 搜索 + 角色筛选 + 提权/降权切换 + 启用/禁用切换 + 本人行禁止改
+- [x] `pages/admin/Comments.tsx`:全平台评论 + 按内容搜索 + 删除(复用 M4 的 `deleteComment(articleId, id)`)
+- [x] `router.tsx`:`/admin/*` 全部嵌入 `AdminLayout`,外层包 `RequireAuth role="ADMIN"`;`AdminPlaceholder.tsx` 已删除
+- [x] `index.css`:新增 `.data-table` + `.admin-input` 共用样式
 
-### 验收
-- admin 账号能看到全部页面,数据正确
-- 普通用户访问 `/admin` 被拦截到 `/`
+### 实际验收
+- ✅ admin 账号:`/admin` 仪表盘 → 真实数据;Articles/Categories/Tags/Users/Comments 全部 CRUD 可用
+- ✅ 普通用户访问 `/admin` 被 RequireAuth 守卫重定向到 `/`
+- ✅ 后端:admin 中间件双层守卫(authz e2e 401/403 都对)
+- ✅ Typecheck 双包零错误
+- ✅ Server e2e 17/17
+
+### M6 关键设计决策
+1. **admin 路由独占前缀** — `/api/admin/*` 集中挂 `requireAuth + requireRole('ADMIN')`,而不是把权限挂到分散的 controller;少改老代码、少漏权限点
+2. **分类/标签 CRUD 在 admin 下,GET 留在公共路径** — 公共页面要看 `_count.articles` 但不能改;admin 只做写操作。两套语义清晰,前端调起来也方便
+3. **自我保护规则放在 service 层** — `updateUser` 内部检查 `viewerId === targetId`,即便 controller 误传也防呆;两条规则:不能改自己的角色、不能禁用自己
+4. **stats 接口一次拉齐** — 用 `Promise.all` 并发跑 17 个 query,避免 N 次往返;30 天 trend 用 Map 预填零桶,缺天自动补 0,前端 SVG 不用判空
+5. **sparkline 自绘 SVG** — 没引入 recharts/chart.js,30 行函数生成 `M…L…Z` path,渐变填充 + 描边两层,设计上和 mockup 一致,体积零负担
+6. **批量操作走串行 fetch** — 选 N 篇文章发布/删除,for 循环逐个调,失败不中断;500 篇也只是 N 个请求,但代码极简(不上 `Promise.allSettled` 是因为我们要等 invalidate 之前所有都返回)
+7. **Comments 删除复用 M4 接口** — 评论 delete 端点 `DELETE /api/articles/:articleId/comments/:id` 在 M4 就允许 admin 删任意评论,M6 客户端直接复用,不重复造轮子
+8. **AdminLayout 不复用 PublicLayout** — 后台是工具型 UI,侧边栏 + 数据密集表格,和阅读型首页不是一类;layout 独立,组件能复用的(Pagination / 头像)还是复用
 
 ---
 
@@ -359,5 +383,5 @@
 - [x] M3 列表 / 搜索 / 分类标签 ✅
 - [x] M4 评论与互动 ✅
 - [x] M5 文件上传 ✅
-- [ ] **M6 管理后台 📍 你在这里**
-- [ ] M7 部署准备
+- [x] M6 管理后台 ✅
+- [ ] **M7 部署准备 📍 你在这里**

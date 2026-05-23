@@ -54,6 +54,32 @@
     @apply bg-klein text-white;
   }
 
+  /* === Admin shared === */
+  .data-table {
+    @apply w-full border-collapse text-sm;
+  }
+  .data-table th {
+    @apply text-left font-mono font-medium text-[11px] tracking-[0.08em] text-steel
+      px-4 py-3 border-b border-whisper bg-canvas;
+  }
+  .data-table td {
+    @apply px-4 py-3.5 border-b border-whisper text-ink align-middle;
+  }
+  .data-table tbody tr:hover td {
+    @apply bg-canvas;
+  }
+  .data-table tbody tr.selected td {
+    @apply bg-klein-tint;
+  }
+  .data-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .admin-input {
+    @apply bg-white border border-whisper rounded-lg px-3 py-2 text-sm text-ink h-9
+      transition focus:outline-none focus:border-klein focus:ring-[3px] focus:ring-klein/20 placeholder:text-steel/60;
+  }
+
   .nav-link {
     @apply relative text-[15px] text-ink py-1.5 px-0.5 transition-colors hover:text-klein;
   }

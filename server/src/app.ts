@@ -12,6 +12,7 @@ import { tagRouter } from './routes/tag.routes.js'
 import { commentRouter } from './routes/comment.routes.js'
 import { userRouter } from './routes/user.routes.js'
 import { uploadRouter } from './routes/upload.routes.js'
+import { adminRouter } from './routes/admin.routes.js'
 
 export function createApp(): Express {
   const app = express()
@@ -41,6 +42,7 @@ export function createApp(): Express {
   app.use('/api/tags', tagRouter)
   app.use('/api/users', userRouter)
   app.use('/api/upload', uploadRouter)
+  app.use('/api/admin', adminRouter)
 
   // 404 fallthrough
   app.use((_req, res) => {

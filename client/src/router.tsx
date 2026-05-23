@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { PublicLayout } from './layouts/PublicLayout'
+import { AdminLayout } from './layouts/AdminLayout'
 import { HomePage } from './pages/Home'
 import { LoginPage } from './pages/Login'
 import { RegisterPage } from './pages/Register'
@@ -11,7 +12,12 @@ import { CategoryArchivePage } from './pages/CategoryArchive'
 import { TagIndexPage } from './pages/TagIndex'
 import { TagArchivePage } from './pages/TagArchive'
 import { SearchResultsPage } from './pages/SearchResults'
-import { AdminPlaceholder } from './pages/AdminPlaceholder'
+import { AdminDashboardPage } from './pages/admin/Dashboard'
+import { AdminArticlesPage } from './pages/admin/Articles'
+import { AdminCategoriesPage } from './pages/admin/Categories'
+import { AdminTagsPage } from './pages/admin/Tags'
+import { AdminUsersPage } from './pages/admin/Users'
+import { AdminCommentsPage } from './pages/admin/Comments'
 import { RequireAuth } from './components/RequireAuth'
 
 export const router = createBrowserRouter([
@@ -43,10 +49,22 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Admin-only standalone
+  // Admin-only — separate layout with sidebar
   {
     element: <RequireAuth role="ADMIN" />,
-    children: [{ path: '/admin', element: <AdminPlaceholder /> }],
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [
+          { path: '/admin', element: <AdminDashboardPage /> },
+          { path: '/admin/articles', element: <AdminArticlesPage /> },
+          { path: '/admin/categories', element: <AdminCategoriesPage /> },
+          { path: '/admin/tags', element: <AdminTagsPage /> },
+          { path: '/admin/users', element: <AdminUsersPage /> },
+          { path: '/admin/comments', element: <AdminCommentsPage /> },
+        ],
+      },
+    ],
   },
 
   { path: '*', element: <div className="p-10 text-center text-steel">页面未找到</div> },

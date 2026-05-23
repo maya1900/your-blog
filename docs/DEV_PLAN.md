@@ -1,7 +1,7 @@
 # 开发计划
 
 > 配套阅读:[REQUIREMENTS.md](REQUIREMENTS.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [UI_DESIGN.md](UI_DESIGN.md) · [DESIGN.md](DESIGN.md)  
-> 版本:v1.2 · 2026-05-23(M2 完成,准备进 M3)
+> 版本:v1.3 · 2026-05-23(M3 完成,准备进 M4)
 
 ---
 
@@ -13,15 +13,15 @@
 |---|---|---|---|---|
 | M0 | 工程脚手架 | ✅ 完成 | `93f1ac5` | 前后端可启动空壳 + DB 通 |
 | M1 | 用户体系 | ✅ 完成 | `a216bf9` | 注册/登录/JWT/角色守卫 |
-| M2 | 文章 CRUD | ✅ 完成 | `ec9ae9a` + (this) | 写、改、删、看文章 |
-| **M3** | **列表 / 搜索 / 分类标签** | ⏳ **下一步** | — | 首页可用 |
-| M4 | 评论与互动 | ⏳ 待开始 | — | 评论 + 点赞 + 收藏 |
+| M2 | 文章 CRUD | ✅ 完成 | `ec9ae9a` / `798163f` / `5afa4cd` | 写、改、删、看文章 |
+| M3 | 列表 / 搜索 / 分类标签 | ✅ 完成 | (this) | 首页可用 |
+| **M4** | **评论与互动** | ⏳ **下一步** | — | 评论 + 点赞 + 收藏 |
 | M5 | 文件上传 | ⏳ 待开始 | — | 封面图、正文图 |
 | M6 | 管理后台 | ⏳ 待开始 | — | `/admin` 全套 |
 | M7 | 部署准备 | ⏳ 待开始 | — | Dockerfile + env 分层 |
 
 **总计预估**:约 7 天工作量(单人,全职)。  
-**实际进度**:M0 / M1 / M2 完成,准备进 M3。
+**实际进度**:M0 / M1 / M2 / M3 完成,准备进 M4。
 
 ---
 
@@ -150,28 +150,45 @@
 
 ---
 
-## M3 · 列表 / 搜索 / 分类标签
+## M3 · 列表 / 搜索 / 分类标签 ✅
 
 **目标**:首页可用,能浏览、分页、按标题搜、按分类/标签筛选。
 
-### 后端
-- [x] ~~`services/article.service.ts` 加 `listArticles({...})`~~ 已在 M2 完成
-- [x] ~~分页工具 `utils/pagination.ts`~~ 已在 M2 完成
-- [x] ~~`category.routes.ts` / `tag.routes.ts` 只读路由~~ 已在 M2 完成
-- [ ] (按需)分类管理员可写接口 — 推迟到 M6 admin 模块统一做
+### 后端(零新增)
+- [x] ~~`listArticles({...})` / 分页工具~~ M2 已完成
+- [x] ~~`category.routes.ts` / `tag.routes.ts`~~ M2 已完成
+- 决定:**M3 是纯前端 milestone**,后端无新增
 
 ### 前端
-- [ ] `pages/Home.tsx`:文章 zigzag 列表(参考 mockup `01-home.html`) + 分页器
-- [ ] `pages/Home.tsx`:Hero 区(居中 + Aurora blob + 头像 inline-in-headline)
-- [ ] `components/ArticleRow.tsx`:zigzag 行(左图右文 / 右图左文 交替)
-- [ ] `pages/CategoryArchive.tsx` `/categories/:slug`
-- [ ] `pages/TagArchive.tsx` `/tags/:name`
-- [ ] 搜索框:在顶导搜索 icon 上做弹层,防抖 300ms,改 URL query
+- [x] `hooks/useDebounce.ts`:`useDebounce(value, ms)` + `useDebouncedCallback(fn, ms)`
+- [x] `hooks/useUrlParam.ts`:`useUrlParam` / `useUrlNumberParam`(URL 当受控状态,空值自动从 query 删除)
+- [x] `components/ArticleList.tsx`:把首页 zigzag 抽成共用组件(home / category / tag / search 全用)
+- [x] `components/Pagination.tsx`:智能页码窗口(首末页 + 当前 ±1 + 省略号),含 compact 模式
+- [x] `components/SearchPalette.tsx`:全屏搜索弹层,300ms 防抖,Cmd/Ctrl+K 唤起,Esc 关闭,Enter 跳第一条,空结果回车进 `/search`
+- [x] `pages/Home.tsx`:**完整 hero**(Klein 蓝光斑 + hairline grid + EST. 副标 + 双行大标 + 主 CTA) + 章节标题 + 共用 ArticleList + URL 分页
+- [x] `pages/CategoryIndex.tsx` `/categories`:分类卡片网格,带文章计数,hover 浮起
+- [x] `pages/CategoryArchive.tsx` `/categories/:slug`:单分类归档
+- [x] `pages/TagIndex.tsx` `/tags`:标签云(4 级字号反映文章数,避开传统 tag cloud 套路)
+- [x] `pages/TagArchive.tsx` `/tags/:name`:单标签归档
+- [x] `pages/SearchResults.tsx` `/search`:URL 同步搜索框 + 防抖 + 分页(关键词变化自动 reset 到第 1 页)
+- [x] `layouts/PublicLayout.tsx`:接入 SearchPalette,顶导分类/标签链接激活态生效,Cmd+K 全局快捷键
 
-### 验收
-- 首页能看到列表(M2 的脏数据 + M3 自己 seed 几篇)
-- 搜索关键词能筛出文章
-- 点分类/标签能进归档页
+### 实际验收
+- ✅ 首页能看到 zigzag 列表 + 分页器,URL `?page=2` 共享
+- ✅ Cmd+K 唤起搜索弹层,输入 "staletime" 300ms 后看到 1 条结果,Enter 跳详情
+- ✅ `/search?keyword=...` 直接打开有效
+- ✅ `/categories` 4 个分类卡片显示正确计数
+- ✅ `/categories/frontend` 显示分类下文章
+- ✅ `/tags` 字号按 article 数分级
+- ✅ `/tags/React` 显示标签归档
+- ✅ Typecheck 双包零错误
+
+### M3 关键设计决策
+1. **后端零新增** — M2 已把 listArticles 的所有筛选维度做齐,M3 完全在前端拼装
+2. **URL 是真理之源** — 翻页 / 搜索全部由 URL query 驱动,刷新/分享 URL 保持状态;`useUrlParam` 写默认值自动从 query 删
+3. **分页改成智能窗口** — 之前简单的 `1 / 12` mono 显示保留为 `compact` 模式,完整窗口模式留给未来其他场景
+4. **SearchPalette ≠ SearchResults** — 弹层只展示 8 条快查;真要看全部、改 URL 分享、翻页就跳 `/search`,职责清楚
+5. **标签云字号 4 级** — `>=8 / >=4 / >=2 / 其它`,避开"按 count 等比例缩放"的廉价 tag cloud 感
 
 ---
 
@@ -306,9 +323,9 @@
 - [x] 7 张 HTML mockup ✅
 - [x] M0 工程脚手架 ✅
 - [x] M1 用户体系 ✅
-- [x] M2 文章 CRUD ✅(server + client + 5 篇种子文章 + 1 篇草稿)
-- [ ] **M3 列表 / 搜索 / 分类标签 📍 你在这里**
-- [ ] M4 评论与互动
+- [x] M2 文章 CRUD ✅
+- [x] M3 列表 / 搜索 / 分类标签 ✅
+- [ ] **M4 评论与互动 📍 你在这里**
 - [ ] M5 文件上传
 - [ ] M6 管理后台
 - [ ] M7 部署准备

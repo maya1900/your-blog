@@ -6,6 +6,11 @@ import { RegisterPage } from './pages/Register'
 import { MePage } from './pages/Me'
 import { WritePage } from './pages/Write'
 import { ArticleDetailPage } from './pages/ArticleDetail'
+import { CategoryIndexPage } from './pages/CategoryIndex'
+import { CategoryArchivePage } from './pages/CategoryArchive'
+import { TagIndexPage } from './pages/TagIndex'
+import { TagArchivePage } from './pages/TagArchive'
+import { SearchResultsPage } from './pages/SearchResults'
 import { AdminPlaceholder } from './pages/AdminPlaceholder'
 import { RequireAuth } from './components/RequireAuth'
 
@@ -20,6 +25,11 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/articles/:slug', element: <ArticleDetailPage /> },
+      { path: '/categories', element: <CategoryIndexPage /> },
+      { path: '/categories/:slug', element: <CategoryArchivePage /> },
+      { path: '/tags', element: <TagIndexPage /> },
+      { path: '/tags/:name', element: <TagArchivePage /> },
+      { path: '/search', element: <SearchResultsPage /> },
 
       // User-only routes
       {

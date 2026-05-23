@@ -1,10 +1,25 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LogOut, PenSquare, Search, User as UserIcon } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store'
+import { SearchPalette } from '@/components/SearchPalette'
 
 export function PublicLayout() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // Global Cmd/Ctrl + K opens the search palette
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -23,16 +38,21 @@ export function PublicLayout() {
             <NavLink to="/" end className="nav-link">
               文章
             </NavLink>
-            <NavLink to="/categories" className="nav-link text-steel">
+            <NavLink to="/categories" className="nav-link">
               分类
             </NavLink>
-            <NavLink to="/tags" className="nav-link text-steel">
+            <NavLink to="/tags" className="nav-link">
               标签
             </NavLink>
           </nav>
 
           <div className="flex items-center gap-2">
-            <button className="btn-icon" aria-label="搜索">
+            <button
+              className="btn-icon"
+              aria-label="搜索"
+              onClick={() => setSearchOpen(true)}
+              title="搜索文章 (Cmd K)"
+            >
               <Search size={18} />
             </button>
 
@@ -97,6 +117,8 @@ export function PublicLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+
+      <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <footer className="border-t border-whisper mt-12">
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-12 flex flex-col md:flex-row md:items-end justify-between gap-8">

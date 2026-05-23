@@ -71,32 +71,34 @@ export function PublicLayout() {
                       <UserIcon size={16} className="text-steel" />
                     )}
                   </button>
-                  <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-whisper rounded-lg py-2 shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
-                    <div className="px-3 py-1.5 border-b border-whisper">
-                      <p className="text-sm font-medium text-ink truncate">{user.username}</p>
-                      <p className="text-xs text-steel font-mono truncate">{user.email}</p>
-                    </div>
-                    <Link
-                      to="/me"
-                      className="block px-3 py-2 text-sm hover:bg-whisper-soft transition"
-                    >
-                      个人中心
-                    </Link>
-                    {user.role === 'ADMIN' && (
+                  <div className="absolute right-0 top-full pt-2 w-44 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+                    <div className="bg-white border border-whisper rounded-lg py-2 shadow-sm">
+                      <div className="px-3 py-1.5 border-b border-whisper">
+                        <p className="text-sm font-medium text-ink truncate">{user.username}</p>
+                        <p className="text-xs text-steel font-mono truncate">{user.email}</p>
+                      </div>
                       <Link
-                        to="/admin"
+                        to="/me"
                         className="block px-3 py-2 text-sm hover:bg-whisper-soft transition"
                       >
-                        管理后台
+                        个人中心
                       </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-3 py-2 text-sm text-steel hover:bg-whisper-soft transition inline-flex items-center gap-2"
-                    >
-                      <LogOut size={14} />
-                      退出登录
-                    </button>
+                      {user.role === 'ADMIN' && (
+                        <Link
+                          to="/admin"
+                          className="block px-3 py-2 text-sm hover:bg-whisper-soft transition"
+                        >
+                          管理后台
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-3 py-2 text-sm text-steel hover:bg-whisper-soft transition inline-flex items-center gap-2"
+                      >
+                        <LogOut size={14} />
+                        退出登录
+                      </button>
+                    </div>
                   </div>
                 </div>
               </>

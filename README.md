@@ -6,10 +6,10 @@
 
 | 文档 | 内容 |
 |---|---|
-| [REQUIREMENTS.md](REQUIREMENTS.md) | 需求清单与功能边界 |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | 技术架构 / 分层 / 数据模型 |
-| [DESIGN.md](DESIGN.md) | UI 设计系统(Aurora AI · Klein Electric) |
-| [DEV_PLAN.md](DEV_PLAN.md) | 8 个里程碑的开发计划 |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | 需求清单与功能边界 |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 技术架构 / 分层 / 数据模型 |
+| [docs/DESIGN.md](docs/DESIGN.md) | UI 设计系统(Aurora AI · Klein Electric) |
+| [docs/DEV_PLAN.md](docs/DEV_PLAN.md) | 8 个里程碑的开发计划 |
 | [mockups/](mockups/index.html) | 7 张高保真静态 HTML 设计草稿 |
 
 ## 技术栈
@@ -84,4 +84,4 @@ your-blog/
 
 ## 当前进度
 
-参见 [DEV_PLAN.md](DEV_PLAN.md) 末尾。
+参见 [docs/DEV_PLAN.md](docs/DEV_PLAN.md) 末尾。

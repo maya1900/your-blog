@@ -19,3 +19,94 @@
     box-sizing: border-box;
   }
 }
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-klein text-white py-2.5 px-5 rounded-lg text-[15px] font-medium transition-colors hover:bg-klein-deep active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-1.5 bg-transparent text-ink py-[9px] px-4 border border-whisper rounded-lg text-sm font-medium transition-colors hover:border-klein hover:text-klein disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-icon {
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-md text-steel transition-colors hover:bg-whisper-soft hover:text-ink;
+  }
+
+  .input {
+    @apply w-full bg-white border border-whisper rounded-lg px-3.5 py-2.5 text-[15px] text-ink transition focus:outline-none focus:border-klein focus:ring-[3px] focus:ring-klein/20 placeholder:text-steel/60;
+  }
+
+  .field-label {
+    @apply block text-xs font-medium text-steel tracking-[0.04em] mb-1.5 font-mono;
+  }
+
+  .chip {
+    @apply inline-flex items-center h-[22px] px-2 rounded-chip bg-whisper-soft text-steel text-xs font-medium tracking-[0.02em];
+  }
+
+  .chip-active {
+    @apply bg-klein text-white;
+  }
+
+  .nav-link {
+    @apply relative text-[15px] text-ink py-1.5 px-0.5 transition-colors hover:text-klein;
+  }
+  .nav-link.active {
+    @apply text-klein;
+  }
+  .nav-link::after {
+    content: '';
+    @apply absolute left-0 right-0 bottom-0 h-[1.5px] bg-klein scale-x-0 origin-left transition-transform duration-200 ease-out;
+  }
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    @apply scale-x-100;
+  }
+}
+
+@layer utilities {
+  .hairline-grid {
+    background-image:
+      linear-gradient(to right, #e5e5e5 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(229, 229, 229, 0.4) 1px, transparent 1px);
+    background-size: calc(100% / 12) 96px;
+  }
+
+  .aurora-blob {
+    filter: blur(110px);
+    mix-blend-mode: multiply;
+  }
+
+  .aurora-1 {
+    background: radial-gradient(circle, #0040ff 0%, transparent 70%);
+    opacity: 0.32;
+    animation: drift-a 26s ease-in-out infinite;
+  }
+
+  .aurora-2 {
+    background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+    opacity: 0.28;
+    animation: drift-b 32s ease-in-out infinite;
+  }
+}
+
+@keyframes drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(40px, 30px);
+  }
+}
+
+@keyframes drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-30px, 50px);
+  }
+}

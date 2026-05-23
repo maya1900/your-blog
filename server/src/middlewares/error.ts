@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
+import { HttpError } from '../utils/errors.js'
 
 export function errorMiddleware(
   err: Error,
@@ -8,8 +9,11 @@ export function errorMiddleware(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction,
 ) {
-  // eslint-disable-next-line no-console
-  console.error('[error]', err)
+  if (err instanceof HttpError) {
+    return res.status(err.statusCode).json({
+      error: { code: err.code, message: err.message },
+    })
+  }
 
   if (err instanceof ZodError) {
     return res.status(400).json({
@@ -21,11 +25,13 @@ export function errorMiddleware(
     })
   }
 
-  const status = 500
-  return res.status(status).json({
+  // eslint-disable-next-line no-console
+  console.error('[unhandled error]', err)
+
+  return res.status(500).json({
     error: {
       code: 'INTERNAL_ERROR',
-      message: err.message || 'Internal server error',
+      message: 'Internal server error',
     },
   })
 }

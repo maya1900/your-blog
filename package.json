@@ -13,7 +13,8 @@
     "db:logs": "docker compose logs -f mysql",
     "db:migrate": "pnpm -C server prisma migrate dev",
     "db:studio": "pnpm -C server prisma studio",
-    "db:reset": "pnpm -C server prisma migrate reset"
+    "db:reset": "pnpm -C server prisma migrate reset",
+    "db:seed": "pnpm -C server db:seed"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

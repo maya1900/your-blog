@@ -9,7 +9,11 @@
     "start": "dotenv -e ../.env -- node dist/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "prisma": "dotenv -e ../.env -- prisma"
+    "prisma": "dotenv -e ../.env -- prisma",
+    "db:seed": "dotenv -e ../.env -- tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

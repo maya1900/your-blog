@@ -395,3 +395,7 @@
 - [x] M5 文件上传 ✅
 - [x] M6 管理后台 ✅
 - [x] M7 部署准备 ✅
+
+---
+
+**post-M7 backlog** 见 [ROADMAP.md](ROADMAP.md) —— 不再按 milestone 编号,按主题分组的待办池,挑着做。

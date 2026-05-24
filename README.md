@@ -283,7 +283,7 @@ your-blog/
 | M6 | 管理后台 | ✓ |
 | M7 | 部署准备(Dockerfile + nginx + env 分层) | ✓ |
 
-详见 [docs/DEV_PLAN.md](docs/DEV_PLAN.md);M6 完成后的增量见 [CHANGELOG.md](CHANGELOG.md)。
+详见 [docs/DEV_PLAN.md](docs/DEV_PLAN.md);M6 完成后的增量见 [CHANGELOG.md](CHANGELOG.md);post-M7 路线池见 [docs/ROADMAP.md](docs/ROADMAP.md)。
 
 ---
 
@@ -296,6 +296,7 @@ your-blog/
 | [docs/DESIGN.md](docs/DESIGN.md) | UI 设计系统(Aurora AI · Klein Electric) |
 | [docs/UI_DESIGN.md](docs/UI_DESIGN.md) | UI 规则与组件清单 |
 | [docs/DEV_PLAN.md](docs/DEV_PLAN.md) | 8 个里程碑的开发计划 |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | post-M7 待办池(关注 / SEO / 整站导出 / 工程质量 …) |
 | [CHANGELOG.md](CHANGELOG.md) | 主路线之外的功能增量 |
 | [mockups/](mockups/index.html) | 高保真设计草稿 |
 

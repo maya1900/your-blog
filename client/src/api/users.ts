@@ -1,5 +1,5 @@
 import { http } from './http'
-import type { User } from '@/types/api'
+import type { PublicUser, User } from '@/types/api'
 
 export interface UpdateMeInput {
   username?: string
@@ -19,4 +19,11 @@ export interface ChangePasswordInput {
 
 export async function changePassword(input: ChangePasswordInput): Promise<void> {
   await http.post('/users/me/password', input)
+}
+
+export async function getUserByUsername(username: string): Promise<PublicUser> {
+  const { data } = await http.get<{ data: PublicUser }>(
+    `/users/${encodeURIComponent(username)}`,
+  )
+  return data.data
 }

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Clock, Eye, PenSquare, ArrowLeft, MessageSquare } from 'lucide-react'
+import { Clock, Eye, PenSquare, ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react'
 import { getArticleBySlug } from '@/api/articles'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -184,20 +184,29 @@ export function ArticleDetailPage() {
             )}
 
             <div className="border border-whisper rounded-xl p-5 bg-white">
-              <div className="flex items-center gap-3">
+              <Link
+                to={`/users/${encodeURIComponent(data.author.username)}`}
+                className="flex items-center gap-3 group"
+              >
                 <div className="w-12 h-12 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft">
                   {data.author.avatar && (
                     <img src={data.author.avatar} alt="" className="w-full h-full object-cover" />
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold text-ink">{data.author.username}</p>
+                  <p className="font-semibold text-ink group-hover:text-klein transition-colors">
+                    {data.author.username}
+                  </p>
                   <p className="font-mono text-xs text-steel">@{data.author.username}</p>
                 </div>
-              </div>
-              <p className="mt-4 font-mono text-xs text-steel">
-                M6 将在这里加入「关注 / 查看作者所有文章」
-              </p>
+              </Link>
+              <Link
+                to={`/users/${encodeURIComponent(data.author.username)}`}
+                className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-steel hover:text-klein transition-colors"
+              >
+                查看 {data.author.username} 的全部文章
+                <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
+              </Link>
             </div>
 
             <ReactionsCard article={data} />

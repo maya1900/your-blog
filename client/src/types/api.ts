@@ -18,6 +18,16 @@ export interface AuthorSummary {
   avatar: string | null
 }
 
+/** Public profile shape — what anyone (incl. anonymous) can see about a user. */
+export interface PublicUser {
+  id: number
+  username: string
+  avatar: string | null
+  bio: string | null
+  createdAt: string
+  articleCount: number
+}
+
 export interface Category {
   id: number
   name: string

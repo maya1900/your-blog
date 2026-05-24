@@ -13,6 +13,7 @@ import { TagIndexPage } from './pages/TagIndex'
 import { TagArchivePage } from './pages/TagArchive'
 import { SearchResultsPage } from './pages/SearchResults'
 import { AboutPage } from './pages/About'
+import { AuthorProfilePage } from './pages/AuthorProfile'
 import { AdminDashboardPage } from './pages/admin/Dashboard'
 import { AdminArticlesPage } from './pages/admin/Articles'
 import { AdminCategoriesPage } from './pages/admin/Categories'
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
       { path: '/tags/:name', element: <TagArchivePage /> },
       { path: '/search', element: <SearchResultsPage /> },
       { path: '/about', element: <AboutPage /> },
+      { path: '/users/:username', element: <AuthorProfilePage /> },
 
       // User-only routes
       {

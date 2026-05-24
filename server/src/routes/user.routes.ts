@@ -168,6 +168,48 @@ const changePassword: RequestHandler = async (req, res, next) => {
   }
 }
 
+/**
+ * GET /api/users/:username — public profile lookup.
+ *
+ * Returns only fields safe to surface to anyone (no email / role / isActive /
+ * passwordHash). Disabled accounts return 404 — treat them as if they don't exist.
+ */
+const UsernameParam = z.object({
+  username: z.string().trim().min(1).max(32),
+})
+
+const getPublicProfile: RequestHandler = async (req, res, next) => {
+  try {
+    const { username } = UsernameParam.parse(req.params)
+    const user = await prisma.user.findUnique({
+      where: { username },
+      select: {
+        id: true,
+        username: true,
+        avatar: true,
+        bio: true,
+        createdAt: true,
+        isActive: true,
+        _count: {
+          select: {
+            articles: { where: { status: 'PUBLISHED' } },
+          },
+        },
+      },
+    })
+    if (!user || !user.isActive) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: '用户不存在' } })
+      return
+    }
+    const { isActive: _unused, _count, ...rest } = user
+    res.json({ data: { ...rest, articleCount: _count.articles } })
+  } catch (err) {
+    next(err)
+  }
+}
+
 userRouter.get('/me/favorites', requireAuth, listMyFavorites)
 userRouter.patch('/me', requireAuth, updateMe)
 userRouter.post('/me/password', requireAuth, changePassword)
+// Public — keep AFTER /me/* so the static "me" path doesn't shadow username lookup
+userRouter.get('/:username', getPublicProfile)

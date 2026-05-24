@@ -7,6 +7,16 @@
 
 ## 2026-05-24 · post-M7
 
+### 作者主页 `/users/:username`
+
+兑现 M2 写详情页时埋下的 TODO「查看作者所有文章」(代码里那条 `M6 将在这里加入…` 占位字幕)。「关注」功能本期不做,留给后续单独迭代。
+
+- **后端** `GET /api/users/:username`(公开)—— 只返回 `{id, username, avatar, bio, createdAt, articleCount}`,绝不外漏 `email / role / isActive / passwordHash`;`articleCount` 用 `_count.articles` 加 `where: { status: 'PUBLISHED' }` 拿 publish 数;被 `isActive=false` 禁用的账号一律 404
+- **前端**
+  - `pages/AuthorProfile.tsx`:顶部头像 + 用户名 + bio + 加入时间 + 已发布数,下面接复用 `ArticleList` + 智能分页;骨架/404/空态都覆盖
+  - 详情页右栏「作者卡」整张可点(头像和用户名),底部多一条「查看 X 的全部文章 →」link,替换之前那行 `M6 将在这里加入…` 字幕
+  - `types/api.ts` 新增 `PublicUser` 类型(跟带敏感字段的 `User` 区分)
+
 ### Fixes
 
 - **prod compose 与 dev 撞 project name** · prod 没设 `name:`,默认从目录名推断成 `your-blog`,跟 dev compose 同名共用一张 `your-blog_default` 网络。后果:对 prod 跑 `down -v` 会连带把 dev 容器从网络里拽下来一起删(named volume 完好,数据没丢,但容器要重启)。修法:`docker-compose.prod.yml` 顶部加 `name: your-blog-prod` 显式钉死项目名,两边互不打扰

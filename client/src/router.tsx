@@ -12,12 +12,15 @@ import { CategoryArchivePage } from './pages/CategoryArchive'
 import { TagIndexPage } from './pages/TagIndex'
 import { TagArchivePage } from './pages/TagArchive'
 import { SearchResultsPage } from './pages/SearchResults'
+import { AboutPage } from './pages/About'
 import { AdminDashboardPage } from './pages/admin/Dashboard'
 import { AdminArticlesPage } from './pages/admin/Articles'
 import { AdminCategoriesPage } from './pages/admin/Categories'
 import { AdminTagsPage } from './pages/admin/Tags'
 import { AdminUsersPage } from './pages/admin/Users'
 import { AdminCommentsPage } from './pages/admin/Comments'
+import { AdminAboutPage } from './pages/admin/About'
+import { AdminSiteInfoPage } from './pages/admin/SiteInfo'
 import { RequireAuth } from './components/RequireAuth'
 
 export const router = createBrowserRouter([
@@ -36,6 +39,7 @@ export const router = createBrowserRouter([
       { path: '/tags', element: <TagIndexPage /> },
       { path: '/tags/:name', element: <TagArchivePage /> },
       { path: '/search', element: <SearchResultsPage /> },
+      { path: '/about', element: <AboutPage /> },
 
       // User-only routes
       {
@@ -62,6 +66,8 @@ export const router = createBrowserRouter([
           { path: '/admin/tags', element: <AdminTagsPage /> },
           { path: '/admin/users', element: <AdminUsersPage /> },
           { path: '/admin/comments', element: <AdminCommentsPage /> },
+          { path: '/admin/about', element: <AdminAboutPage /> },
+          { path: '/admin/site', element: <AdminSiteInfoPage /> },
         ],
       },
     ],

@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { ArrowRight } from 'lucide-react'
 import { register as registerApi, type RegisterPayload } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth.store'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 const schema = z.object({
   username: z
@@ -25,6 +26,7 @@ export function RegisterPage() {
   const setSession = useAuthStore((s) => s.setSession)
   const qc = useQueryClient()
   const [serverError, setServerError] = useState<string | null>(null)
+  const { siteTitle } = useSiteSettings()
 
   const {
     register,
@@ -64,7 +66,7 @@ export function RegisterPage() {
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-klein" />
             EST. 2026 · A SLOW BLOG
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight">加入墨记</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">加入{siteTitle}</h1>
           <p className="mt-2 text-steel">注册一个账号,开始写点想说的</p>
         </div>
 

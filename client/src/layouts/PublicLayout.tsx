@@ -3,11 +3,13 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LogOut, PenSquare, Search, User as UserIcon } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store'
 import { SearchPalette } from '@/components/SearchPalette'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 
 export function PublicLayout() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
   const [searchOpen, setSearchOpen] = useState(false)
+  const { siteTitle, siteTagline, siteLogo } = useSiteSettings()
 
   // Global Cmd/Ctrl + K opens the search palette
   useEffect(() => {
@@ -30,8 +32,16 @@ export function PublicLayout() {
     <div className="min-h-[100dvh] flex flex-col">
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/75 border-b border-whisper">
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
-          <Link to="/" className="text-[22px] font-semibold tracking-tight text-ink">
-            墨记
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-[22px] font-semibold tracking-tight text-ink"
+            title={siteTitle}
+          >
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteTitle} className="h-8 w-auto max-w-[200px] object-contain" />
+            ) : (
+              siteTitle
+            )}
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -43,6 +53,9 @@ export function PublicLayout() {
             </NavLink>
             <NavLink to="/tags" className="nav-link">
               标签
+            </NavLink>
+            <NavLink to="/about" className="nav-link">
+              关于
             </NavLink>
           </nav>
 
@@ -125,12 +138,16 @@ export function PublicLayout() {
       <footer className="border-t border-whisper mt-12">
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <p className="text-[22px] font-semibold tracking-tight text-ink">墨记</p>
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteTitle} className="h-9 w-auto max-w-[220px] object-contain" />
+            ) : (
+              <p className="text-[22px] font-semibold tracking-tight text-ink">{siteTitle}</p>
+            )}
             <p className="mt-2 text-sm text-steel">
-              用 React + Express + Prisma 写的。慢一点,但写完每一行都想清楚了。
+              {siteTagline}
             </p>
           </div>
-          <p className="text-xs text-steel font-mono">© 2026 墨记 · v0.1.0</p>
+          <p className="text-xs text-steel font-mono">© 2026 {siteTitle} · v0.1.0</p>
         </div>
       </footer>
     </div>

@@ -3,14 +3,17 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   ChevronDown,
   FileText,
+  Info,
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  Settings,
   Tag as TagIcon,
   Tags,
   Users,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store'
+import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { cn } from '@/utils/cn'
 
 const navSections: {
@@ -40,12 +43,20 @@ const navSections: {
     label: 'USERS',
     items: [{ to: '/admin/users', icon: <Users size={16} />, label: '用户' }],
   },
+  {
+    label: 'SITE',
+    items: [
+      { to: '/admin/site', icon: <Settings size={16} />, label: '站点信息' },
+      { to: '/admin/about', icon: <Info size={16} />, label: '关于页' },
+    ],
+  },
 ]
 
 export function AdminLayout() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const { siteTitle, siteLogo } = useSiteSettings()
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -65,8 +76,20 @@ export function AdminLayout() {
       {/* ===== Sidebar ===== */}
       <aside className="w-[240px] shrink-0 bg-white border-r border-whisper flex flex-col sticky top-0 h-[100dvh]">
         <div className="px-6 py-5 border-b border-whisper">
-          <Link to="/" className="text-[19px] font-semibold tracking-tight inline-flex items-baseline gap-2">
-            墨记
+          <Link
+            to="/"
+            className="text-[19px] font-semibold tracking-tight inline-flex items-center gap-2"
+            title={siteTitle}
+          >
+            {siteLogo ? (
+              <img
+                src={siteLogo}
+                alt={siteTitle}
+                className="h-7 w-auto max-w-[140px] object-contain"
+              />
+            ) : (
+              <span>{siteTitle}</span>
+            )}
             <span className="text-steel text-xs font-mono">/ADMIN</span>
           </Link>
         </div>
@@ -198,6 +221,8 @@ function Breadcrumbs() {
     '/admin/categories': '分类管理',
     '/admin/tags': '标签管理',
     '/admin/users': '用户管理',
+    '/admin/about': '关于页',
+    '/admin/site': '站点信息',
   }
   const title = map[path] ?? '后台'
   const isRoot = path === '/admin'

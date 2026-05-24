@@ -2,6 +2,7 @@ import { Router } from 'express'
 import * as adminController from '../controllers/admin.controller.js'
 import { requireAuth } from '../middlewares/requireAuth.js'
 import { requireRole } from '../middlewares/requireRole.js'
+import { adminSiteRouter } from './site.routes.js'
 
 export const adminRouter: Router = Router()
 
@@ -26,3 +27,6 @@ adminRouter.delete('/categories/:id', adminController.deleteCategory)
 
 // Tags delete
 adminRouter.delete('/tags/:id', adminController.deleteTag)
+
+// Site settings (about page etc.)
+adminRouter.use('/site', adminSiteRouter)

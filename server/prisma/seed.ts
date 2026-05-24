@@ -34,6 +34,26 @@ async function main() {
     })
   }
 
+  // Default site settings — only inserted on first run; not overwritten on re-seed
+  await prisma.siteSetting.upsert({
+    where: { key: 'about' },
+    update: {},
+    create: {
+      key: 'about',
+      value: `# 关于墨记
+
+墨记是一个用 React + Express + Prisma 写的小型博客系统。慢一点,但写完每一行都想清楚了。
+
+## 博主
+
+- **名字**:管理员
+- **联系**:admin@moji.local
+- **写作主题**:前端 / 后端 / 工具 / 思考
+
+> 这段文字可以在管理后台 → 关于页 中随时修改。`,
+    },
+  })
+
   // eslint-disable-next-line no-console
   console.log('✓ Seeded')
   // eslint-disable-next-line no-console

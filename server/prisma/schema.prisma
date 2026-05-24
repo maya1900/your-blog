@@ -124,3 +124,11 @@ model Favorite {
 
   @@id([userId, articleId])
 }
+
+/// Generic key-value store for site-wide settings (e.g. "about" markdown).
+/// Avoids growing a new column every time we want a freeform blob.
+model SiteSetting {
+  key       String   @id @db.VarChar(64)
+  value     String   @db.LongText
+  updatedAt DateTime @updatedAt
+}

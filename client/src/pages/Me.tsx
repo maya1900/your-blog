@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bookmark,
+  Download,
   Edit3,
   Eye,
   FileText,
   PenSquare,
   Calendar,
 } from "lucide-react";
-import { listArticles, listMyFavorites } from "@/api/articles";
+import { listArticles, listMyFavorites, downloadArticleMarkdown } from "@/api/articles";
 import { updateMe, changePassword } from "@/api/users";
 import { useAuthStore } from "@/stores/auth.store";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -326,10 +327,38 @@ function ArticleList({ query, emptyMessage, tinted }: ArticleListProps) {
             >
               <Edit3 size={14} />
             </Link>
+            <ExportButton slug={a.slug} />
           </div>
         </article>
       ))}
     </div>
+  );
+}
+
+function ExportButton({ slug }: { slug: string }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        if (busy) return;
+        setBusy(true);
+        setError(null);
+        try {
+          await downloadArticleMarkdown(slug);
+        } catch (err) {
+          setError((err as Error).message);
+        } finally {
+          setBusy(false);
+        }
+      }}
+      disabled={busy}
+      className="btn-icon !w-8 !h-8 disabled:opacity-50"
+      title={error ?? "导出 Markdown"}
+    >
+      <Download size={14} className={busy ? "animate-pulse" : ""} />
+    </button>
   );
 }
 

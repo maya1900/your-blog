@@ -90,3 +90,19 @@ export const publish: RequestHandler = async (req, res, next) => {
     next(err)
   }
 }
+
+export const exportBySlug: RequestHandler = async (req, res, next) => {
+  try {
+    const { slug } = SlugParam.parse(req.params)
+    const { filename, markdown } = await articleService.exportArticleAsMarkdown(
+      slug,
+      req.user,
+    )
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8')
+    // slug is ASCII-safe (generateSlug normalizes + nanoid fallback), so no quoting needed.
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.send(markdown)
+  } catch (err) {
+    next(err)
+  }
+}

@@ -9,6 +9,9 @@ articleRouter.get('/', articleController.list)
 // IMPORTANT: by-id route MUST be declared before /:slug so Express doesn't
 // route "by-id" through the slug handler.
 articleRouter.get('/by-id/:id', requireAuth, articleController.getById)
+// `/:slug/export` is two segments — won't be shadowed by `/:slug` — but listing
+// it before keeps the read endpoints visually together.
+articleRouter.get('/:slug/export', articleController.exportBySlug)
 articleRouter.get('/:slug', articleController.getBySlug)
 articleRouter.post('/', requireAuth, articleController.create)
 articleRouter.put('/:id', requireAuth, articleController.update)

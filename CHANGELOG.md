@@ -5,6 +5,22 @@
 
 ---
 
+## 2026-05-24 · post-M7
+
+### 单篇文章导出 Markdown
+
+`/me` 已发布 / 草稿列表每行新增「下载」icon,一键导出当前文章为 .md(YAML frontmatter + 正文原文)。所有权层面对齐 Hexo/Jekyll —— 你写的字随时能取走。
+
+- **后端**:`GET /api/articles/:slug/export` —— 权限沿用 `getArticleBySlug`(草稿仅作者 / 管理员可见),但**不触发 viewCount 自增**(导出 ≠ 阅读)
+- **frontmatter 字段**:`title / slug / status / publishedAt / createdAt / updatedAt / category / tags / excerpt / coverImage / author`
+- YAML 转义走 `JSON.stringify`(JSON 字符串是合法 YAML 双引号 scalar,免引第三方 YAML 库)
+- 响应头:`Content-Type: text/markdown; charset=utf-8` + `Content-Disposition: attachment; filename="<slug>.md"`(slug 由 `generateSlug` 保证 ASCII 安全)
+- **前端**:`api/articles.downloadArticleMarkdown(slug)` —— axios `responseType: 'blob'`,从 `Content-Disposition` 头读文件名,off-screen anchor 触发原生下载
+- 路由顺序:`GET /:slug/export` 放在 `/:slug` 前(纯顺序无关,但视觉分组)
+- 验收:已发布文章匿名 200 + 完整 frontmatter;草稿匿名 404、admin 200
+
+---
+
 ## 2026-05-24 · M7 部署准备
 
 ### Docker 三联生产部署

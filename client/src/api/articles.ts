@@ -71,3 +71,27 @@ export async function listMyFavorites(
   )
   return data.data
 }
+
+/**
+ * Download an article as a Markdown file (with YAML frontmatter). Triggers a
+ * native browser save via an off-screen anchor — the Promise resolves once the
+ * click has been dispatched, which is enough for the UI to drop its spinner.
+ */
+export async function downloadArticleMarkdown(slug: string): Promise<void> {
+  const resp = await http.get<Blob>(`/articles/${encodeURIComponent(slug)}/export`, {
+    responseType: 'blob',
+  })
+  const cd = (resp.headers['content-disposition'] as string | undefined) ?? ''
+  const match = /filename="([^"]+)"/.exec(cd)
+  const filename = match ? match[1] : `${slug}.md`
+
+  const url = URL.createObjectURL(resp.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  // Give the browser a tick before revoking so Safari has time to start the download
+  setTimeout(() => URL.revokeObjectURL(url), 0)
+}

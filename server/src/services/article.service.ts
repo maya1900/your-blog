@@ -261,6 +261,74 @@ export async function publishArticle(articleId: number, viewer: { id: number; ro
   return getArticleById(articleId)
 }
 
+/**
+ * Build a portable Markdown representation of an article — YAML frontmatter
+ * followed by the original Markdown body. Permission matches getArticleBySlug
+ * (drafts only visible to author / admin); unlike that one this never bumps
+ * viewCount.
+ */
+export async function exportArticleAsMarkdown(
+  slug: string,
+  viewer?: { id: number; role: Role },
+): Promise<{ filename: string; markdown: string }> {
+  const article = await prisma.article.findUnique({
+    where: { slug },
+    include: articleInclude(),
+  })
+  if (!article) throw new NotFoundError('文章不存在')
+
+  if (article.status === ArticleStatus.DRAFT) {
+    if (!viewer || (viewer.role !== 'ADMIN' && viewer.id !== article.authorId)) {
+      throw new NotFoundError('文章不存在')
+    }
+  }
+
+  const flat = flattenTags(article)
+  return {
+    filename: `${article.slug}.md`,
+    markdown: serializeArticleToMarkdown(flat),
+  }
+}
+
+// JSON-quoted strings are valid YAML scalars (double-quoted flow form), so we
+// piggy-back on JSON.stringify for escaping rather than pulling in a YAML lib.
+function yamlScalar(s: string): string {
+  return JSON.stringify(s)
+}
+
+function serializeArticleToMarkdown(article: {
+  title: string
+  slug: string
+  summary: string | null
+  content: string
+  coverUrl: string | null
+  status: ArticleStatus
+  publishedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  category: { name: string } | null
+  tags: { name: string }[]
+  author: { username: string } | null
+}): string {
+  const lines: string[] = ['---']
+  lines.push(`title: ${yamlScalar(article.title)}`)
+  lines.push(`slug: ${article.slug}`)
+  lines.push(`status: ${article.status === ArticleStatus.PUBLISHED ? 'published' : 'draft'}`)
+  if (article.publishedAt) lines.push(`publishedAt: ${article.publishedAt.toISOString()}`)
+  lines.push(`createdAt: ${article.createdAt.toISOString()}`)
+  lines.push(`updatedAt: ${article.updatedAt.toISOString()}`)
+  if (article.category) lines.push(`category: ${yamlScalar(article.category.name)}`)
+  if (article.tags.length > 0) {
+    lines.push('tags:')
+    for (const t of article.tags) lines.push(`  - ${yamlScalar(t.name)}`)
+  }
+  if (article.summary) lines.push(`excerpt: ${yamlScalar(article.summary)}`)
+  if (article.coverUrl) lines.push(`coverImage: ${yamlScalar(article.coverUrl)}`)
+  if (article.author) lines.push(`author: ${yamlScalar(article.author.username)}`)
+  lines.push('---', '', article.content, '')
+  return lines.join('\n')
+}
+
 // ============ Shape helper ============
 
 type RawArticle = {

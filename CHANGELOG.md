@@ -7,6 +7,27 @@
 
 ## 2026-05-24 · post-M7
 
+### 封面图:随机封面 + 默认渐变 + 本地化压缩 + 引用计数式清理
+
+写文章选封面之前只能上传或粘外链;现在多两个随机源 + 一张默认渐变兜底,本地化保存全部走 sharp 压缩裁剪,孤儿文件自动回收。
+
+- **服务端**
+  - `server/src/services/cover.service.ts` 新文件 —— sharp `rotate() → resize(1600, 900, fit:cover, position:attention) → jpeg(quality:82, mozjpeg)` 处理任何来源的封面;Picsum 拉随机 seed,Unsplash 走 `/photos/random?orientation=landscape` 并按规范 fire-and-forget `download_location` ping;下载有 10s 超时、12MB 上限、域名白名单(picsum.photos / fastly.picsum.photos / images.unsplash.com)防 SSRF
+  - `tryDeleteCoverFile(url)` —— 引用计数式安全清理:URL 必须 `/uploads/` 前缀、resolve 后仍在 UPLOAD_ROOT 下(防 `..` 穿越)、不被任何 `article.coverUrl` 引用,三道闸过了才 unlink
+  - `server/src/middlewares/upload-cover.ts` —— 内存版 multer(不落盘),让 sharp 直接处理 buffer 后再写 JPG
+  - `POST /api/upload/cover`(单文件直传) / `POST /api/upload/cover/random`(`{source, query?}`) / `DELETE /api/upload/cover`(`{url}`) —— 三个新端点,**`/api/upload/image` 不动**(头像、文内插图、站点 logo 仍走原路径,不该被强制 16:9)
+  - `updateArticle` / `deleteArticle` 在写入 DB 后调 `tryDeleteCoverFileSafe(oldCover)` —— 改封面、清封面、删文章三种链路全自动回收旧文件,引用守卫保证多文章共享同一封面时只有最后一个解引用的才删
+  - `env.UNSPLASH_ACCESS_KEY` —— 可选,不配则 Unsplash 按钮报 400「未配置 Unsplash」
+  - **顺手修了一个 M2 以来的旧 bug**:`coverUrl` 的 zod 校验是 `z.string().url()`,等于把 M5 加的本地上传通道直接堵死了(`/uploads/...` 不是合法 URL)。改成接受 `/` 开头或 `http(s)://` 的两种形态,和站点 logo/favicon 的 [`isOptionalUrl`](server/src/routes/site.routes.ts#L33-L37) 同款
+- **前端**
+  - [`components/CoverDropzone.tsx`](client/src/components/CoverDropzone.tsx) 重做 —— 直传切到 `/upload/cover`(自动 JPG 压缩 + 16:9 裁剪);右侧三个 pill 按钮 `🎲 Picsum / 🎲 Unsplash / 🔗 链接`;选中后若来源是随机,「删除」按钮前多一个「重抽」骰子按钮;追踪 `createdUrlsRef` —— 重抽 / 切源 / 改上传 / 改链接 / 点移除时都 fire DELETE 上一张,SPA 卸载走 axios DELETE,关页/刷新走 `fetch(keepalive:true)` 兜底;Unsplash 默认查询词从文章标题透传
+  - [`components/DefaultCoverGradient.tsx`](client/src/components/DefaultCoverGradient.tsx) —— 纯 SVG 默认封面,djb2 哈希标题在 6 套预调和双色渐变里挑一套 + 装饰圆 + 斜线 + 半透明首字水印,**确定性渲染**(同标题 → 同图);零网络依赖,永不失效
+  - [`ArticleList.tsx`](client/src/components/ArticleList.tsx) 把 "NO COVER" 占位换成渐变;[`ArticleDetail.tsx`](client/src/pages/ArticleDetail.tsx) 无封面时不再藏掉封面区,渲染渐变;两处保持视觉一致
+  - `api/upload.ts` —— `uploadCover` / `uploadRandomCover` / `deleteCoverFile`(axios) / `deleteCoverFileKeepalive`(裸 fetch,unload 用)
+- **依赖**:`sharp ^0.34`(macOS arm64 / linux x64 都有 prebuild,容器内会自动拉 musl 版本)
+
+**遗留**:不展示 Unsplash 摄影师署名(图片已本地化,且只展示 attribution 会和首页排版冲突);只按 API 守则 ping `download_location` 做最低限度满足。
+
 ### HTTPS 反代(基础设施就绪,证书自备)
 
 兑现 [ROADMAP 4.1](docs/ROADMAP.md) 一半 —— 仓库内把 nginx HTTPS 反代配齐,**证书签发流程刻意不绑死**(certbot / acme.sh / 付费 CA / 自签皆可),换 CA 时不用动 compose。

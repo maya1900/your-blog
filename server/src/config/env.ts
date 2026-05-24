@@ -13,6 +13,7 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('7d'),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
   UPLOAD_ROOT: z.string().default('uploads'),
+  UNSPLASH_ACCESS_KEY: z.string().min(1).optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)

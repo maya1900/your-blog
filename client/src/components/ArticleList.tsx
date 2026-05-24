@@ -3,6 +3,7 @@ import { ArrowRight, Eye } from 'lucide-react'
 import type { Article } from '@/types/api'
 import { formatDate, estimateReadTime } from '@/utils/format'
 import { StatusBadge } from './StatusBadge'
+import { DefaultCoverGradient } from './DefaultCoverGradient'
 
 interface Props {
   items: Article[]
@@ -41,9 +42,10 @@ export function ArticleList({ items, numbered = true, total, startIndex = 0 }: P
                   className="w-full aspect-[16/9] object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               ) : (
-                <div className="w-full aspect-[16/9] flex items-center justify-center text-steel font-mono text-xs">
-                  NO COVER
-                </div>
+                <DefaultCoverGradient
+                  title={a.title}
+                  className="w-full aspect-[16/9] transition-transform duration-500 group-hover:scale-[1.02]"
+                />
               )}
             </div>
 

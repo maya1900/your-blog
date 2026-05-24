@@ -385,7 +385,7 @@ export function WritePage() {
 
         {/* Cover image dropzone */}
         <div className="mb-4">
-          <CoverDropzone value={coverUrl} onChange={setCoverUrl} />
+          <CoverDropzone value={coverUrl} onChange={setCoverUrl} randomQuery={title} />
         </div>
 
         {/* Summary — collapsed by default, can be a single small textarea */}

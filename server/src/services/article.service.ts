@@ -8,14 +8,24 @@ import {
   BadRequestError,
 } from '../utils/errors.js'
 import { paginated, skipTake, type PaginationInput } from '../utils/pagination.js'
+import { tryDeleteCoverFileSafe } from './cover.service.js'
 
 // ============ Zod schemas ============
+
+// Cover may be an absolute URL (https://...) OR a root-relative path returned
+// by our upload endpoints (/uploads/...). z.string().url() rejects the latter.
+const isCoverUrl = (v: string) =>
+  v === '' || v.startsWith('/') || /^https?:\/\//.test(v)
 
 export const CreateArticleSchema = z.object({
   title: z.string().min(1, '标题不能为空').max(100, '标题最多 100 字符'),
   summary: z.string().max(200, '摘要最多 200 字符').optional(),
   content: z.string().min(1, '正文不能为空'),
-  coverUrl: z.string().url('封面图必须是有效 URL').optional().or(z.literal('')),
+  coverUrl: z
+    .string()
+    .max(512)
+    .refine(isCoverUrl, '封面图必须是 http(s):// 链接或 /uploads/… 路径')
+    .optional(),
   categoryId: z.coerce.number().int().positive('请选择分类'),
   tags: z.array(z.string().min(1).max(32)).max(6, '标签最多 6 个').default([]),
   status: z.nativeEnum(ArticleStatus).default(ArticleStatus.DRAFT),
@@ -233,6 +243,17 @@ export async function updateArticle(
     data,
     include: articleInclude(),
   })
+
+  // If the cover changed (including clearing it), try to garbage-collect the
+  // old file. `tryDeleteCoverFileSafe` checks for other references first.
+  if (
+    input.coverUrl !== undefined &&
+    existing.coverUrl &&
+    existing.coverUrl !== updated.coverUrl
+  ) {
+    await tryDeleteCoverFileSafe(existing.coverUrl)
+  }
+
   return flattenTags(updated)
 }
 
@@ -243,6 +264,8 @@ export async function deleteArticle(articleId: number, viewer: { id: number; rol
     throw new ForbiddenError('无权删除该文章')
   }
   await prisma.article.delete({ where: { id: articleId } })
+  // Article is gone — try to free its cover file too.
+  await tryDeleteCoverFileSafe(existing.coverUrl)
 }
 
 export async function publishArticle(articleId: number, viewer: { id: number; role: Role }) {

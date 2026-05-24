@@ -7,6 +7,7 @@ import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { StatusBadge } from '@/components/StatusBadge'
 import { ReactionsCard } from '@/components/ReactionsCard'
 import { CommentsSection } from '@/components/CommentsSection'
+import { DefaultCoverGradient } from '@/components/DefaultCoverGradient'
 import { formatDate, estimateReadTime } from '@/utils/format'
 import { useAuthStore } from '@/stores/auth.store'
 
@@ -72,8 +73,8 @@ export function ArticleDetailPage() {
       </p>
 
       {/* Cover */}
-      {data.coverUrl && (
-        <div className="overflow-hidden rounded-xl border border-whisper mb-10 max-h-[480px]">
+      <div className="overflow-hidden rounded-xl border border-whisper mb-10 max-h-[480px]">
+        {data.coverUrl ? (
           <img
             src={data.coverUrl}
             alt=""
@@ -82,8 +83,10 @@ export function ArticleDetailPage() {
               ;(e.target as HTMLImageElement).parentElement?.classList.add('hidden')
             }}
           />
-        </div>
-      )}
+        ) : (
+          <DefaultCoverGradient title={data.title} className="w-full aspect-[16/9] max-h-[480px]" />
+        )}
+      </div>
 
       {/* Header */}
       <header className="mb-10">

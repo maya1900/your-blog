@@ -8,6 +8,7 @@ import { StatusBadge } from '@/components/StatusBadge'
 import { ReactionsCard } from '@/components/ReactionsCard'
 import { CommentsSection } from '@/components/CommentsSection'
 import { DefaultCoverGradient } from '@/components/DefaultCoverGradient'
+import { Avatar } from '@/components/Avatar'
 import { formatDate, estimateReadTime } from '@/utils/format'
 import { useAuthStore } from '@/stores/auth.store'
 
@@ -106,11 +107,7 @@ export function ArticleDetailPage() {
 
         <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-steel">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft">
-              {data.author.avatar && (
-                <img src={data.author.avatar} alt="" className="w-full h-full object-cover" />
-              )}
-            </div>
+            <Avatar username={data.author.username} avatar={data.author.avatar} size={24} />
             <span className="text-sm font-medium text-ink">{data.author.username}</span>
           </div>
           <span className="font-mono text-xs">{formatDate(data.publishedAt ?? data.createdAt)}</span>
@@ -191,11 +188,7 @@ export function ArticleDetailPage() {
                 to={`/users/${encodeURIComponent(data.author.username)}`}
                 className="flex items-center gap-3 group"
               >
-                <div className="w-12 h-12 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft">
-                  {data.author.avatar && (
-                    <img src={data.author.avatar} alt="" className="w-full h-full object-cover" />
-                  )}
-                </div>
+                <Avatar username={data.author.username} avatar={data.author.avatar} size={48} />
                 <div>
                   <p className="font-semibold text-ink group-hover:text-klein transition-colors">
                     {data.author.username}

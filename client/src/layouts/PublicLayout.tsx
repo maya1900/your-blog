@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LogOut, PenSquare, Search, User as UserIcon } from 'lucide-react'
+import { LogOut, PenSquare, Search } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store'
 import { SearchPalette } from '@/components/SearchPalette'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
+import { Avatar } from '@/components/Avatar'
 
 export function PublicLayout() {
   const { user, logout } = useAuthStore()
@@ -76,13 +77,8 @@ export function PublicLayout() {
                   写文章
                 </Link>
                 <div className="ml-2 group relative">
-                  <button className="w-8 h-8 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft flex items-center justify-center">
-                    {user.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <UserIcon size={16} className="text-steel" />
-                    )}
+                  <button className="block rounded-full">
+                    <Avatar username={user.username} avatar={user.avatar} size={32} />
                   </button>
                   <div className="absolute right-0 top-full pt-2 w-44 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
                     <div className="bg-white border border-whisper rounded-lg py-2 shadow-sm">

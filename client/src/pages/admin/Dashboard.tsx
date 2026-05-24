@@ -12,6 +12,7 @@ import {
 import { getStats, type AdminStats } from '@/api/admin'
 import { formatDate } from '@/utils/format'
 import { cn } from '@/utils/cn'
+import { Avatar } from '@/components/Avatar'
 
 export function AdminDashboardPage() {
   const { data, isLoading } = useQuery({
@@ -161,7 +162,11 @@ export function AdminDashboardPage() {
                     </td>
                     <td>
                       <div className="flex items-center gap-2">
-                        <Avatar user={a.author} size={24} />
+                        <Avatar
+                          username={a.author.username}
+                          avatar={a.author.avatar}
+                          size={24}
+                        />
                         <span className="text-sm">{a.author.username}</span>
                       </div>
                     </td>
@@ -197,7 +202,7 @@ export function AdminDashboardPage() {
             ) : (
               data.recentComments.map((c) => (
                 <div key={c.id} className="flex items-start gap-3">
-                  <Avatar user={c.user} size={28} />
+                  <Avatar username={c.user.username} avatar={c.user.avatar} size={28} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
                       <span className="font-medium">{c.user.username}</span>
@@ -376,27 +381,6 @@ function StatusChip({ status }: { status: 'DRAFT' | 'PUBLISHED' }) {
     >
       {status}
     </span>
-  )
-}
-
-function Avatar({
-  user,
-  size,
-}: {
-  user: { username: string; avatar: string | null }
-  size: number
-}) {
-  return (
-    <div
-      className="rounded-full ring-1 ring-whisper bg-whisper-soft overflow-hidden flex items-center justify-center text-steel text-xs font-medium shrink-0"
-      style={{ width: size, height: size }}
-    >
-      {user.avatar ? (
-        <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-      ) : (
-        user.username[0]?.toUpperCase()
-      )}
-    </div>
   )
 }
 

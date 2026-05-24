@@ -6,6 +6,7 @@ import { getUserByUsername } from '@/api/users'
 import { ArticleList } from '@/components/ArticleList'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState } from '@/components/EmptyState'
+import { Avatar } from '@/components/Avatar'
 import { useUrlNumberParam } from '@/hooks/useUrlParam'
 import { formatDate } from '@/utils/format'
 
@@ -61,11 +62,7 @@ export function AuthorProfilePage() {
   return (
     <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
       <header className="mb-12 flex items-start gap-6 flex-wrap">
-        <div className="w-24 h-24 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft shrink-0">
-          {user.avatar && (
-            <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-          )}
-        </div>
+        <Avatar username={user.username} avatar={user.avatar} size={96} />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-3 flex-wrap">

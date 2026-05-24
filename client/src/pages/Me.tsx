@@ -16,6 +16,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { StatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { AvatarEditor } from "@/components/AvatarEditor";
+import { Avatar } from "@/components/Avatar";
 import { formatDate } from "@/utils/format";
 import { cn } from "@/utils/cn";
 
@@ -72,15 +73,12 @@ export function MePage() {
       <section className="border-b border-whisper bg-white/40">
         <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-12">
           <div className="flex items-start gap-8 flex-wrap">
-            <div className="w-24 h-24 rounded-full border border-whisper overflow-hidden bg-whisper-soft shrink-0">
-              {user.avatar && (
-                <img
-                  src={user.avatar}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </div>
+            <Avatar
+              username={user.username}
+              avatar={user.avatar}
+              size={96}
+              className="!ring-0 border border-whisper"
+            />
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">

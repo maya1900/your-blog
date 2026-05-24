@@ -15,6 +15,7 @@ import {
 import { useAuthStore } from '@/stores/auth.store'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { cn } from '@/utils/cn'
+import { Avatar } from '@/components/Avatar'
 
 const navSections: {
   label: string
@@ -170,13 +171,11 @@ export function AdminLayout() {
                 }}
               >
                 <button className="inline-flex items-center gap-2.5 pl-1 pr-3 py-1 border border-whisper rounded-full bg-white hover:border-klein transition">
-                  <div className="w-7 h-7 rounded-full ring-1 ring-whisper bg-whisper-soft overflow-hidden flex items-center justify-center text-steel text-xs font-medium">
-                    {user?.avatar ? (
-                      <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      user?.username?.[0]?.toUpperCase() ?? 'A'
-                    )}
-                  </div>
+                  <Avatar
+                    username={user?.username ?? 'A'}
+                    avatar={user?.avatar}
+                    size={28}
+                  />
                   <span className="text-sm font-medium">{user?.username ?? '管理员'}</span>
                   <ChevronDown size={14} className="text-steel" />
                 </button>

@@ -18,6 +18,7 @@ import {
 } from '@/api/articles'
 import { listCategories } from '@/api/taxonomy'
 import { Pagination } from '@/components/Pagination'
+import { Avatar } from '@/components/Avatar'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useUrlNumberParam, useUrlParam } from '@/hooks/useUrlParam'
 import { formatDate } from '@/utils/format'
@@ -338,7 +339,11 @@ function ArticleRow({
       </td>
       <td>
         <div className="flex items-center gap-2">
-          <Avatar user={article.author} size={24} />
+          <Avatar
+            username={article.author.username}
+            avatar={article.author.avatar}
+            size={24}
+          />
           <span className="text-sm">{article.author.username}</span>
         </div>
       </td>
@@ -468,27 +473,6 @@ function SelectField({
         size={14}
         className="absolute right-2.5 top-1/2 -translate-y-1/2 text-steel pointer-events-none"
       />
-    </div>
-  )
-}
-
-function Avatar({
-  user,
-  size,
-}: {
-  user: { username: string; avatar: string | null }
-  size: number
-}) {
-  return (
-    <div
-      className="rounded-full ring-1 ring-whisper bg-whisper-soft overflow-hidden flex items-center justify-center text-steel text-xs font-medium shrink-0"
-      style={{ width: size, height: size }}
-    >
-      {user.avatar ? (
-        <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-      ) : (
-        user.username[0]?.toUpperCase()
-      )}
     </div>
   )
 }

@@ -10,6 +10,7 @@ import {
 import type { Article } from '@/types/api'
 import { useAuthStore } from '@/stores/auth.store'
 import { formatDate } from '@/utils/format'
+import { Avatar } from './Avatar'
 
 interface Props {
   article: Article
@@ -85,11 +86,7 @@ export function CommentsSection({ article }: Props) {
           className="border border-whisper rounded-xl bg-white p-5 mb-10 max-w-[768px]"
         >
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft shrink-0">
-              {user.avatar && (
-                <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-              )}
-            </div>
+            <Avatar username={user.username} avatar={user.avatar} size={32} />
             <div className="flex-1">
               <textarea
                 rows={3}
@@ -142,11 +139,7 @@ export function CommentsSection({ article }: Props) {
         {items.map((c) => (
           <li key={c.id} className="pb-6 border-b border-whisper">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft shrink-0">
-                {c.user.avatar && (
-                  <img src={c.user.avatar} alt="" className="w-full h-full object-cover" />
-                )}
-              </div>
+              <Avatar username={c.user.username} avatar={c.user.avatar} size={36} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-semibold text-ink">{c.user.username}</span>

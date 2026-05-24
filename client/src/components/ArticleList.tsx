@@ -4,6 +4,7 @@ import type { Article } from '@/types/api'
 import { formatDate, estimateReadTime } from '@/utils/format'
 import { StatusBadge } from './StatusBadge'
 import { DefaultCoverGradient } from './DefaultCoverGradient'
+import { Avatar } from './Avatar'
 
 interface Props {
   items: Article[]
@@ -81,11 +82,11 @@ export function ArticleList({ items, numbered = true, total, startIndex = 0 }: P
               </div>
               <div className="mt-4 flex items-center justify-between max-w-xl">
                 <div className="flex items-center gap-2 text-sm text-steel">
-                  <div className="w-5 h-5 rounded-full ring-1 ring-whisper overflow-hidden bg-whisper-soft">
-                    {a.author.avatar && (
-                      <img src={a.author.avatar} alt="" className="w-full h-full object-cover" />
-                    )}
-                  </div>
+                  <Avatar
+                    username={a.author.username}
+                    avatar={a.author.avatar}
+                    size={20}
+                  />
                   <span className="text-[13px]">{a.author.username}</span>
                   <span className="text-whisper">·</span>
                   <span className="font-mono text-xs">

@@ -15,6 +15,7 @@ import {
   type UpdateUserInput,
 } from '@/api/admin'
 import { AvatarEditor } from '@/components/AvatarEditor'
+import { Avatar } from '@/components/Avatar'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useUrlNumberParam, useUrlParam } from '@/hooks/useUrlParam'
 import { useAuthStore } from '@/stores/auth.store'
@@ -212,13 +213,7 @@ function UserRow({
     <tr>
       <td>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full ring-1 ring-whisper bg-whisper-soft overflow-hidden flex items-center justify-center text-steel text-xs font-medium">
-            {user.avatar ? (
-              <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-            ) : (
-              user.username[0]?.toUpperCase()
-            )}
-          </div>
+          <Avatar username={user.username} avatar={user.avatar} size={32} />
           <div>
             <p className="font-medium text-ink">{user.username}</p>
             {user.bio && (

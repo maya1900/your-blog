@@ -8,6 +8,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useUrlNumberParam, useUrlParam } from '@/hooks/useUrlParam'
 import { formatDate } from '@/utils/format'
 import { Pagination } from '@/components/Pagination'
+import { Avatar } from '@/components/Avatar'
 
 export function AdminCommentsPage() {
   const [keyword, setKeyword] = useUrlParam('keyword', '')
@@ -98,17 +99,7 @@ export function AdminCommentsPage() {
                 <tr key={c.id}>
                   <td>
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full ring-1 ring-whisper bg-whisper-soft overflow-hidden flex items-center justify-center text-steel text-xs font-medium">
-                        {c.user.avatar ? (
-                          <img
-                            src={c.user.avatar}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          c.user.username[0]?.toUpperCase()
-                        )}
-                      </div>
+                      <Avatar username={c.user.username} avatar={c.user.avatar} size={28} />
                       <span className="text-sm">{c.user.username}</span>
                     </div>
                   </td>

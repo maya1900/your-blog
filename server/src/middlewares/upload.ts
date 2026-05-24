@@ -4,8 +4,8 @@ import type { Request, RequestHandler } from 'express'
 import multer, { MulterError } from 'multer'
 import { nanoid } from '../utils/nanoid.js'
 import { BadRequestError } from '../utils/errors.js'
+import { env } from '../config/env.js'
 
-const UPLOAD_ROOT = 'uploads'
 const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
 
 const ALLOWED_MIME = new Set([
@@ -25,7 +25,7 @@ function monthBucket(): string {
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    const dir = join(UPLOAD_ROOT, monthBucket())
+    const dir = join(env.UPLOAD_ROOT, monthBucket())
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
     cb(null, dir)
   },

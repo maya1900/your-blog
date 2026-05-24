@@ -12,6 +12,7 @@ const envSchema = z.object({
     .min(16, 'JWT_SECRET must be at least 16 chars'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
+  UPLOAD_ROOT: z.string().default('uploads'),
 })
 
 const parsed = envSchema.safeParse(process.env)

@@ -1,0 +1,73 @@
+# Production stack for 墨记
+# Usage:
+#   cp .env.production.example .env.production
+#   # edit .env.production with real secrets
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: your-blog-mysql-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    # No port mapping — mysql is internal-only.
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    image: your-blog/server:latest
+    container_name: your-blog-server-prod
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN}
+      UPLOAD_ROOT: /app/uploads
+    volumes:
+      - blog-uploads:/app/uploads
+    # No port mapping — only reachable through nginx.
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    image: your-blog/web:latest
+    container_name: your-blog-web-prod
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      # Read-only mount — nginx only serves, never writes uploads.
+      - blog-uploads:/var/www/uploads:ro
+
+volumes:
+  mysql-data:
+    name: your-blog-mysql-data-prod
+  blog-uploads:
+    name: your-blog-uploads

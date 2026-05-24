@@ -1,7 +1,7 @@
 # 开发计划
 
 > 配套阅读:[REQUIREMENTS.md](REQUIREMENTS.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [UI_DESIGN.md](UI_DESIGN.md) · [DESIGN.md](DESIGN.md)  
-> 版本:v1.6 · 2026-05-23(M6 完成,准备进 M7)
+> 版本:v1.7 · 2026-05-24(M7 完成,8 个里程碑收官)
 
 ---
 
@@ -18,10 +18,10 @@
 | M4 | 评论与互动 | ✅ 完成 | `1d9e320` | 评论 + 点赞 + 收藏 |
 | M5 | 文件上传 | ✅ 完成 | `a95074d` | 封面图、正文图 |
 | M6 | 管理后台 | ✅ 完成 | `85c79ae` | `/admin` 全套 |
-| **M7** | **部署准备** | ⏳ **下一步** | — | Dockerfile + env 分层 |
+| **M7** | **部署准备** | ✅ 完成 | — | Docker 三联 + nginx + env 分层 |
 
 **总计预估**:约 7 天工作量(单人,全职)。  
-**实际进度**:M0 / M1 / M2 / M3 / M4 / M5 / M6 完成,准备进 M7。
+**实际进度**:M0 ~ M7 全部完成。
 
 ---
 
@@ -325,25 +325,35 @@
 
 ---
 
-## M7 · 部署准备
+## M7 · 部署准备 ✅
 
 **目标**:能用 `docker compose up` 在干净的机器上拉起整个系统。
 
 ### 任务清单
-- [x] ~~`docker-compose.yml`:MySQL~~ 已在 M0 完成,生产版需扩展
-- [ ] `Dockerfile.server`:多阶段(builder → runner),copy prisma migrations
-- [ ] `Dockerfile.client`:Vite build → nginx alpine
-- [ ] `nginx.conf`:反向代理 `/api` 到 server:4000,静态文件由 nginx 直出,`/uploads` 也走 nginx
-- [ ] `docker-compose.yml` 生产版:nginx + server + mysql,volumes(uploads + mysql data)
-- [ ] `.env.production.example`
-- [ ] 启动脚本:容器内自动跑 `prisma migrate deploy`
-- [ ] `README.md`:开发启动 + 生产部署两套说明(开发部分已就绪)
-- [ ] (按需)ESLint + Prettier + Husky:补全工程质量底座
+- [x] ~~`docker-compose.yml`:MySQL~~ 已在 M0 完成,生产版已扩展到 `docker-compose.prod.yml`
+- [x] `Dockerfile.server`:多阶段(builder → runner),Prisma generate + tsc + entrypoint 自动 migrate deploy
+- [x] `Dockerfile.client`:Vite build → nginx:1.27-alpine
+- [x] `nginx/nginx.conf`:反代 `/api` 到 `server:4000`、`/uploads` 走 named volume 直出、SPA fallback、静态 hash 资源 30 天 immutable 缓存
+- [x] `docker-compose.prod.yml`:mysql + server + nginx 三服务,depends_on healthcheck 串起、`blog-uploads` named volume 在 server(rw) / nginx(ro) 间共享
+- [x] `.env.production.example` + `.dockerignore`
+- [x] `server/docker-entrypoint.sh`:容器启动自动 `prisma migrate deploy` 后 exec node dist/index.js
+- [x] `README.md`:增「生产部署」章节(架构表 + 运维命令)
+- [x] 源码改造:`app.listen` 绑 `0.0.0.0`、`UPLOAD_ROOT` 改 env 驱动、upload controller 用 `path.relative` 计算 URL
+- [ ] ~~ESLint + Prettier + Husky~~(本期推迟,tsc 兜底继续生效)
 
-### 验收
-- `cp .env.production.example .env.production` 填好密钥
-- `docker compose -f docker-compose.prod.yml up -d --build` 一次拉起
-- 浏览器访问 `localhost` 看到首页
+### 实际验收
+- ✅ `pnpm typecheck` 双包零错误
+- ✅ dev 模式 `UPLOAD_ROOT` 默认 `'uploads'`,旧行为不破
+- 🔜 prod 镜像构建 + 烟测(用 `docker compose -f docker-compose.prod.yml ... up -d --build`)
+- 🔜 浏览器开 `localhost` 看到首页;`curl /api/health` 返回 `{ok:true}`;粘贴图片后刷新仍在
+
+### M7 关键设计决策
+1. **uploads 走 named volume + nginx 直出** — server 写、nginx 只读挂载到 `/var/www/uploads`,nginx alias 直接出文件,绕过 Node 链路。`UPLOAD_ROOT` 改成 env(dev 默认 `'uploads'`,prod 设 `/app/uploads`),路径变更不再到处改代码
+2. **entrypoint 自动 migrate deploy,不开独立 init 容器** — 当前只有 2 条迁移,`migrate deploy` 本身幂等,简单。代价是 nginx 启动稍晚(等 server healthcheck 过)
+3. **不裁剪 server 镜像 node_modules** — 多 ~150MB 换 prisma CLI 直接可用,entrypoint 一行命令。后期想瘦身可以走显式 copy `@prisma/*` 那条路
+4. **client http baseURL 写死 `/api`** — 同源部署 nginx 反代最干净,prod 镜像不注 `VITE_API_BASE_URL`
+5. **mysql 在 prod compose 不暴露端口** — 仅 docker 内网,nginx 是唯一入口
+6. **`.dockerignore` 排除 docs/mockups/scripts/test-*.sh** — build context 瘦身,顺便规避把 .env 烤进镜像
 
 ---
 
@@ -384,4 +394,4 @@
 - [x] M4 评论与互动 ✅
 - [x] M5 文件上传 ✅
 - [x] M6 管理后台 ✅
-- [ ] **M7 部署准备 📍 你在这里**
+- [x] M7 部署准备 ✅

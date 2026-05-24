@@ -29,7 +29,7 @@ export function createApp(): Express {
   app.use(express.urlencoded({ extended: true }))
 
   // Static uploads
-  app.use('/uploads', express.static('uploads', { maxAge: '7d' }))
+  app.use('/uploads', express.static(env.UPLOAD_ROOT, { maxAge: '7d' }))
 
   // Parse JWT into req.user if present (optional)
   app.use(auth)

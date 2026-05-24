@@ -12,7 +12,24 @@
 #   ENV_FILE=.env.staging bash scripts/backup.sh      # override env file
 #   BACKUP_DIR=/mnt/big bash scripts/backup.sh        # override output dir
 #
-# To restore, see README "数据备份 / 恢复".
+# ───────────────────────────────────────────────────────────────────────
+# To restore (⚠ overwrites current data):
+#
+#   # 1) unpack
+#   mkdir -p restore && tar xzf backups/your-blog-<timestamp>.tar.gz -C restore
+#
+#   # 2) restore MySQL — reads .env.production for root password + db name
+#   set -a; . .env.production; set +a
+#   gunzip -c restore/db.sql.gz | docker exec -i your-blog-mysql-prod \
+#     mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"
+#
+#   # 3) restore uploads volume (wipe old then untar)
+#   docker run --rm -v your-blog-uploads:/data -v "$PWD/restore":/in alpine:3 \
+#     sh -c 'rm -rf /data/* /data/..?* /data/.[!.]* 2>/dev/null; tar xzf /in/uploads.tar.gz -C /data'
+#
+#   # 4) bounce server so the connection pool sees fresh data
+#   docker compose -f docker-compose.prod.yml --env-file .env.production restart server
+# ───────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 ENV_FILE="${ENV_FILE:-.env.production}"

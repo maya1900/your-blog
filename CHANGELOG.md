@@ -7,7 +7,11 @@
 
 ## 2026-05-24 · post-M7
 
-### 一键备份脚本 · `scripts/backup.sh`
+### Fixes
+
+- **prod compose 与 dev 撞 project name** · prod 没设 `name:`,默认从目录名推断成 `your-blog`,跟 dev compose 同名共用一张 `your-blog_default` 网络。后果:对 prod 跑 `down -v` 会连带把 dev 容器从网络里拽下来一起删(named volume 完好,数据没丢,但容器要重启)。修法:`docker-compose.prod.yml` 顶部加 `name: your-blog-prod` 显式钉死项目名,两边互不打扰
+
+### 一键备份脚本 · `scripts/backup.sh` · `d3dcd7c`
 
 prod 栈快照打包成单个 tar:mysqldump(`--single-transaction` 一致性快照,流式 gzip 不落明文)+ uploads named volume 完整内容 + manifest,默认输出到 `backups/your-blog-<timestamp>.tar.gz`。配上 cron 就是完整的备份方案。
 

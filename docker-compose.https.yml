@@ -1,0 +1,26 @@
+# HTTPS overlay for 墨记 prod stack
+#
+# 用法(与基础 prod compose 叠加):
+#   docker compose -f docker-compose.prod.yml -f docker-compose.https.yml \
+#     --env-file .env.production up -d
+#
+# 前置:把证书文件放到宿主机
+#   ./certs/fullchain.pem    — 证书链(含中间证书)
+#   ./certs/privkey.pem      — 私钥
+# 缺文件 nginx 启动会直接失败 —— 这是 fail-fast 而不是 bug。
+#
+# 证书来源不限:certbot / acme.sh 签的 Let's Encrypt、付费 CA、自签皆可。
+# 本仓库刻意不内置 certbot 容器;签发流程交给宿主机或人工。
+
+services:
+  nginx:
+    ports:
+      # base compose 已经映射 80,这里追加 443
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      # 覆盖 image 内 baked-in 的 HTTP-only 配置
+      - ./nginx/nginx.https.conf:/etc/nginx/conf.d/default.conf:ro
+      # 证书目录(只读)
+      - ./certs:/etc/nginx/certs:ro
+      # 可选:certbot --webroot 续期路径,需要时再开
+      # - ./certs/acme:/var/www/acme

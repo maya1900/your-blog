@@ -7,6 +7,18 @@
 
 ## 2026-05-24 · post-M7
 
+### HTTPS 反代(基础设施就绪,证书自备)
+
+兑现 [ROADMAP 4.1](docs/ROADMAP.md) 一半 —— 仓库内把 nginx HTTPS 反代配齐,**证书签发流程刻意不绑死**(certbot / acme.sh / 付费 CA / 自签皆可),换 CA 时不用动 compose。
+
+- **`nginx/nginx.https.conf`** — 80 全量 301 跳 443、TLS 1.2/1.3、HSTS 1 年、`/.well-known/acme-challenge/` 放行给 certbot --webroot 续期。证书路径硬编码 `/etc/nginx/certs/{fullchain,privkey}.pem`,文件缺失 nginx 启动直接 fail-fast(不是 bug)
+- **`docker-compose.https.yml`** overlay — 追加 `${HTTPS_PORT:-443}:443` 端口、`./certs:/etc/nginx/certs:ro`、`./nginx/nginx.https.conf:/etc/nginx/conf.d/default.conf:ro` 覆盖 image 内 baked-in 的 HTTP 配置。**叠加** base prod compose 使用:`docker compose -f docker-compose.prod.yml -f docker-compose.https.yml up -d`
+- **`.gitignore`** 加 `certs/` —— 防止误把私钥提交进 git
+- **`.env.production.example`** 加 `HTTPS_PORT=443` + 提示「启用 HTTPS overlay 时 `CLIENT_ORIGIN` 必须改 https://...」(否则 CORS 出问题)
+- **README** 新「HTTPS / TLS」小节,给三种签证书的菜谱(certbot standalone / 已有证书 / certbot --webroot 续期)
+
+**刻意不做**:不内置 certbot sidecar 容器、不做 Caddy 替代。原因:博客系统证书一年签一次的事,搞个常驻容器收益低于复杂度;Caddy 替代是 prod 架构调整,等真上线踩坑再说。
+
 ### 作者主页 `/users/:username`
 
 兑现 M2 写详情页时埋下的 TODO「查看作者所有文章」(代码里那条 `M6 将在这里加入…` 占位字幕)。「关注」功能本期不做,留给后续单独迭代。

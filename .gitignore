@@ -39,3 +39,6 @@ server/prisma/*.db-journal
 
 # production backups (created by scripts/backup.sh)
 backups/
+
+# TLS certs / keys for production HTTPS — never commit
+certs/

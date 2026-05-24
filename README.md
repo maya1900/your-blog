@@ -205,6 +205,43 @@ docker run --rm -v your-blog-uploads:/data -v "$PWD/restore":/in alpine:3 \
 docker compose -f docker-compose.prod.yml --env-file .env.production restart server
 ```
 
+### HTTPS / TLS
+
+基础 prod compose 只起 HTTP(80);上 HTTPS 通过 overlay 文件叠加,**证书自备**。设计原则:本仓库不内置 certbot 容器,签发流程交给宿主机或人工 —— 这样换 CA / 续期工具时不用动 compose。
+
+```bash
+# 1. 把证书放到仓库根目录(已加入 .gitignore)
+mkdir -p certs
+cp /path/to/fullchain.pem certs/
+cp /path/to/privkey.pem   certs/
+
+# 2. .env.production 改 CLIENT_ORIGIN 为 https://your.domain
+
+# 3. 起栈时多叠一个 overlay
+docker compose -f docker-compose.prod.yml -f docker-compose.https.yml \
+  --env-file .env.production up -d
+```
+
+配置见 [nginx/nginx.https.conf](nginx/nginx.https.conf) —— 80 全量 301 跳 443、TLS 1.2/1.3、HSTS 1 年、放行 `/.well-known/acme-challenge/`(给 certbot --webroot 续期留口)。
+
+**怎么签证书**(任选其一,本仓库不绑死):
+
+```bash
+# A) certbot standalone(临时停 80,适合首次签):
+docker run --rm -p 80:80 -v "$PWD/certs:/etc/letsencrypt" \
+  certbot/certbot certonly --standalone -d your.domain
+# 然后把 /etc/letsencrypt/live/your.domain/{fullchain,privkey}.pem 拷到 certs/ 根目录
+
+# B) acme.sh / 已有证书 / 自签:把 fullchain.pem + privkey.pem 放进 certs/ 即可
+
+# C) 续期(certbot --webroot):
+docker run --rm -v "$PWD/certs:/etc/letsencrypt" -v "$PWD/certs/acme:/var/www/acme" \
+  certbot/certbot renew --webroot -w /var/www/acme
+docker compose -f docker-compose.prod.yml -f docker-compose.https.yml restart nginx
+```
+
+⚠ 启用 HSTS 后浏览器会硬记 https,**首次部署可先注释掉 `add_header Strict-Transport-Security`**,跑稳定一周再开。
+
 ---
 
 ## 常用脚本

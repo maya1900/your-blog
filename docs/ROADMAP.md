@@ -14,12 +14,13 @@
 | 一键备份脚本 `scripts/backup.sh` | `d3dcd7c` |
 | 修 prod / dev compose project name 冲突 | `82bf0fa` |
 | 作者主页 `/users/:username` | `d0830bc` |
+| HTTPS 反代基础设施(nginx + compose overlay,证书自备) | post-M7 |
 
 | 待办 · 短列表(写在文档里时的优先序) |
 |---|
 | **关注作者(C)** —— 配合作者主页是自然下一步 |
 | **整站导出**(admin 一键 dump posts.json + uploads.tar.gz) |
-| **HTTPS / SEO 基础**(sitemap.xml + RSS + OG 标签) |
+| **SEO 基础**(sitemap.xml + RSS + OG 标签) |
 | **ESLint + Prettier + Husky**(M0 / M7 都推迟了两次) |
 
 工作量标记:【S】≈ 0.5–1h · 【M】≈ 半天 · 【L】≈ 1+ 天
@@ -157,13 +158,21 @@ M0 决定推迟,M7 又推迟。**装上 + 跑一次 fix 后人工 review 一遍*
 
 ## 4. 生产化深化
 
-### 4.1 HTTPS / 域名 ·【S】
+### 4.1 HTTPS / 域名 ·【S】· **基础设施已完成,证书签发待真·上线**
 
-当前 nginx 只 listen 80。两条路:
-- **Certbot in compose** —— 加一个 `certbot/certbot` 一次性容器跑 standalone 模式签证书,nginx 加 listen 443 + ssl_certificate 配置 + 80 → 443 redirect。证书续期写 cron
-- **换成 Caddy** —— 自动 HTTPS、配置文件比 nginx 短得多。代价是少一些 nginx 的稳定性印象(实际上 Caddy 也很稳)
+当前状态:
+- ✅ `nginx/nginx.https.conf` —— 80→443 跳转、TLS 1.2/1.3、HSTS、ACME challenge pass-through
+- ✅ `docker-compose.https.yml` overlay —— 叠加到 prod compose 上一行命令开 HTTPS
+- ⏳ **证书签发链路** —— 仓库刻意不内置 certbot 容器,部署服务器上手动签 + 续期
+- ⏳ **Caddy 替代评估** —— 见下,延后
 
-我更倾向 **Caddy 替代 nginx**,因为单机部署场景下 nginx 的复杂度溢出。但这是 prod 架构调整,有 image 一致性问题(`Dockerfile.client` 要重写),实际可以延后等真上线再决定。
+用法:`docker compose -f docker-compose.prod.yml -f docker-compose.https.yml --env-file .env.production up -d`,前置把 fullchain.pem + privkey.pem 放进 `./certs/`。
+
+后续可能补的:
+- **certbot --webroot 续期 cron** ·【S】 —— `0 4 * * 0` 周日凌晨跑一次 `certbot renew` + `docker compose restart nginx`,写宿主机 crontab 即可
+- **OCSP stapling** ·【S】 —— 给 https server 块加 `ssl_stapling on; ssl_stapling_verify on; resolver 1.1.1.1;`,首次握手更快
+
+延伸讨论 —— Caddy 替代 nginx:配置短、自动 HTTPS,代价是重写 Dockerfile.client + image 一致性。**等 nginx 续期方案踩坑后再决定**,不为换而换。
 
 ---
 
@@ -229,4 +238,4 @@ M0 决定推迟,M7 又推迟。**装上 + 跑一次 fix 后人工 review 一遍*
 2. **ESLint + Prettier + Husky(3.1)** ·【S】 —— 已经推迟两次了,再不做就该改名叫「永远的 M7+1」
 3. **SEO 基础(4.2)** ·【M】 —— 博客没 SEO 等于没人看;`react-helmet-async` 都装好了
 
-「整站导出」「RSS」「HTTPS」是优先级稍低但都简单的事,可以穿插着做。其他延后。
+「整站导出」「RSS」是优先级稍低但都简单的事,可以穿插着做。其他延后。

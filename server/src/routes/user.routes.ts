@@ -2,7 +2,12 @@ import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
 import { requireAuth } from '../middlewares/requireAuth.js'
-import { ConflictError, UnauthorizedError } from '../utils/errors.js'
+import {
+  BadRequestError,
+  ConflictError,
+  UnauthorizedError,
+} from '../utils/errors.js'
+import { hashPassword, verifyPassword } from '../utils/password.js'
 import { paginated, skipTake, type PaginationInput } from '../utils/pagination.js'
 
 export const userRouter: Router = Router()
@@ -127,5 +132,42 @@ const updateMe: RequestHandler = async (req, res, next) => {
   }
 }
 
+const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, '当前密码不能为空'),
+    newPassword: z
+      .string()
+      .min(8, '新密码至少 8 位')
+      .max(64, '新密码最多 64 位'),
+  })
+  .refine((v) => v.currentPassword !== v.newPassword, {
+    message: '新密码不能与当前密码相同',
+    path: ['newPassword'],
+  })
+
+/** POST /api/users/me/password — change own password (verifies current) */
+const changePassword: RequestHandler = async (req, res, next) => {
+  try {
+    if (!req.user) throw new UnauthorizedError()
+    const { currentPassword, newPassword } = ChangePasswordSchema.parse(req.body)
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } })
+    if (!user) throw new UnauthorizedError()
+
+    const ok = await verifyPassword(currentPassword, user.passwordHash)
+    if (!ok) throw new BadRequestError('当前密码不正确')
+
+    const passwordHash = await hashPassword(newPassword)
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { passwordHash },
+    })
+    res.json({ data: { ok: true } })
+  } catch (err) {
+    next(err)
+  }
+}
+
 userRouter.get('/me/favorites', requireAuth, listMyFavorites)
 userRouter.patch('/me', requireAuth, updateMe)
+userRouter.post('/me/password', requireAuth, changePassword)

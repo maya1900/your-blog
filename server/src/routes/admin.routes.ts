@@ -14,6 +14,7 @@ adminRouter.get('/stats', adminController.stats)
 // Users
 adminRouter.get('/users', adminController.listUsers)
 adminRouter.patch('/users/:id', adminController.updateUser)
+adminRouter.post('/users/:id/password', adminController.resetUserPassword)
 
 // All comments
 adminRouter.get('/comments', adminController.listAllComments)

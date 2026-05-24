@@ -69,6 +69,10 @@ export async function listUsers(params: ListUsersParams = {}): Promise<PagedResu
 }
 
 export interface UpdateUserInput {
+  username?: string
+  email?: string
+  bio?: string | null
+  avatar?: string | null
   role?: Role
   isActive?: boolean
 }
@@ -76,6 +80,10 @@ export interface UpdateUserInput {
 export async function updateUser(id: number, input: UpdateUserInput): Promise<User> {
   const { data } = await http.patch<{ data: User }>(`/admin/users/${id}`, input)
   return data.data
+}
+
+export async function resetUserPassword(id: number, newPassword: string): Promise<void> {
+  await http.post(`/admin/users/${id}/password`, { newPassword })
 }
 
 // ===== Comments (admin all) =====

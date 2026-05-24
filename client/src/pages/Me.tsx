@@ -1,23 +1,20 @@
-import { useRef, useState, type DragEvent } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bookmark,
-  Camera,
   Edit3,
   Eye,
   FileText,
-  Loader2,
   PenSquare,
   Calendar,
-  Trash2,
 } from "lucide-react";
 import { listArticles, listMyFavorites } from "@/api/articles";
-import { uploadImage, UPLOAD_ACCEPT, UPLOAD_MAX_BYTES } from "@/api/upload";
-import { updateMe } from "@/api/users";
+import { updateMe, changePassword } from "@/api/users";
 import { useAuthStore } from "@/stores/auth.store";
 import { StatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
+import { AvatarEditor } from "@/components/AvatarEditor";
 import { formatDate } from "@/utils/format";
 import { cn } from "@/utils/cn";
 
@@ -472,6 +469,7 @@ function ProfileView() {
   const bioCount = bio.length;
 
   return (
+    <>
     <div className="border border-whisper rounded-xl bg-white p-6 max-w-2xl">
       <h2 className="text-lg font-semibold mb-1">编辑资料</h2>
       <p className="text-sm text-steel mb-6">
@@ -578,139 +576,120 @@ function ProfileView() {
         <dd className="text-ink">{formatDate(user.createdAt)}</dd>
       </dl>
     </div>
+    <PasswordChangeCard />
+  </>
+  );
+}
+
+// ============ Change password card ============
+
+function PasswordChangeCard() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  const changeMu = useMutation({
+    mutationFn: () => changePassword({ currentPassword: current, newPassword: next }),
+    onSuccess: () => {
+      setCurrent("");
+      setNext("");
+      setConfirm("");
+      setSavedAt(Date.now());
+    },
+  });
+
+  const mismatch = confirm.length > 0 && next !== confirm;
+  const tooShort = next.length > 0 && next.length < 8;
+  const sameAsOld = next.length > 0 && current.length > 0 && next === current;
+  const canSubmit =
+    current.length > 0 &&
+    next.length >= 8 &&
+    confirm === next &&
+    !sameAsOld &&
+    !changeMu.isPending;
+
+  const errMsg = changeMu.isError ? (changeMu.error as Error).message : null;
+
+  return (
+    <div className="mt-6 border border-whisper rounded-xl bg-white p-6 max-w-2xl">
+      <h2 className="text-lg font-semibold mb-1">修改密码</h2>
+      <p className="text-sm text-steel mb-6">
+        改密后需要重新登录其他设备。8-64 位,不能与当前密码相同。
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="md:col-span-2">
+          <label className="field-label" htmlFor="pwd-current">
+            当前密码
+          </label>
+          <input
+            id="pwd-current"
+            type="password"
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+            autoComplete="current-password"
+            className="input font-mono"
+          />
+        </div>
+        <div>
+          <label className="field-label" htmlFor="pwd-next">
+            新密码
+          </label>
+          <input
+            id="pwd-next"
+            type="password"
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+            autoComplete="new-password"
+            className="input font-mono"
+          />
+          {tooShort && (
+            <p className="mt-1 text-xs text-amber-600">至少 8 位</p>
+          )}
+          {sameAsOld && (
+            <p className="mt-1 text-xs text-amber-600">不能与当前密码相同</p>
+          )}
+        </div>
+        <div>
+          <label className="field-label" htmlFor="pwd-confirm">
+            确认新密码
+          </label>
+          <input
+            id="pwd-confirm"
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            autoComplete="new-password"
+            className="input font-mono"
+          />
+          {mismatch && (
+            <p className="mt-1 text-xs text-red-600">两次输入不一致</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-whisper flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => {
+            changeMu.reset();
+            setSavedAt(null);
+            changeMu.mutate();
+          }}
+          disabled={!canSubmit}
+          className="btn-primary !py-2 !px-5 text-sm"
+        >
+          {changeMu.isPending ? "提交中…" : "更新密码"}
+        </button>
+        {errMsg && <p className="text-sm text-red-600 ml-auto">{errMsg}</p>}
+        {!errMsg && savedAt && (
+          <p className="text-sm text-emerald-700 ml-auto">密码已更新 ✓</p>
+        )}
+      </div>
+    </div>
   );
 }
 
 // ============ Avatar editor ============
 
-function AvatarEditor({
-  value,
-  onChange,
-  fallback,
-}: {
-  value: string | null;
-  onChange: (v: string | null) => void;
-  fallback: string;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [dragOver, setDragOver] = useState(false);
-
-  async function handleFile(file: File) {
-    setError(null);
-    setBusy(true);
-    try {
-      const res = await uploadImage(file);
-      onChange(res.url);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function onDrop(e: DragEvent<HTMLDivElement>) {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) void handleFile(file);
-  }
-
-  return (
-    <div className="flex items-center gap-5">
-      {/* Circular preview / dropzone */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => !busy && inputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (busy) return;
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        onDragOver={(e) => {
-          if (busy) return;
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        className={cn(
-          "group relative w-24 h-24 rounded-full overflow-hidden border-2 border-dashed transition-colors flex items-center justify-center bg-whisper-soft",
-          busy ? "cursor-wait opacity-70" : "cursor-pointer",
-          dragOver
-            ? "border-klein bg-klein/[0.04]"
-            : "border-whisper hover:border-klein",
-        )}
-        title="点击或拖入图片更换头像"
-      >
-        {value ? (
-          <img
-            src={value}
-            alt=""
-            className="w-full h-full object-cover"
-            onError={(e) =>
-              ((e.target as HTMLImageElement).style.opacity = "0")
-            }
-          />
-        ) : (
-          <span className="text-2xl font-semibold text-steel">
-            {fallback[0]?.toUpperCase() ?? "?"}
-          </span>
-        )}
-
-        {/* Hover overlay */}
-        <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-          {busy ? (
-            <Loader2 size={20} className="animate-spin" />
-          ) : (
-            <Camera size={20} />
-          )}
-        </span>
-      </div>
-
-      <div className="flex flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => !busy && inputRef.current?.click()}
-            disabled={busy}
-            className="btn-secondary !py-1.5 !px-3 text-xs"
-          >
-            <Camera size={12} />
-            {value ? "更换" : "上传头像"}
-          </button>
-          {value && (
-            <button
-              type="button"
-              onClick={() => onChange(null)}
-              className="inline-flex items-center gap-1 text-xs text-steel hover:text-red-600 px-2 py-1.5 rounded transition-colors"
-            >
-              <Trash2 size={12} />
-              移除
-            </button>
-          )}
-        </div>
-        <p className="font-mono text-xs text-steel">
-          PNG · JPG · WEBP · GIF · ≤ {UPLOAD_MAX_BYTES / 1024 / 1024}MB
-        </p>
-        {error && <p className="text-xs text-red-600">{error}</p>}
-      </div>
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept={UPLOAD_ACCEPT}
-        hidden
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) void handleFile(f);
-          if (inputRef.current) inputRef.current.value = "";
-        }}
-      />
-    </div>
-  );
-}

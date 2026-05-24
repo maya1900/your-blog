@@ -11,3 +11,12 @@ export async function updateMe(input: UpdateMeInput): Promise<User> {
   const { data } = await http.patch<{ data: User }>('/users/me', input)
   return data.data
 }
+
+export interface ChangePasswordInput {
+  currentPassword: string
+  newPassword: string
+}
+
+export async function changePassword(input: ChangePasswordInput): Promise<void> {
+  await http.post('/users/me/password', input)
+}

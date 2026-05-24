@@ -7,6 +7,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../utils/errors.js'
+import { hashPassword } from '../utils/password.js'
 import {
   paginated,
   skipTake,
@@ -25,11 +26,34 @@ export const ListUsersSchema = z.object({
 
 export const UpdateUserSchema = z
   .object({
+    username: z
+      .string()
+      .trim()
+      .min(3, '用户名至少 3 个字符')
+      .max(32, '用户名最多 32 个字符')
+      .regex(/^[a-zA-Z0-9_\-一-龥]+$/, '只允许字母、数字、下划线、连字符、中文')
+      .optional(),
+    email: z.string().email('邮箱格式不正确').max(120).optional(),
+    bio: z.string().max(200, '简介最多 200 字').nullable().optional(),
+    avatar: z
+      .string()
+      .max(512)
+      .nullable()
+      .optional()
+      .refine(
+        (v) =>
+          v === undefined ||
+          v === null ||
+          v === '' ||
+          v.startsWith('/') ||
+          /^https?:\/\//.test(v),
+        '头像必须是 http(s):// 链接或 /uploads/… 路径',
+      ),
     role: z.nativeEnum(Role).optional(),
     isActive: z.boolean().optional(),
   })
   .refine(
-    (v) => v.role !== undefined || v.isActive !== undefined,
+    (v) => Object.values(v).some((x) => x !== undefined),
     '未提供更新字段',
   )
 
@@ -37,6 +61,13 @@ export const ListCommentsSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(20),
   keyword: z.string().trim().optional(),
+})
+
+export const ResetPasswordSchema = z.object({
+  newPassword: z
+    .string()
+    .min(8, '新密码至少 8 位')
+    .max(64, '新密码最多 64 位'),
 })
 
 export const CategoryInputSchema = z.object({
@@ -57,6 +88,7 @@ export const CategoryInputSchema = z.object({
 
 export type ListUsersInput = z.infer<typeof ListUsersSchema>
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>
 export type ListCommentsInput = z.infer<typeof ListCommentsSchema>
 export type CategoryInput = z.infer<typeof CategoryInputSchema>
 
@@ -275,7 +307,25 @@ export async function updateUser(
     }
   }
 
+  // Uniqueness checks (only when actually changing)
+  if (input.username !== undefined && input.username !== target.username) {
+    const dup = await prisma.user.findFirst({
+      where: { username: input.username, NOT: { id: targetId } },
+    })
+    if (dup) throw new ConflictError('用户名已被占用')
+  }
+  if (input.email !== undefined && input.email !== target.email) {
+    const dup = await prisma.user.findFirst({
+      where: { email: input.email, NOT: { id: targetId } },
+    })
+    if (dup) throw new ConflictError('邮箱已被占用')
+  }
+
   const data: import('@prisma/client').Prisma.UserUpdateInput = {}
+  if (input.username !== undefined) data.username = input.username
+  if (input.email !== undefined) data.email = input.email
+  if (input.bio !== undefined) data.bio = input.bio || null
+  if (input.avatar !== undefined) data.avatar = input.avatar || null
   if (input.role !== undefined) data.role = input.role
   if (input.isActive !== undefined) data.isActive = input.isActive
 
@@ -294,6 +344,27 @@ export async function updateUser(
     },
   })
   return updated
+}
+
+/**
+ * Admin password reset. No current-password verification — admin authority.
+ * Used to recover access for users who forgot their password.
+ */
+export async function resetUserPassword(
+  targetId: number,
+  input: ResetPasswordInput,
+) {
+  const target = await prisma.user.findUnique({
+    where: { id: targetId },
+    select: { id: true },
+  })
+  if (!target) throw new NotFoundError('用户不存在')
+
+  const passwordHash = await hashPassword(input.newPassword)
+  await prisma.user.update({
+    where: { id: targetId },
+    data: { passwordHash },
+  })
 }
 
 // ============ All comments (admin view) ============

@@ -40,6 +40,18 @@ export const updateUser: RequestHandler = async (req, res, next) => {
   }
 }
 
+export const resetUserPassword: RequestHandler = async (req, res, next) => {
+  try {
+    if (!req.user) throw new UnauthorizedError()
+    const { id } = IdParam.parse(req.params)
+    const input = adminService.ResetPasswordSchema.parse(req.body)
+    await adminService.resetUserPassword(id, input)
+    res.json({ data: { ok: true } })
+  } catch (err) {
+    next(err)
+  }
+}
+
 // ===== All comments =====
 
 export const listAllComments: RequestHandler = async (req, res, next) => {

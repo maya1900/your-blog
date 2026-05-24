@@ -36,3 +36,6 @@ server/uploads/*
 # prisma local artifacts
 server/prisma/dev.db
 server/prisma/*.db-journal
+
+# production backups (created by scripts/backup.sh)
+backups/

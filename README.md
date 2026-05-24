@@ -168,20 +168,41 @@ docker exec your-blog-server-prod \
 # 查看 server 日志
 docker logs -f your-blog-server-prod
 
-# 拉一份 MySQL 备份
-docker exec your-blog-mysql-prod \
-  sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE' \
-  > backup-$(date +%F).sql
-
-# 备份 uploads 卷
-docker run --rm -v your-blog-uploads:/data -v "$PWD":/backup alpine \
-  tar czf /backup/uploads-$(date +%F).tar.gz -C /data .
-
 # 滚动升级(代码变了之后)
 docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
 
 # 完全清理(⚠ 含数据)
 docker compose -f docker-compose.prod.yml --env-file .env.production down -v
+```
+
+### 数据备份 / 恢复
+
+**备份** — 一个脚本搞定,默认读 `.env.production`,产出单个 tar 包(含 mysqldump + uploads 卷快照 + manifest):
+
+```bash
+bash scripts/backup.sh
+# → backups/your-blog-2026-05-24_143000.tar.gz (含 db.sql.gz + uploads.tar.gz + manifest.txt)
+```
+
+可选环境变量:`ENV_FILE`(默认 `.env.production`)、`BACKUP_DIR`(默认 `backups/`)、`MYSQL_CONTAINER` / `UPLOADS_VOLUME`(改容器/卷名)。配合 cron 定时上传到 S3/对象存储就是完整方案。
+
+**恢复**(⚠ 会覆盖现有数据):
+
+```bash
+# 1. 解开备份
+mkdir -p restore && tar xzf backups/your-blog-2026-05-24_143000.tar.gz -C restore
+
+# 2. 恢复 MySQL(读取 .env.production 拿 root 密码 + 数据库名)
+set -a; . .env.production; set +a
+gunzip -c restore/db.sql.gz | docker exec -i your-blog-mysql-prod \
+  mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"
+
+# 3. 恢复 uploads 卷(清空旧的再灌入)
+docker run --rm -v your-blog-uploads:/data -v "$PWD/restore":/in alpine:3 \
+  sh -c 'rm -rf /data/* /data/..?* /data/.[!.]* 2>/dev/null; tar xzf /in/uploads.tar.gz -C /data'
+
+# 4. 重启 server 让连接池抓到新数据
+docker compose -f docker-compose.prod.yml --env-file .env.production restart server
 ```
 
 ---

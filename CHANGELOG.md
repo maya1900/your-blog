@@ -7,7 +7,17 @@
 
 ## 2026-05-24 · post-M7
 
-### 单篇文章导出 Markdown
+### 一键备份脚本 · `scripts/backup.sh`
+
+prod 栈快照打包成单个 tar:mysqldump(`--single-transaction` 一致性快照,流式 gzip 不落明文)+ uploads named volume 完整内容 + manifest,默认输出到 `backups/your-blog-<timestamp>.tar.gz`。配上 cron 就是完整的备份方案。
+
+- 默认读 `.env.production`,可改 `ENV_FILE` / `BACKUP_DIR` / `MYSQL_CONTAINER` / `UPLOADS_VOLUME`
+- 启动前先 fail-fast 检查 docker daemon / mysql 容器 / uploads 卷三个前置条件,缺一报错退出
+- 跑临时 `alpine:3` 容器以只读挂载 volume 的方式 tar 出 uploads(不需要把 nginx/server 容器停)
+- README「数据备份 / 恢复」章节附带完整的恢复步骤(解包 → mysql restore → uploads 卷清空重灌 → server 重启)
+- `.gitignore` 加 `backups/`,避免误把备份提交进 git
+
+### 单篇文章导出 Markdown · `8cd2f97`
 
 `/me` 已发布 / 草稿列表每行新增「下载」icon,一键导出当前文章为 .md(YAML frontmatter + 正文原文)。所有权层面对齐 Hexo/Jekyll —— 你写的字随时能取走。
 

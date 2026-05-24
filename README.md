@@ -130,6 +130,10 @@ server e2e 冒烟(curl,server 跑起来直接跑):
 | [CHANGELOG.md](CHANGELOG.md)                 | 主路线之外的功能增量                    |
 | [mockups/index.html](mockups/index.html)     | HTML 高保真 mockup                      |
 
+## 友情链接：
+
+![Linuxdo](https://linux.do)
+
 ---
 
 [MIT](LICENSE) © 2026 maya1900

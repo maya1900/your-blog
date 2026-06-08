@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   ChevronDown,
   FileText,
@@ -57,6 +57,7 @@ const navSections: {
 export function AdminLayout() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const { siteTitle, siteLogo } = useSiteSettings()
 
@@ -205,8 +206,10 @@ export function AdminLayout() {
           </div>
         </header>
 
-        <div className="flex-1 p-8">
-          <Outlet />
+        <div className="flex-1 p-8 overflow-x-hidden">
+          <div key={`${location.pathname}${location.search}`} className="page-transition">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>
@@ -215,7 +218,7 @@ export function AdminLayout() {
 
 /** Breadcrumb derived from the current location pathname segments. */
 function Breadcrumbs() {
-  const path = window.location.pathname
+  const path = useLocation().pathname
   const map: Record<string, string> = {
     '/admin': '仪表盘',
     '/admin/articles': '文章管理',

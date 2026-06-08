@@ -12,7 +12,11 @@ export function ThemeToggle() {
       title={isDark ? '浅色主题' : '深色主题'}
       onClick={toggleTheme}
     >
-      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      {isDark ? (
+        <Sun key="sun" size={18} className="theme-toggle-icon" />
+      ) : (
+        <Moon key="moon" size={18} className="theme-toggle-icon" />
+      )}
     </button>
   )
 }

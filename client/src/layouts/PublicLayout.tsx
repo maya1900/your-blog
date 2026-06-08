@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { LogOut, PenSquare, Search } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store'
 import { SearchPalette } from '@/components/SearchPalette'
@@ -10,6 +10,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 export function PublicLayout() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchOpen, setSearchOpen] = useState(false)
   const { siteTitle, siteTagline, siteLogo } = useSiteSettings()
 
@@ -128,8 +129,10 @@ export function PublicLayout() {
         </div>
       </header>
 
-      <main className="flex-1">
-        <Outlet />
+      <main className="flex-1 overflow-x-hidden">
+        <div key={`${location.pathname}${location.search}`} className="page-transition">
+          <Outlet />
+        </div>
       </main>
 
       <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />

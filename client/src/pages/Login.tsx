@@ -49,7 +49,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center p-6 bg-canvas relative overflow-hidden">
+    <div className="page-transition min-h-[100dvh] flex items-center justify-center p-6 bg-canvas relative overflow-hidden">
       <div className="absolute inset-0 hairline-grid pointer-events-none" />
       <div className="absolute -left-[200px] -top-[180px] w-[720px] h-[720px] rounded-full pointer-events-none aurora-blob aurora-1" />
       <div className="absolute -right-[120px] -bottom-[80px] w-[600px] h-[600px] rounded-full pointer-events-none aurora-blob aurora-2" />

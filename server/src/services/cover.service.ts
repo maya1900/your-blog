@@ -6,13 +6,13 @@ import { env } from '../config/env.js'
 import { BadRequestError } from '../utils/errors.js'
 import { prisma } from '../lib/prisma.js'
 import { nanoid } from '../utils/nanoid.js'
+import { getRandomUnsplashPhoto } from './unsplash.service.js'
 
 const COVER_WIDTH = 1600
 const COVER_HEIGHT = 900
 const COVER_JPEG_QUALITY = 82
 const DOWNLOAD_TIMEOUT_MS = 10_000
 const MAX_DOWNLOAD_BYTES = 12 * 1024 * 1024 // 12 MB
-const RANDOM_PROVIDER_TIMEOUT_MS = 8_000
 
 // Only allow images coming from picsum / unsplash CDN domains.
 // Keep this tight so the cover-from-random endpoint can't be coerced into
@@ -78,51 +78,9 @@ function pickPicsum(): PickedCover {
   }
 }
 
-interface UnsplashRandomPhoto {
-  urls?: { regular?: string; full?: string }
-  links?: { download_location?: string }
-}
-
 async function pickUnsplash(query?: string): Promise<PickedCover> {
-  const key = env.UNSPLASH_ACCESS_KEY
-  if (!key) {
-    throw new BadRequestError('未配置 Unsplash (请在 .env 设置 UNSPLASH_ACCESS_KEY)')
-  }
-
-  const params = new URLSearchParams({
-    orientation: 'landscape',
-    content_filter: 'high',
-    count: '1',
-  })
-  if (query && query.trim()) params.set('query', query.trim().slice(0, 60))
-
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), RANDOM_PROVIDER_TIMEOUT_MS)
-  let res: Response
-  try {
-    res = await fetch(`https://api.unsplash.com/photos/random?${params.toString()}`, {
-      headers: {
-        Authorization: `Client-ID ${key}`,
-        'Accept-Version': 'v1',
-      },
-      signal: controller.signal,
-    })
-  } catch (err) {
-    throw new BadRequestError(`Unsplash 请求失败: ${(err as Error).message}`)
-  } finally {
-    clearTimeout(timer)
-  }
-
-  if (!res.ok) {
-    throw new BadRequestError(`Unsplash 返回 ${res.status}`)
-  }
-  const payload = (await res.json()) as UnsplashRandomPhoto | UnsplashRandomPhoto[]
-  const photo = Array.isArray(payload) ? payload[0] : payload
-  const url = photo?.urls?.regular ?? photo?.urls?.full
-  if (!url) {
-    throw new BadRequestError('Unsplash 未返回可用图片')
-  }
-  return { url, downloadLocation: photo?.links?.download_location }
+  const photo = await getRandomUnsplashPhoto(query)
+  return { url: photo.urls.regular, downloadLocation: photo.links.downloadLocation }
 }
 
 export async function pickRandomCoverUrl(
@@ -186,6 +144,14 @@ export async function downloadImage(url: string): Promise<Buffer> {
 export function pingUnsplashDownload(downloadLocation: string): void {
   const key = env.UNSPLASH_ACCESS_KEY
   if (!key || !downloadLocation) return
+  let parsed: URL
+  try {
+    parsed = new URL(downloadLocation)
+  } catch {
+    return
+  }
+  if (parsed.protocol !== 'https:' || parsed.hostname !== 'api.unsplash.com') return
+
   void fetch(downloadLocation, {
     headers: { Authorization: `Client-ID ${key}` },
   }).catch(() => {

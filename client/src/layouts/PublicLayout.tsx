@@ -149,7 +149,9 @@ export function PublicLayout() {
               {siteTagline}
             </p>
           </div>
-          <p className="text-xs text-steel font-mono">© 2026 {siteTitle} · v0.1.0</p>
+          <p className="text-xs text-steel font-mono">
+            © 2026 {siteTitle} · v{__APP_VERSION__}
+          </p>
         </div>
       </footer>
     </div>

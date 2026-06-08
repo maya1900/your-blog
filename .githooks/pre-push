@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+
+if [ "${SKIP_VERSION_BUMP:-}" = "1" ]; then
+  exit 0
+fi
+
+last_subject=$(git log -1 --pretty=%s 2>/dev/null || true)
+case "$last_subject" in
+  chore\(version\):\ bump\ to\ v*)
+    exit 0
+    ;;
+esac
+
+changed_in_head=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null || true)
+if echo "$changed_in_head" | grep -qx "package.json"; then
+  exit 0
+fi
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "pre-push: working tree has changes. Commit or stash them before version bump." >&2
+  exit 1
+fi
+
+next_version=$(node scripts/bump-patch-version.mjs --patch)
+
+git add package.json client/package.json server/package.json
+git commit -m "chore(version): bump to v$next_version"
+
+echo "pre-push: bumped version to v$next_version and created a commit." >&2
+echo "pre-push: run git push again to push the new version commit." >&2
+exit 1

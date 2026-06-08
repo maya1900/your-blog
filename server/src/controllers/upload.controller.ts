@@ -68,6 +68,24 @@ export const uploadCoverFromRandom: RequestHandler = async (req, res, next) => {
   }
 }
 
+const UnsplashCoverSchema = z.object({
+  url: z.string().url(),
+  downloadLocation: z.string().url(),
+})
+
+/** Import a selected Unsplash photo as a local cover, then trigger download tracking. */
+export const uploadCoverFromUnsplash: RequestHandler = async (req, res, next) => {
+  try {
+    const { url, downloadLocation } = UnsplashCoverSchema.parse(req.body)
+    const buf = await downloadImage(url)
+    const result = await processCoverBuffer(buf)
+    pingUnsplashDownload(downloadLocation)
+    res.status(201).json({ data: { ...result, source: 'unsplash' } })
+  } catch (err) {
+    next(err)
+  }
+}
+
 const DeleteCoverSchema = z.object({
   url: z
     .string()

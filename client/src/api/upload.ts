@@ -70,6 +70,19 @@ export async function uploadRandomCover(
   return data.data
 }
 
+/** Import a selected Unsplash photo as a local, processed 16:9 cover. */
+export async function uploadUnsplashCover(
+  url: string,
+  downloadLocation: string,
+): Promise<RandomCoverResult> {
+  const { data } = await http.post<{ data: RandomCoverResult }>(
+    '/upload/cover/unsplash',
+    { url, downloadLocation },
+    { timeout: 30_000 },
+  )
+  return data.data
+}
+
 /**
  * Best-effort: delete a previously-saved cover file from /uploads/. Server
  * refuses if the file is still referenced by an article, so this is safe to

@@ -148,7 +148,9 @@ export function AdminLayout() {
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-signal animate-pulse" />
             <span>SYSTEM HEALTHY</span>
           </div>
-          <p className="font-mono text-[13px] text-steel mt-1">v1.0.0 · M6</p>
+          <p className="font-mono text-[13px] text-steel mt-1">
+            v{__APP_VERSION__} · M6
+          </p>
         </div>
       </aside>
 

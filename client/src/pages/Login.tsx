@@ -64,7 +64,7 @@ export function LoginPage() {
           <p className="mt-2 text-steel">登录账号继续写点想说的</p>
         </div>
 
-        <div className="bg-white border border-whisper rounded-xl p-8">
+        <div className="bg-surface border border-whisper rounded-xl p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="field-label">USERNAME / EMAIL</label>

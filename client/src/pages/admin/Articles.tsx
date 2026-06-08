@@ -231,7 +231,7 @@ export function AdminArticlesPage() {
       )}
 
       {/* Table */}
-      <div className="bg-white border border-whisper rounded-xl overflow-hidden">
+      <div className="bg-surface border border-whisper rounded-xl overflow-hidden">
         <table className="data-table">
           <thead>
             <tr>
@@ -427,7 +427,7 @@ function Checkbox({
       className={cn(
         'inline-flex items-center justify-center w-4 h-4 border-[1.5px] rounded transition-colors',
         state === 'unchecked'
-          ? 'border-whisper hover:border-klein bg-white'
+          ? 'border-whisper hover:border-klein bg-surface'
           : 'border-klein bg-klein text-white',
       )}
       aria-checked={state === 'checked'}

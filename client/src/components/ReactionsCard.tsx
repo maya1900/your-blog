@@ -110,7 +110,7 @@ export function ReactionsCard({ article }: Props) {
   }
 
   return (
-    <div className="border border-whisper rounded-xl p-3 bg-white">
+    <div className="border border-whisper rounded-xl p-3 bg-surface">
       <p className="font-mono text-xs text-steel tracking-[0.04em] px-2 pb-2">REACTIONS</p>
       <div className="flex items-center justify-around">
         <button
@@ -125,7 +125,7 @@ export function ReactionsCard({ article }: Props) {
         >
           <Heart
             size={18}
-            fill={article.liked ? '#0040FF' : 'none'}
+            fill={article.liked ? 'currentColor' : 'none'}
             strokeWidth={1.5}
           />
           <span className="font-mono text-xs">{article._count.likes}</span>
@@ -143,7 +143,7 @@ export function ReactionsCard({ article }: Props) {
         >
           <Bookmark
             size={18}
-            fill={article.favorited ? '#0040FF' : 'none'}
+            fill={article.favorited ? 'currentColor' : 'none'}
             strokeWidth={1.5}
           />
           <span className="font-mono text-xs">{article._count.favorites}</span>

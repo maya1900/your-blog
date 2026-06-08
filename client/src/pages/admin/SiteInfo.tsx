@@ -70,7 +70,7 @@ export function AdminSiteInfoPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-whisper rounded-xl p-6 max-w-2xl">
+      <div className="bg-surface border border-whisper rounded-xl p-6 max-w-2xl">
         {isLoading || !draft ? (
           <p className="text-steel font-mono text-sm py-10 text-center">加载中…</p>
         ) : (

@@ -47,7 +47,7 @@ export function AdminCategoriesPage() {
         </button>
       </div>
 
-      <div className="bg-white border border-whisper rounded-xl overflow-hidden">
+      <div className="bg-surface border border-whisper rounded-xl overflow-hidden">
         <table className="data-table">
           <thead>
             <tr>
@@ -165,7 +165,7 @@ function CategoryEditDialog({
       onClick={onClose}
     >
       <div
-        className="bg-white border border-whisper rounded-xl w-full max-w-md p-6 shadow-lg"
+        className="bg-surface border border-whisper rounded-xl w-full max-w-md p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-semibold mb-4">

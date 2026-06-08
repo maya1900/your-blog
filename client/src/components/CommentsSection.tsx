@@ -83,7 +83,7 @@ export function CommentsSection({ article }: Props) {
       {user ? (
         <form
           onSubmit={handleSubmit}
-          className="border border-whisper rounded-xl bg-white p-5 mb-10 max-w-[768px]"
+          className="border border-whisper rounded-xl bg-surface p-5 mb-10 max-w-[768px]"
         >
           <div className="flex items-start gap-3">
             <Avatar username={user.username} avatar={user.avatar} size={32} />

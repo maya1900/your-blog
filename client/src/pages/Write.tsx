@@ -17,6 +17,7 @@ import { CoverDropzone } from '@/components/CoverDropzone'
 import { StatusBadge } from '@/components/StatusBadge'
 import { useAuthStore } from '@/stores/auth.store'
 import { estimateReadTime } from '@/utils/format'
+import { useTheme } from '@/hooks/useTheme'
 
 const TAG_MAX = 6
 
@@ -27,6 +28,7 @@ export function WritePage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const user = useAuthStore((s) => s.user)
+  const { theme } = useTheme()
 
   // Form state — lightweight controlled inputs (MDEditor isn't RHF-friendly,
   // so we keep things simple instead of fighting wrappers).
@@ -418,11 +420,10 @@ export function WritePage() {
           </div>
 
           {/* Resizable wrapper. User drags the bottom-right handle;
-              ResizeObserver picks up the new height and passes it to MDEditor.
-              data-color-mode forces light theme regardless of OS pref. */}
+              ResizeObserver picks up the new height and passes it to MDEditor. */}
           <div
             ref={editorWrapRef}
-            data-color-mode="light"
+            data-color-mode={theme}
             className="md-editor-shell resize-y overflow-hidden"
             style={{ height: 720, minHeight: 320, maxHeight: '85vh' }}
           >
@@ -456,7 +457,7 @@ export function WritePage() {
       </main>
 
       {/* Sticky action bar */}
-      <div className="sticky bottom-0 z-30 backdrop-blur-md bg-white/85 border-t border-whisper">
+      <div className="sticky bottom-0 z-30 backdrop-blur-md bg-surface/85 border-t border-whisper">
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 text-steel font-mono text-xs">
             <span className="inline-flex items-center gap-1.5">

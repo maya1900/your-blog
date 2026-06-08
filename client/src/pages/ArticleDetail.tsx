@@ -183,7 +183,7 @@ export function ArticleDetailPage() {
               </div>
             )}
 
-            <div className="border border-whisper rounded-xl p-5 bg-white">
+            <div className="border border-whisper rounded-xl p-5 bg-surface">
               <Link
                 to={`/users/${encodeURIComponent(data.author.username)}`}
                 className="flex items-center gap-3 group"

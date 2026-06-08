@@ -110,7 +110,7 @@ export function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-whisper rounded-xl overflow-hidden">
+      <div className="bg-surface border border-whisper rounded-xl overflow-hidden">
         <table className="data-table">
           <thead>
             <tr>
@@ -352,7 +352,7 @@ function UserEditDialog({
       onClick={onClose}
     >
       <div
-        className="bg-white border border-whisper rounded-xl w-full max-w-2xl p-6 shadow-lg my-8"
+        className="bg-surface border border-whisper rounded-xl w-full max-w-2xl p-6 shadow-lg my-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-1">

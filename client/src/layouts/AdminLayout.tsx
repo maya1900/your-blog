@@ -16,6 +16,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { cn } from '@/utils/cn'
 import { Avatar } from '@/components/Avatar'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 const navSections: {
   label: string
@@ -75,7 +76,7 @@ export function AdminLayout() {
   return (
     <div className="min-h-[100dvh] flex bg-canvas">
       {/* ===== Sidebar ===== */}
-      <aside className="w-[240px] shrink-0 bg-white border-r border-whisper flex flex-col sticky top-0 h-[100dvh]">
+      <aside className="w-[240px] shrink-0 bg-surface border-r border-whisper flex flex-col sticky top-0 h-[100dvh]">
         <div className="px-6 py-5 border-b border-whisper">
           <Link
             to="/"
@@ -98,7 +99,7 @@ export function AdminLayout() {
         <nav className="flex-1 py-4 overflow-y-auto">
           {navSections.map((section) => (
             <div key={section.label}>
-              <p className="px-[26px] mt-5 mb-2 font-mono text-[10px] tracking-[0.08em] text-neutral-400">
+              <p className="px-[26px] mt-5 mb-2 font-mono text-[10px] tracking-[0.08em] text-steel/60">
                 {section.label}
               </p>
               {section.items.map((item) => (
@@ -129,7 +130,7 @@ export function AdminLayout() {
             </div>
           ))}
 
-          <p className="px-[26px] mt-5 mb-2 font-mono text-[10px] tracking-[0.08em] text-neutral-400">
+          <p className="px-[26px] mt-5 mb-2 font-mono text-[10px] tracking-[0.08em] text-steel/60">
             SYSTEM
           </p>
           <button
@@ -152,11 +153,13 @@ export function AdminLayout() {
 
       {/* ===== Main ===== */}
       <main className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-whisper">
+        <header className="sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-whisper">
           <div className="px-8 h-16 flex items-center justify-between">
             <Breadcrumbs />
 
             <div className="flex items-center gap-3">
+              <ThemeToggle />
+
               <Link
                 to="/"
                 className="text-sm text-steel hover:text-ink transition-colors"
@@ -170,7 +173,7 @@ export function AdminLayout() {
                   setMenuOpen((v) => !v)
                 }}
               >
-                <button className="inline-flex items-center gap-2.5 pl-1 pr-3 py-1 border border-whisper rounded-full bg-white hover:border-klein transition">
+                <button className="inline-flex items-center gap-2.5 pl-1 pr-3 py-1 border border-whisper rounded-full bg-surface hover:border-klein transition">
                   <Avatar
                     username={user?.username ?? 'A'}
                     avatar={user?.avatar}
@@ -180,7 +183,7 @@ export function AdminLayout() {
                   <ChevronDown size={14} className="text-steel" />
                 </button>
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-whisper rounded-lg py-2 shadow-sm">
+                  <div className="absolute right-0 top-full mt-2 w-44 bg-surface border border-whisper rounded-lg py-2 shadow-sm">
                     <div className="px-3 py-1.5 border-b border-whisper">
                       <p className="text-sm font-medium text-ink truncate">{user?.username}</p>
                       <p className="text-xs text-steel font-mono truncate">{user?.email}</p>

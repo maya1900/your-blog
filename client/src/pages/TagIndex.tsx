@@ -39,7 +39,7 @@ export function TagIndexPage() {
       )}
 
       {data && data.length > 0 && (
-        <div className="bg-white border border-whisper rounded-xl p-8">
+        <div className="bg-surface border border-whisper rounded-xl p-8">
           <div className="flex flex-wrap items-baseline gap-x-5 gap-y-3">
             {data.map((t) => {
               const count = t._count?.articles ?? 0

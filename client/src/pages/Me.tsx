@@ -70,7 +70,7 @@ export function MePage() {
   return (
     <>
       {/* Profile header */}
-      <section className="border-b border-whisper bg-white/40">
+      <section className="border-b border-whisper bg-surface/40">
         <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-12">
           <div className="flex items-start gap-8 flex-wrap">
             <Avatar
@@ -253,7 +253,7 @@ function ArticleList({ query, emptyMessage, tinted }: ArticleListProps) {
             "grid grid-cols-[160px_1fr_auto] gap-6 p-5 rounded-xl border transition-colors",
             tinted
               ? "bg-amber-50/50 border-amber-100 hover:border-klein"
-              : "bg-white border-whisper hover:border-klein",
+              : "bg-surface border-whisper hover:border-klein",
           )}
         >
           <Link
@@ -395,7 +395,7 @@ function FavoritesList({
       {items.map((a) => (
         <article
           key={a.id}
-          className="grid grid-cols-[160px_1fr_auto] gap-6 p-5 rounded-xl border bg-white border-whisper transition-colors hover:border-klein"
+          className="grid grid-cols-[160px_1fr_auto] gap-6 p-5 rounded-xl border bg-surface border-whisper transition-colors hover:border-klein"
         >
           <Link
             to={`/articles/${a.slug}`}
@@ -497,7 +497,7 @@ function ProfileView() {
 
   return (
     <>
-    <div className="border border-whisper rounded-xl bg-white p-6 max-w-2xl">
+    <div className="border border-whisper rounded-xl bg-surface p-6 max-w-2xl">
       <h2 className="text-lg font-semibold mb-1">编辑资料</h2>
       <p className="text-sm text-steel mb-6">
         头像、昵称、简介可改。邮箱和角色由管理员管理,不能在这里改。
@@ -639,7 +639,7 @@ function PasswordChangeCard() {
   const errMsg = changeMu.isError ? (changeMu.error as Error).message : null;
 
   return (
-    <div className="mt-6 border border-whisper rounded-xl bg-white p-6 max-w-2xl">
+    <div className="mt-6 border border-whisper rounded-xl bg-surface p-6 max-w-2xl">
       <h2 className="text-lg font-semibold mb-1">修改密码</h2>
       <p className="text-sm text-steel mb-6">
         改密后需要重新登录其他设备。8-64 位,不能与当前密码相同。

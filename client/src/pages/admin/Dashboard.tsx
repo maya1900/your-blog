@@ -123,7 +123,7 @@ export function AdminDashboardPage() {
 
       {/* Two-column: recent articles + recent activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white border border-whisper rounded-xl overflow-hidden">
+        <div className="lg:col-span-2 bg-surface border border-whisper rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-whisper flex items-center justify-between">
             <h3 className="text-base font-semibold">最近文章</h3>
             <Link
@@ -186,7 +186,7 @@ export function AdminDashboardPage() {
           )}
         </div>
 
-        <div className="bg-white border border-whisper rounded-xl flex flex-col">
+        <div className="bg-surface border border-whisper rounded-xl flex flex-col">
           <div className="px-5 py-4 border-b border-whisper flex items-center justify-between">
             <h3 className="text-base font-semibold">最新评论</h3>
             <Link
@@ -245,7 +245,7 @@ function HeroStat({
   trendUp: boolean
 }) {
   return (
-    <div className="relative md:col-span-2 bg-white border border-whisper rounded-xl p-5 hover:border-klein transition-colors overflow-hidden">
+    <div className="relative md:col-span-2 bg-surface border border-whisper rounded-xl p-5 hover:border-klein transition-colors overflow-hidden">
       <p className="font-mono text-[11px] tracking-[0.08em] text-steel">{label}</p>
       <div className="mt-3 flex items-end gap-4">
         <span className="font-mono text-[52px] leading-none font-semibold text-ink tracking-[-0.025em]">
@@ -293,7 +293,7 @@ function StatCard({
         'rounded-xl p-5 border transition-colors',
         tinted
           ? 'bg-klein text-white border-klein'
-          : 'bg-white border-whisper hover:border-klein',
+          : 'bg-surface border-whisper hover:border-klein',
       )}
     >
       <p
@@ -356,15 +356,15 @@ function Sparkline({ points }: { points: number[] }) {
   const area = `${line} L${w},${h} L0,${h} Z`
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="mt-4 w-full h-16">
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="mt-4 w-full h-16 text-klein">
       <defs>
         <linearGradient id="sg-main" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#0040FF" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#0040FF" stopOpacity="0" />
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={area} fill="url(#sg-main)" />
-      <path d={line} fill="none" stroke="#0040FF" strokeWidth="1.5" />
+      <path d={line} fill="none" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   )
 }

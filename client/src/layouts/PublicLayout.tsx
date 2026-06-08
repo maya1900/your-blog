@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { SearchPalette } from '@/components/SearchPalette'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { Avatar } from '@/components/Avatar'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 export function PublicLayout() {
   const { user, logout } = useAuthStore()
@@ -31,7 +32,7 @@ export function PublicLayout() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col">
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/75 border-b border-whisper">
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-surface/75 border-b border-whisper">
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
           <Link
             to="/"
@@ -61,6 +62,8 @@ export function PublicLayout() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
+
             <button
               className="btn-icon"
               aria-label="搜索"
@@ -81,7 +84,7 @@ export function PublicLayout() {
                     <Avatar username={user.username} avatar={user.avatar} size={32} />
                   </button>
                   <div className="absolute right-0 top-full pt-2 w-44 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
-                    <div className="bg-white border border-whisper rounded-lg py-2 shadow-sm">
+                    <div className="bg-surface border border-whisper rounded-lg py-2 shadow-sm">
                       <div className="px-3 py-1.5 border-b border-whisper">
                         <p className="text-sm font-medium text-ink truncate">{user.username}</p>
                         <p className="text-xs text-steel font-mono truncate">{user.email}</p>

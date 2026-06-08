@@ -229,7 +229,7 @@ export function CoverDropzone({ value, onChange, randomQuery }: Props) {
             onChange={(e) => setUrlDraft(e.target.value)}
             onKeyDown={onUrlKeyDown}
             placeholder="粘贴图片链接 · https://… 或 /uploads/…"
-            className="flex-1 min-w-0 bg-white border border-whisper rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-klein focus:ring-[3px] focus:ring-klein/20"
+            className="flex-1 min-w-0 bg-surface border border-whisper rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-klein focus:ring-[3px] focus:ring-klein/20"
           />
           <button
             type="button"
@@ -279,7 +279,7 @@ export function CoverDropzone({ value, onChange, randomQuery }: Props) {
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         className={[
-          'flex items-center gap-3.5 p-3.5 border border-dashed rounded-[10px] bg-white transition-colors',
+          'flex items-center gap-3.5 p-3.5 border border-dashed rounded-[10px] bg-surface transition-colors',
           filled || isBusy ? 'cursor-default' : 'cursor-pointer',
           dragOver
             ? 'border-klein bg-klein/[0.04]'

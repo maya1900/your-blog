@@ -70,7 +70,7 @@ export function RegisterPage() {
           <p className="mt-2 text-steel">注册一个账号,开始写点想说的</p>
         </div>
 
-        <div className="bg-white border border-whisper rounded-xl p-8">
+        <div className="bg-surface border border-whisper rounded-xl p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="field-label">USERNAME</label>

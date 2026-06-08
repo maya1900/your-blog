@@ -52,7 +52,7 @@ export function AdminTagsPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-whisper rounded-xl overflow-hidden">
+      <div className="bg-surface border border-whisper rounded-xl overflow-hidden">
         <table className="data-table">
           <thead>
             <tr>

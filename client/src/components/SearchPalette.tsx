@@ -72,7 +72,7 @@ export function SearchPalette({ open, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-xl bg-white border border-whisper rounded-xl shadow-xl overflow-hidden"
+        className="w-full max-w-xl bg-surface border border-whisper rounded-xl shadow-xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <form onSubmit={handleSubmit} className="flex items-center gap-3 px-4 py-3 border-b border-whisper">

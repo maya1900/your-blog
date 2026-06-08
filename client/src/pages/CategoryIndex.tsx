@@ -32,7 +32,7 @@ export function CategoryIndexPage() {
               <Link
                 key={c.id}
                 to={`/categories/${c.slug}`}
-                className="group bg-white border border-whisper rounded-xl p-6 transition hover:border-klein hover:-translate-y-0.5"
+                className="group bg-surface border border-whisper rounded-xl p-6 transition hover:border-klein hover:-translate-y-0.5"
               >
                 <div className="flex items-baseline justify-between mb-3">
                   <span className="font-mono text-xs text-steel tracking-[0.04em] uppercase">

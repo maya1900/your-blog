@@ -5,9 +5,11 @@ import { Eye } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getAbout, updateAbout } from '@/api/site'
 import { formatDate } from '@/utils/format'
+import { useTheme } from '@/hooks/useTheme'
 
 export function AdminAboutPage() {
   const qc = useQueryClient()
+  const { theme } = useTheme()
   const { data, isLoading } = useQuery({
     queryKey: ['site', 'about'],
     queryFn: getAbout,
@@ -52,11 +54,11 @@ export function AdminAboutPage() {
         </Link>
       </div>
 
-      <div className="bg-white border border-whisper rounded-xl p-5">
+      <div className="bg-surface border border-whisper rounded-xl p-5">
         {isLoading ? (
           <p className="text-steel font-mono text-sm py-10 text-center">加载中…</p>
         ) : (
-          <div data-color-mode="light" className="md-editor-shell">
+          <div data-color-mode={theme} className="md-editor-shell">
             <MDEditor
               value={draft}
               onChange={(v) => setDraft(v ?? '')}

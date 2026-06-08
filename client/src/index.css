@@ -8,10 +8,44 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-canvas: 250 250 250;
+    --color-surface: 255 255 255;
+    --color-ink: 10 10 10;
+    --color-steel: 82 82 82;
+    --color-whisper: 229 229 229;
+    --color-whisper-soft: 245 245 245;
+    --color-klein: 0 64 255;
+    --color-klein-deep: 0 51 204;
+    --color-klein-soft: 61 90 254;
+    --color-klein-tint: 238 242 255;
+    --color-cyan-signal: 6 182 212;
+    --color-emerald-signal: 16 185 129;
+    --color-amber-signal: 245 158 11;
+    color-scheme: light;
+  }
+
+  .dark {
+    --color-canvas: 10 12 16;
+    --color-surface: 17 20 26;
+    --color-ink: 242 244 248;
+    --color-steel: 161 168 178;
+    --color-whisper: 48 54 64;
+    --color-whisper-soft: 27 31 39;
+    --color-klein: 100 145 255;
+    --color-klein-deep: 132 165 255;
+    --color-klein-soft: 125 166 255;
+    --color-klein-tint: 22 32 58;
+    --color-cyan-signal: 34 211 238;
+    --color-emerald-signal: 52 211 153;
+    --color-amber-signal: 251 191 36;
+    color-scheme: dark;
+  }
+
   html,
   body {
-    background: #fafafa;
-    color: #0a0a0a;
+    background: rgb(var(--color-canvas));
+    color: rgb(var(--color-ink));
     font-family: 'Geist', 'PingFang SC', 'Noto Sans SC', system-ui,
       -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -39,7 +73,7 @@
   }
 
   .input {
-    @apply w-full bg-white border border-whisper rounded-lg px-3.5 py-2.5 text-[15px] text-ink transition focus:outline-none focus:border-klein focus:ring-[3px] focus:ring-klein/20 placeholder:text-steel/60;
+    @apply w-full bg-surface border border-whisper rounded-lg px-3.5 py-2.5 text-[15px] text-ink transition focus:outline-none focus:border-klein focus:ring-[3px] focus:ring-klein/20 placeholder:text-steel/60;
   }
 
   .field-label {
@@ -76,7 +110,7 @@
   }
 
   .admin-input {
-    @apply bg-white border border-whisper rounded-lg px-3 py-2 text-sm text-ink h-9
+    @apply bg-surface border border-whisper rounded-lg px-3 py-2 text-sm text-ink h-9
       transition focus:outline-none focus:border-klein focus:ring-[3px] focus:ring-klein/20 placeholder:text-steel/60;
   }
 
@@ -99,8 +133,8 @@
 @layer utilities {
   .hairline-grid {
     background-image:
-      linear-gradient(to right, #e5e5e5 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(229, 229, 229, 0.4) 1px, transparent 1px);
+      linear-gradient(to right, rgb(var(--color-whisper)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--color-whisper) / 0.42) 1px, transparent 1px);
     background-size: calc(100% / 12) 96px;
   }
 
@@ -110,13 +144,13 @@
   }
 
   .aurora-1 {
-    background: radial-gradient(circle, #0040ff 0%, transparent 70%);
+    background: radial-gradient(circle, rgb(var(--color-klein)) 0%, transparent 70%);
     opacity: 0.32;
     animation: drift-a 26s ease-in-out infinite;
   }
 
   .aurora-2 {
-    background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+    background: radial-gradient(circle, rgb(var(--color-cyan-signal)) 0%, transparent 70%);
     opacity: 0.28;
     animation: drift-b 32s ease-in-out infinite;
   }
@@ -144,7 +178,7 @@
 
 /* === Markdown article prose === */
 .prose-article {
-  color: #0a0a0a;
+  color: rgb(var(--color-ink));
   font-size: 1.0625rem;
   line-height: 1.8;
 }
@@ -152,7 +186,7 @@
 .prose-article h2,
 .prose-article h3,
 .prose-article h4 {
-  color: #0a0a0a;
+  color: rgb(var(--color-ink));
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.015em;
@@ -180,13 +214,13 @@
   margin: 0 0 1.4rem;
 }
 .prose-article a {
-  color: #0040ff;
+  color: rgb(var(--color-klein));
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 .prose-article a:hover {
-  color: #0033cc;
+  color: rgb(var(--color-klein-deep));
 }
 .prose-article ul,
 .prose-article ol {
@@ -203,26 +237,26 @@
   margin-bottom: 0.5rem;
 }
 .prose-article li::marker {
-  color: #525252;
+  color: rgb(var(--color-steel));
 }
 .prose-article blockquote {
-  border-left: 4px solid #0040ff;
+  border-left: 4px solid rgb(var(--color-klein));
   padding-left: 1.25rem;
   margin: 1.75rem 0;
   font-style: italic;
-  color: #525252;
+  color: rgb(var(--color-steel));
 }
 .prose-article :not(pre) > code {
-  background: #f5f5f5;
+  background: rgb(var(--color-whisper-soft));
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'Geist Mono', ui-monospace, monospace;
   font-size: 0.875em;
-  color: #0a0a0a;
+  color: rgb(var(--color-ink));
 }
 .prose-article pre {
-  background: #0a0a0a;
-  color: #fafafa;
+  background: #0a0f1a;
+  color: #f8fafc;
   padding: 22px 24px;
   border-radius: 12px;
   overflow-x: auto;
@@ -252,23 +286,23 @@
 .prose-article pre .hljs-keyword,
 .prose-article pre .hljs-type,
 .prose-article pre .hljs-built_in {
-  color: #06b6d4;
+  color: rgb(var(--color-cyan-signal));
 }
 .prose-article pre .hljs-string,
 .prose-article pre .hljs-attr {
-  color: #10b981;
+  color: rgb(var(--color-emerald-signal));
 }
 .prose-article pre .hljs-number,
 .prose-article pre .hljs-literal {
-  color: #f59e0b;
+  color: rgb(var(--color-amber-signal));
 }
 .prose-article pre .hljs-comment {
-  color: #737373;
+  color: #94a3b8;
   font-style: italic;
 }
 .prose-article pre .hljs-title,
 .prose-article pre .hljs-function {
-  color: #fafafa;
+  color: #f8fafc;
 }
 .prose-article img {
   max-width: 100%;
@@ -277,7 +311,7 @@
 }
 .prose-article hr {
   border: none;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid rgb(var(--color-whisper));
   margin: 2rem 0;
 }
 .prose-article table {
@@ -288,11 +322,11 @@
 }
 .prose-article th,
 .prose-article td {
-  border: 1px solid #e5e5e5;
+  border: 1px solid rgb(var(--color-whisper));
   padding: 8px 12px;
   text-align: left;
 }
 .prose-article th {
-  background: #fafafa;
+  background: rgb(var(--color-canvas));
   font-weight: 500;
 }

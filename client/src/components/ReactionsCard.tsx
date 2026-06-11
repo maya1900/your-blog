@@ -22,7 +22,7 @@ export function ReactionsCard({ article }: Props) {
 
   const requireLogin = () => {
     if (!user) {
-      navigate('/login', { state: { from: `/articles/${article.slug}` } })
+      navigate('/login', { state: { from: `/articles/${article.slug}` }, viewTransition: true })
       return false
     }
     return true

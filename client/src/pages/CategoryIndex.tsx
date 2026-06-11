@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, BookOpen } from 'lucide-react'
 import { listCategories } from '@/api/taxonomy'
@@ -32,7 +32,7 @@ export function CategoryIndexPage() {
               <Link
                 key={c.id}
                 to={`/categories/${c.slug}`}
-                className="group bg-surface border border-whisper rounded-xl p-6 transition hover:border-klein hover:-translate-y-0.5"
+                className="group lift-card bg-surface border border-whisper rounded-xl p-6 hover:border-klein"
               >
                 <div className="flex items-baseline justify-between mb-3">
                   <span className="font-mono text-xs text-steel tracking-[0.04em] uppercase">

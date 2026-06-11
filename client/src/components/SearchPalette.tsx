@@ -59,9 +59,9 @@ export function SearchPalette({ open, onClose }: Props) {
     if (!q) return
     // If we already have a confident first result, jump to it.
     if (items.length > 0) {
-      navigate(`/articles/${items[0]!.slug}`)
+      navigate(`/articles/${items[0]!.slug}`, { viewTransition: true })
     } else {
-      navigate(`/search?keyword=${encodeURIComponent(q)}`)
+      navigate(`/search?keyword=${encodeURIComponent(q)}`, { viewTransition: true })
     }
     onClose()
   }
@@ -119,7 +119,7 @@ export function SearchPalette({ open, onClose }: Props) {
                 <li key={a.id}>
                   <button
                     onClick={() => {
-                      navigate(`/articles/${a.slug}`)
+                      navigate(`/articles/${a.slug}`, { viewTransition: true })
                       onClose()
                     }}
                     className="w-full text-left px-5 py-3 flex items-center gap-4 hover:bg-whisper-soft transition border-b border-whisper last:border-b-0 group"

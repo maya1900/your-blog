@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import type { CSSProperties } from 'react'
+import { Link } from '@/components/Link'
 import { ArrowRight, Eye } from 'lucide-react'
 import type { Article } from '@/types/api'
 import { formatDate, estimateReadTime } from '@/utils/format'
@@ -31,7 +32,8 @@ export function ArticleList({ items, numbered = true, total, startIndex = 0 }: P
           <Link
             to={`/articles/${a.slug}`}
             key={a.id}
-            className="group grid md:grid-cols-12 gap-6 md:gap-10 items-center py-8 border-b border-whisper last:border-b-0 transition"
+            style={{ '--row-index': i } as CSSProperties}
+            className="group stagger-rise grid md:grid-cols-12 gap-6 md:gap-10 items-center py-8 border-b border-whisper last:border-b-0 transition"
           >
             <div
               className={`md:col-span-5 rounded-xl overflow-hidden border border-whisper bg-whisper-soft ${imageRight ? 'md:order-2' : ''}`}

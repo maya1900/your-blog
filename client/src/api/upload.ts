@@ -58,26 +58,10 @@ export interface RandomCoverResult extends UploadedImage {
 }
 
 /** POST /api/upload/cover/random. Server picks → downloads → compresses → saves. */
-export async function uploadRandomCover(
-  source: CoverSource,
-  query?: string,
-): Promise<RandomCoverResult> {
+export async function uploadRandomCover(source: CoverSource): Promise<RandomCoverResult> {
   const { data } = await http.post<{ data: RandomCoverResult }>(
     '/upload/cover/random',
-    { source, query },
-    { timeout: 30_000 },
-  )
-  return data.data
-}
-
-/** Import a selected Unsplash photo as a local, processed 16:9 cover. */
-export async function uploadUnsplashCover(
-  url: string,
-  downloadLocation: string,
-): Promise<RandomCoverResult> {
-  const { data } = await http.post<{ data: RandomCoverResult }>(
-    '/upload/cover/unsplash',
-    { url, downloadLocation },
+    { source },
     { timeout: 30_000 },
   )
   return data.data

@@ -22,6 +22,10 @@
     --color-cyan-signal: 6 182 212;
     --color-emerald-signal: 16 185 129;
     --color-amber-signal: 245 158 11;
+
+    /* Motion easings — decelerate for entrances, spring for tactile feedback. */
+    --ease-out: cubic-bezier(0.2, 0, 0, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     color-scheme: light;
   }
 
@@ -96,15 +100,15 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center gap-2 bg-klein text-white py-2.5 px-5 rounded-lg text-[15px] font-medium transition-colors hover:bg-klein-deep active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center gap-2 bg-klein text-white py-2.5 px-5 rounded-lg text-[15px] font-medium transition duration-200 ease-[var(--ease-spring)] hover:bg-klein-deep hover:-translate-y-0.5 hover:shadow-lg hover:shadow-klein/25 active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-1.5 bg-transparent text-ink py-[9px] px-4 border border-whisper rounded-lg text-sm font-medium transition-colors hover:border-klein hover:text-klein disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center gap-1.5 bg-transparent text-ink py-[9px] px-4 border border-whisper rounded-lg text-sm font-medium transition duration-200 ease-[var(--ease-spring)] hover:border-klein hover:text-klein hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-icon {
-    @apply inline-flex items-center justify-center w-9 h-9 rounded-md text-steel transition-colors hover:bg-whisper-soft hover:text-ink;
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-md text-steel transition duration-200 ease-[var(--ease-spring)] hover:bg-whisper-soft hover:text-ink hover:scale-105 active:scale-95;
   }
 
   .input {
@@ -164,10 +168,6 @@
     @apply scale-x-100;
   }
 
-  .page-transition {
-    animation: page-enter 240ms cubic-bezier(0.2, 0, 0, 1) both;
-  }
-
   .theme-toggle-icon {
     animation: theme-icon-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
   }
@@ -219,19 +219,6 @@
   }
 }
 
-@keyframes page-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-    filter: blur(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
 @keyframes theme-icon-in {
   from {
     opacity: 0;
@@ -252,6 +239,112 @@
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
   }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+
+  .lift-card:hover {
+    transform: none !important;
+  }
+}
+
+/* === Theme switch: circular reveal (View Transitions API) ===
+   Scoped to .theme-reveal (set on <html> only during a theme toggle) so it
+   doesn't clash with the route transition below — both target `root`.
+   The new theme is clipped to an expanding circle (animated in useTheme.ts);
+   disable the default cross-fade so the old theme sits underneath. */
+html.theme-reveal::view-transition-old(root),
+html.theme-reveal::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.theme-reveal::view-transition-new(root) {
+  z-index: 1;
+}
+html.theme-reveal::view-transition-old(root) {
+  z-index: 0;
+}
+
+/* === Route transition (normal navigations) ===
+   Old page fades out, new page fades in with a slight upward drift. */
+html:not(.theme-reveal)::view-transition-old(root) {
+  animation: vt-out 200ms var(--ease-out) both;
+}
+html:not(.theme-reveal)::view-transition-new(root) {
+  animation: vt-in 320ms var(--ease-out) both;
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Article list stagger: rows rise in sequence === */
+.stagger-rise {
+  animation: row-rise 480ms var(--ease-out) backwards;
+  animation-delay: calc(min(var(--row-index, 0), 8) * 55ms);
+}
+@keyframes row-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Card hover lift === */
+.lift-card {
+  transition:
+    transform 0.25s var(--ease-out),
+    box-shadow 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out);
+}
+.lift-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -12px rgb(var(--color-ink) / 0.18);
+}
+
+/* === Scroll-driven reveal (progressive enhancement — no JS) ===
+   Unsupported browsers skip the @supports block and show content statically. */
+@supports (animation-timeline: view()) {
+  .reveal-on-scroll {
+    animation: reveal-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+  @keyframes reveal-rise {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* While the reveal runs, suppress the global colour transition so the snapshot
+   the API captures shows the final theme colours, not a mid-fade frame. */
+html.theme-reveal *,
+html.theme-reveal *::before,
+html.theme-reveal *::after {
+  transition: none !important;
 }
 
 /* === Markdown article prose === */

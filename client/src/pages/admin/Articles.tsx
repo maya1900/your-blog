@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ChevronDown,
@@ -143,7 +144,7 @@ export function AdminArticlesPage() {
         </div>
         <button
           className="btn-primary !py-2 !px-4 text-sm"
-          onClick={() => navigate('/write')}
+          onClick={() => navigate('/write', { viewTransition: true })}
         >
           <Plus size={14} />
           新建文章

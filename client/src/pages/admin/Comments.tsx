@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ExternalLink, Search as SearchIcon, Trash2 } from 'lucide-react'
 import { listAllComments, type AdminComment } from '@/api/admin'

@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Calendar, FileText } from 'lucide-react'
 import { listArticles } from '@/api/articles'

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { Clock, Eye, PenSquare, ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react'
 import { getArticleBySlug } from '@/api/articles'
@@ -47,7 +48,7 @@ export function ArticleDetailPage() {
         <p className="font-mono text-xs text-steel tracking-[0.04em] mb-4">404 · NOT FOUND</p>
         <h1 className="text-2xl font-semibold mb-2">文章不存在</h1>
         <p className="text-steel mb-6">{(error as Error).message}</p>
-        <button onClick={() => navigate('/')} className="btn-secondary inline-flex">
+        <button onClick={() => navigate('/', { viewTransition: true })} className="btn-secondary inline-flex">
           <ArrowLeft size={14} />
           返回首页
         </button>
@@ -210,7 +211,9 @@ export function ArticleDetailPage() {
         </aside>
       </div>
 
-      <CommentsSection article={data} />
+      <div className="reveal-on-scroll">
+        <CommentsSection article={data} />
+      </div>
     </div>
   )
 }

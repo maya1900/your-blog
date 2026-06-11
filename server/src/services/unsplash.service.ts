@@ -13,6 +13,7 @@ export interface UnsplashPhoto {
   description?: string | null
   alt_description?: string | null
   urls: {
+    raw: string
     small: string
     regular: string
     full?: string
@@ -30,12 +31,6 @@ export interface UnsplashPhoto {
   }
 }
 
-interface UnsplashSearchResponse {
-  total: number
-  total_pages: number
-  results: UnsplashPhoto[]
-}
-
 export interface NormalizedUnsplashPhoto {
   id: string
   width: number
@@ -43,6 +38,7 @@ export interface NormalizedUnsplashPhoto {
   color: string | null
   alt: string
   urls: {
+    raw: string
     small: string
     regular: string
   }
@@ -55,12 +51,6 @@ export interface NormalizedUnsplashPhoto {
     username: string
     url: string
   }
-}
-
-export interface UnsplashSearchResult {
-  total: number
-  totalPages: number
-  results: NormalizedUnsplashPhoto[]
 }
 
 function requireUnsplashKey(): string {
@@ -79,6 +69,7 @@ function normalizePhoto(photo: UnsplashPhoto): NormalizedUnsplashPhoto {
     color: photo.color,
     alt: photo.alt_description ?? photo.description ?? 'Unsplash photo',
     urls: {
+      raw: photo.urls.raw,
       small: photo.urls.small,
       regular: photo.urls.regular,
     },
@@ -117,26 +108,6 @@ async function unsplashFetch<T>(path: string, params: URLSearchParams): Promise<
     throw new BadRequestError(`Unsplash 返回 ${res.status}`)
   }
   return (await res.json()) as T
-}
-
-export async function searchUnsplashPhotos(input: {
-  query: string
-  page: number
-  perPage: number
-}): Promise<UnsplashSearchResult> {
-  const params = new URLSearchParams({
-    query: input.query,
-    page: String(input.page),
-    per_page: String(input.perPage),
-    orientation: 'landscape',
-    content_filter: 'high',
-  })
-  const data = await unsplashFetch<UnsplashSearchResponse>('/search/photos', params)
-  return {
-    total: data.total,
-    totalPages: data.total_pages,
-    results: data.results.map(normalizePhoto),
-  }
 }
 
 export async function getRandomUnsplashPhoto(

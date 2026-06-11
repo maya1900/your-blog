@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink } from '@/components/Link'
 import {
   ChevronDown,
   FileText,
@@ -71,7 +72,7 @@ export function AdminLayout() {
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/login', { viewTransition: true })
   }
 
   return (
@@ -209,7 +210,7 @@ export function AdminLayout() {
         </header>
 
         <div className="flex-1 p-8 overflow-x-hidden">
-          <div key={`${location.pathname}${location.search}`} className="page-transition">
+          <div key={`${location.pathname}${location.search}`}>
             <Outlet />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, PenSquare, BookOpen, Tag as TagIcon } from 'lucide-react'
 import { listArticles } from '@/api/articles'
@@ -89,7 +89,7 @@ export function HomePage() {
       </section>
 
       {/* === Section divider === */}
-      <div className="relative max-w-[1280px] mx-auto px-6 md:px-10 pt-16" id="latest">
+      <div className="reveal-on-scroll relative max-w-[1280px] mx-auto px-6 md:px-10 pt-16" id="latest">
         <div className="flex items-baseline justify-between">
           <h2 className="text-2xl font-semibold tracking-tight">最新文章</h2>
           <span className="font-mono text-xs text-steel">

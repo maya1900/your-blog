@@ -10,7 +10,13 @@ export function ThemeToggle() {
       className="btn-icon"
       aria-label={isDark ? '切换到浅色主题' : '切换到深色主题'}
       title={isDark ? '浅色主题' : '深色主题'}
-      onClick={toggleTheme}
+      onClick={(event) => {
+        const rect = event.currentTarget.getBoundingClientRect()
+        toggleTheme({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        })
+      }}
     >
       {isDark ? (
         <Sun key="sun" size={18} className="theme-toggle-icon" />

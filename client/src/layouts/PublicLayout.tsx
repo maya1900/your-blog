@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink } from '@/components/Link'
 import { LogOut, PenSquare, Search } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store'
 import { SearchPalette } from '@/components/SearchPalette'
@@ -28,7 +29,7 @@ export function PublicLayout() {
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/login', { viewTransition: true })
   }
 
   return (
@@ -130,7 +131,7 @@ export function PublicLayout() {
       </header>
 
       <main className="flex-1 overflow-x-hidden">
-        <div key={`${location.pathname}${location.search}`} className="page-transition">
+        <div key={`${location.pathname}${location.search}`}>
           <Outlet />
         </div>
       </main>

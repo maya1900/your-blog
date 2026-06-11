@@ -65,6 +65,11 @@ export async function processCoverBuffer(input: Buffer): Promise<ProcessedCover>
 
 export type CoverSource = 'picsum' | 'unsplash'
 
+// Random Unsplash covers are limited to this subject so picks skew toward
+// scenery rather than people/objects. (Picsum has no such filter — it stays
+// fully random.) `query` is mutually exclusive with topics/collections.
+const COVER_UNSPLASH_QUERY = 'nature'
+
 interface PickedCover {
   url: string
   /** Only set for Unsplash — ping this after using the photo (Unsplash terms). */
@@ -78,17 +83,17 @@ function pickPicsum(): PickedCover {
   }
 }
 
-async function pickUnsplash(query?: string): Promise<PickedCover> {
-  const photo = await getRandomUnsplashPhoto(query)
-  return { url: photo.urls.regular, downloadLocation: photo.links.downloadLocation }
+async function pickUnsplash(): Promise<PickedCover> {
+  const photo = await getRandomUnsplashPhoto(COVER_UNSPLASH_QUERY)
+  // `regular` is only ~1080px wide; the cover is 1600 wide, so request the
+  // `raw` URL at an explicit width — sharp before our own re-encode, no upscale.
+  const url = `${photo.urls.raw}&w=${COVER_WIDTH}&fm=jpg&q=80`
+  return { url, downloadLocation: photo.links.downloadLocation }
 }
 
-export async function pickRandomCoverUrl(
-  source: CoverSource,
-  query?: string,
-): Promise<PickedCover> {
+export async function pickRandomCoverUrl(source: CoverSource): Promise<PickedCover> {
   if (source === 'picsum') return pickPicsum()
-  if (source === 'unsplash') return pickUnsplash(query)
+  if (source === 'unsplash') return pickUnsplash()
   throw new BadRequestError(`未知图源: ${source}`)
 }
 

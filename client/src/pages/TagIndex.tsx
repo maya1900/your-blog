@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { Tag as TagIcon } from 'lucide-react'
 import { listTags } from '@/api/taxonomy'

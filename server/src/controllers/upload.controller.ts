@@ -49,38 +49,19 @@ export const uploadCover: RequestHandler = async (req, res, next) => {
 
 const RandomCoverSchema = z.object({
   source: z.enum(['picsum', 'unsplash']),
-  query: z.string().trim().max(60).optional(),
 })
 
 /** Pick a random remote cover (Picsum / Unsplash), download it, process, save. */
 export const uploadCoverFromRandom: RequestHandler = async (req, res, next) => {
   try {
-    const { source, query } = RandomCoverSchema.parse(req.body)
-    const picked = await pickRandomCoverUrl(source, query)
+    const { source } = RandomCoverSchema.parse(req.body)
+    const picked = await pickRandomCoverUrl(source)
     const buf = await downloadImage(picked.url)
     const result = await processCoverBuffer(buf)
     if (source === 'unsplash' && picked.downloadLocation) {
       pingUnsplashDownload(picked.downloadLocation)
     }
     res.status(201).json({ data: { ...result, source } })
-  } catch (err) {
-    next(err)
-  }
-}
-
-const UnsplashCoverSchema = z.object({
-  url: z.string().url(),
-  downloadLocation: z.string().url(),
-})
-
-/** Import a selected Unsplash photo as a local cover, then trigger download tracking. */
-export const uploadCoverFromUnsplash: RequestHandler = async (req, res, next) => {
-  try {
-    const { url, downloadLocation } = UnsplashCoverSchema.parse(req.body)
-    const buf = await downloadImage(url)
-    const result = await processCoverBuffer(buf)
-    pingUnsplashDownload(downloadLocation)
-    res.status(201).json({ data: { ...result, source: 'unsplash' } })
   } catch (err) {
     next(err)
   }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react'
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import MDEditor from '@uiw/react-md-editor'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRight, Eye, EyeOff, Trash2 } from 'lucide-react'
@@ -128,7 +129,7 @@ export function WritePage() {
       qc.invalidateQueries({ queryKey: ['articles'] })
       qc.invalidateQueries({ queryKey: ['article'] })
       qc.invalidateQueries({ queryKey: ['my-articles'] })
-      navigate(`/articles/${saved.slug}`)
+      navigate(`/articles/${saved.slug}`, { viewTransition: true })
     },
     onError: (err: Error) => setFormError(err.message),
   })
@@ -138,7 +139,7 @@ export function WritePage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] })
       qc.invalidateQueries({ queryKey: ['my-articles'] })
-      navigate('/me')
+      navigate('/me', { viewTransition: true })
     },
     onError: (err: Error) => setFormError(err.message),
   })
@@ -387,7 +388,7 @@ export function WritePage() {
 
         {/* Cover image dropzone */}
         <div className="mb-4">
-          <CoverDropzone value={coverUrl} onChange={setCoverUrl} randomQuery={title} />
+          <CoverDropzone value={coverUrl} onChange={setCoverUrl} />
         </div>
 
         {/* Summary — collapsed by default, can be a single small textarea */}

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Search } from 'lucide-react'
 import { listArticles } from '@/api/articles'

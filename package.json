@@ -1,6 +1,6 @@
 {
   "name": "your-blog",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "墨记 — 一个慢工出细活的技术博客 (React + Express + Prisma + MySQL)",
   "scripts": {

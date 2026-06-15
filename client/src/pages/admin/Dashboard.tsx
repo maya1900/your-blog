@@ -8,6 +8,7 @@ import {
   TrendingDown,
   TrendingUp,
   UserPlus,
+  Users,
 } from 'lucide-react'
 import { getStats, type AdminStats } from '@/api/admin'
 import { formatDate } from '@/utils/format'
@@ -35,7 +36,11 @@ export function AdminDashboardPage() {
   }
 
   const greeting = greetingByHour()
-  const trendUp = data.thisWeek.articles > 0
+  const totalPageviews = metric(data.totals.pageviews, data.totals.views)
+  const weekPageviews = metric(data.thisWeek.pageviews)
+  const weekVisits = metric(data.thisWeek.visits)
+  const totalVisits = metric(data.totals.visits)
+  const trendUp = weekPageviews > 0
 
   return (
     <div className="space-y-6">
@@ -43,12 +48,14 @@ export function AdminDashboardPage() {
       <div className="flex items-end justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight">
-            {greeting},管理员 <span>👋</span>
+            {greeting},管理员
           </h2>
           <p className="mt-1 text-steel">
-            本周新增文章{' '}
-            <span className="text-klein font-medium">+{data.thisWeek.articles}</span>,
-            新增评论{' '}
+            本周访问{' '}
+            <span className="text-klein font-medium">+{weekVisits}</span>,
+            浏览{' '}
+            <span className="text-klein font-medium">+{weekPageviews}</span>,
+            评论{' '}
             <span className="text-klein font-medium">+{data.thisWeek.comments}</span>,
             新用户{' '}
             <span className="text-klein font-medium">+{data.thisWeek.users}</span>。
@@ -65,18 +72,18 @@ export function AdminDashboardPage() {
       {/* Bento Row 1: hero + 2 stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <HeroStat
-          label="TOTAL ARTICLES · 30 DAYS"
-          value={data.trend.reduce((s, p) => s + p.count, 0)}
-          delta={data.thisWeek.articles}
+          label="PAGE VIEWS"
+          value={totalPageviews}
+          delta={weekPageviews}
           trend={data.trend}
           trendUp={trendUp}
         />
         <StatCard
-          label="USERS"
-          value={data.totals.users}
-          delta={data.thisWeek.users}
+          label="VISITS"
+          value={totalVisits}
+          delta={weekVisits}
           deltaLabel="this week"
-          icon={<UserPlus size={14} />}
+          icon={<Users size={14} />}
           deltaUp
         />
         <StatCard
@@ -89,29 +96,30 @@ export function AdminDashboardPage() {
         />
       </div>
 
-      {/* Bento Row 2: drafts / views / likes (tinted) / categories */}
+      {/* Bento Row 2: new users / article reads / reactions / categories */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
-          label="DRAFTS"
-          value={data.totals.drafts}
-          subline={`${data.totals.published} 篇已发布`}
+          label="NEW USERS · 7D"
+          value={data.thisWeek.users}
+          icon={<UserPlus size={14} />}
+          subline={`累计用户 ${formatNum(data.totals.users)}`}
         />
         <StatCard
-          label="TOTAL VIEWS"
+          label="ARTICLE READS"
           value={data.totals.views}
           icon={<Eye size={14} />}
-          subline="所有文章累计"
+          subline="文章详情累计"
         />
         <StatCard
-          label="LIKES · ALL TIME"
-          value={data.totals.likes}
+          label="REACTIONS"
+          value={data.totals.likes + data.totals.favorites}
           icon={<Heart size={14} />}
-          subline={`收藏 ${data.totals.favorites}`}
+          subline={`喜欢 ${data.totals.likes} · 收藏 ${data.totals.favorites}`}
           tinted
         />
         <StatCard
-          label="CATEGORIES"
-          value={data.totals.categories}
+          label="TOP CATEGORIES"
+          value={data.topCategories.length}
           subline={
             data.topCategories
               .slice(0, 3)
@@ -249,7 +257,7 @@ function HeroStat({
       <p className="font-mono text-[11px] tracking-[0.08em] text-steel">{label}</p>
       <div className="mt-3 flex items-end gap-4">
         <span className="font-mono text-[52px] leading-none font-semibold text-ink tracking-[-0.025em]">
-          {value}
+          {formatNum(value)}
         </span>
         <span
           className={cn(
@@ -263,7 +271,7 @@ function HeroStat({
         </span>
       </div>
       <Sparkline points={trend.map((t) => t.count)} />
-      <div className="absolute top-5 right-5 font-mono text-[13px] text-steel">↑ 30D</div>
+      <div className="absolute top-5 right-5 font-mono text-[13px] text-steel">30D TREND</div>
     </div>
   )
 }
@@ -296,14 +304,26 @@ function StatCard({
           : 'bg-surface border-whisper hover:border-klein',
       )}
     >
-      <p
-        className={cn(
-          'font-mono text-[11px] tracking-[0.08em]',
-          tinted ? 'text-white/70' : 'text-steel',
+      <div className="flex items-center justify-between gap-3">
+        <p
+          className={cn(
+            'font-mono text-[11px] tracking-[0.08em]',
+            tinted ? 'text-white/70' : 'text-steel',
+          )}
+        >
+          {label}
+        </p>
+        {icon && (
+          <span
+            className={cn(
+              'inline-flex h-7 w-7 items-center justify-center rounded-full',
+              tinted ? 'bg-white/12 text-white' : 'bg-whisper-soft text-steel',
+            )}
+          >
+            {icon}
+          </span>
         )}
-      >
-        {label}
-      </p>
+      </div>
       <p
         className={cn(
           'font-mono text-[2.25rem] font-semibold leading-[1.05] tracking-[-0.025em] mt-3',
@@ -324,7 +344,7 @@ function StatCard({
           )}
         >
           {deltaUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-          {icon}+{delta} {deltaLabel}
+          +{delta} {deltaLabel}
         </p>
       )}
       {subline && (
@@ -395,8 +415,13 @@ function greetingByHour(): string {
 }
 
 function formatNum(n: number): string {
+  if (!Number.isFinite(n)) return '0'
   if (n >= 10_000) return `${(n / 1000).toFixed(1)}k`
   return n.toLocaleString('en-US')
+}
+
+function metric(...values: Array<number | undefined | null>): number {
+  return values.find((v): v is number => typeof v === 'number' && Number.isFinite(v)) ?? 0
 }
 
 function truncate(s: string, n: number): string {

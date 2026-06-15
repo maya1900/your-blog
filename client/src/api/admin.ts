@@ -6,6 +6,8 @@ import type { PagedResult, Role, User, Comment } from '@/types/api'
 export interface AdminStats {
   totals: {
     users: number
+    visits: number
+    pageviews: number
     articles: number
     published: number
     drafts: number
@@ -18,6 +20,8 @@ export interface AdminStats {
   }
   thisWeek: {
     articles: number
+    visits: number
+    pageviews: number
     comments: number
     users: number
   }

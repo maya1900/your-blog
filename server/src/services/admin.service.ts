@@ -97,6 +97,8 @@ export type CategoryInput = z.infer<typeof CategoryInputSchema>
 export interface AdminStats {
   totals: {
     users: number
+    visits: number
+    pageviews: number
     articles: number
     published: number
     drafts: number
@@ -109,6 +111,8 @@ export interface AdminStats {
   }
   thisWeek: {
     articles: number
+    visits: number
+    pageviews: number
     comments: number
     users: number
   }
@@ -146,6 +150,7 @@ export async function getStats(): Promise<AdminStats> {
   const now = new Date()
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const pageViewStatsPromise = getPageViewStats(weekAgo, monthAgo)
 
   const [
     users,
@@ -161,7 +166,7 @@ export async function getStats(): Promise<AdminStats> {
     weekArticles,
     weekComments,
     weekUsers,
-    monthArticleRows,
+    pageViewStats,
     topCategoriesRaw,
     recentArticles,
     recentComments,
@@ -179,10 +184,7 @@ export async function getStats(): Promise<AdminStats> {
     prisma.article.count({ where: { createdAt: { gte: weekAgo } } }),
     prisma.comment.count({ where: { createdAt: { gte: weekAgo } } }),
     prisma.user.count({ where: { createdAt: { gte: weekAgo } } }),
-    prisma.article.findMany({
-      where: { createdAt: { gte: monthAgo } },
-      select: { createdAt: true },
-    }),
+    pageViewStatsPromise,
     prisma.category.findMany({
       include: { _count: { select: { articles: true } } },
       orderBy: { name: 'asc' },
@@ -205,13 +207,13 @@ export async function getStats(): Promise<AdminStats> {
     }),
   ])
 
-  // 30-day trend (one bucket per day; days with no posts → 0)
+  // 30-day trend (one bucket per day; days with no page views → 0)
   const buckets = new Map<string, number>()
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
     buckets.set(isoDay(d), 0)
   }
-  for (const row of monthArticleRows) {
+  for (const row of pageViewStats.monthRows) {
     const k = isoDay(row.createdAt)
     if (buckets.has(k)) buckets.set(k, (buckets.get(k) ?? 0) + 1)
   }
@@ -228,6 +230,8 @@ export async function getStats(): Promise<AdminStats> {
   return {
     totals: {
       users,
+      visits: pageViewStats.visits,
+      pageviews: pageViewStats.pageviews,
       articles,
       published,
       drafts,
@@ -240,6 +244,8 @@ export async function getStats(): Promise<AdminStats> {
     },
     thisWeek: {
       articles: weekArticles,
+      visits: pageViewStats.weekVisits,
+      pageviews: pageViewStats.weekPageviews,
       comments: weekComments,
       users: weekUsers,
     },
@@ -247,6 +253,45 @@ export async function getStats(): Promise<AdminStats> {
     topCategories,
     recentArticles,
     recentComments,
+  }
+}
+
+async function getPageViewStats(weekAgo: Date, monthAgo: Date) {
+  try {
+    const [pageviews, weekPageviews, visitorRows, weekVisitorRows, monthRows] =
+      await Promise.all([
+        prisma.pageView.count(),
+        prisma.pageView.count({ where: { createdAt: { gte: weekAgo } } }),
+        prisma.pageView.findMany({
+          distinct: ['visitorId'],
+          select: { visitorId: true },
+        }),
+        prisma.pageView.findMany({
+          where: { createdAt: { gte: weekAgo } },
+          distinct: ['visitorId'],
+          select: { visitorId: true },
+        }),
+        prisma.pageView.findMany({
+          where: { createdAt: { gte: monthAgo } },
+          select: { createdAt: true },
+        }),
+      ])
+
+    return {
+      pageviews,
+      weekPageviews,
+      visits: visitorRows.length,
+      weekVisits: weekVisitorRows.length,
+      monthRows,
+    }
+  } catch {
+    return {
+      pageviews: 0,
+      weekPageviews: 0,
+      visits: 0,
+      weekVisits: 0,
+      monthRows: [] as { createdAt: Date }[],
+    }
   }
 }
 

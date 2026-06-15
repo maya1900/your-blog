@@ -48,13 +48,13 @@ type ViewTransitionDocument = Document & {
   }
 }
 
-// Duration of the circular reveal, in ms. Bump toward 1000 for a slower sweep.
+// Duration of the circular theme transition, in ms. Bump toward 1000 for a slower sweep.
 const REVEAL_DURATION_MS = 600
 
 /**
- * Switch the theme with a circular reveal centred on `origin` (the toggle
- * button). The new theme is clipped to a circle that grows from a point to
- * cover the whole viewport, via the View Transitions API.
+ * Switch the theme with a circular transition centred on `origin` (the toggle
+ * button). Dark mode expands from the button; light mode is revealed as the
+ * old dark snapshot contracts back into the button.
  *
  * Falls back to an instant switch (with the global colour fade) when the API
  * is unavailable, the user prefers reduced motion, or no origin is given.
@@ -80,9 +80,10 @@ function setThemeWithReveal(nextTheme: Theme, origin?: { x: number; y: number })
   )
 
   const root = document.documentElement
+  const isExpanding = nextTheme === 'dark'
   // Freeze the global colour transition so the snapshot the API captures shows
   // the final new-theme colours, not a frame caught mid-fade.
-  root.classList.add('theme-reveal')
+  root.classList.add('theme-reveal', isExpanding ? 'theme-reveal-expand' : 'theme-reveal-contract')
 
   const transition = doc.startViewTransition(() => {
     setTheme(nextTheme)
@@ -92,15 +93,17 @@ function setThemeWithReveal(nextTheme: Theme, origin?: { x: number; y: number })
     .then(() => {
       root.animate(
         {
-          clipPath: [
-            `circle(0px at ${x}px ${y}px)`,
-            `circle(${endRadius}px at ${x}px ${y}px)`,
-          ],
+          clipPath: isExpanding
+            ? [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`]
+            : [`circle(${endRadius}px at ${x}px ${y}px)`, `circle(0px at ${x}px ${y}px)`],
         },
         {
           duration: REVEAL_DURATION_MS,
           easing: 'cubic-bezier(0.2, 0, 0, 1)',
-          pseudoElement: '::view-transition-new(root)',
+          fill: 'both',
+          pseudoElement: isExpanding
+            ? '::view-transition-new(root)'
+            : '::view-transition-old(root)',
         },
       )
     })
@@ -109,7 +112,7 @@ function setThemeWithReveal(nextTheme: Theme, origin?: { x: number; y: number })
     })
 
   transition.finished.finally(() => {
-    root.classList.remove('theme-reveal')
+    root.classList.remove('theme-reveal', 'theme-reveal-expand', 'theme-reveal-contract')
   })
 }
 

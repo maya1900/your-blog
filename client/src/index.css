@@ -250,20 +250,22 @@
   }
 }
 
-/* === Theme switch: circular reveal (View Transitions API) ===
+/* === Theme switch: circular expand/contract (View Transitions API) ===
    Scoped to .theme-reveal (set on <html> only during a theme toggle) so it
    doesn't clash with the route transition below — both target `root`.
-   The new theme is clipped to an expanding circle (animated in useTheme.ts);
-   disable the default cross-fade so the old theme sits underneath. */
+   Dark mode expands as the new snapshot; light mode appears as the old dark
+   snapshot contracts away. Disable the default cross-fade for a clean mask. */
 html.theme-reveal::view-transition-old(root),
 html.theme-reveal::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
-html.theme-reveal::view-transition-new(root) {
+html.theme-reveal-expand::view-transition-new(root),
+html.theme-reveal-contract::view-transition-old(root) {
   z-index: 1;
 }
-html.theme-reveal::view-transition-old(root) {
+html.theme-reveal-expand::view-transition-old(root),
+html.theme-reveal-contract::view-transition-new(root) {
   z-index: 0;
 }
 

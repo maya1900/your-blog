@@ -32,6 +32,11 @@ http.interceptors.response.use(
     const apiMessage = error.response?.data?.error?.message
     if (apiMessage) {
       error.message = apiMessage
+    } else if (error.response?.status) {
+      error.message =
+        error.response.status >= 500
+          ? '服务器开小差了，请稍后再试'
+          : `请求失败(${error.response.status})`
     }
     return Promise.reject(error)
   },

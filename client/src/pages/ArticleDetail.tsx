@@ -4,6 +4,7 @@ import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { Clock, Eye, PenSquare, ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react'
 import { getArticleBySlug } from '@/api/articles'
+import { listComments } from '@/api/comments'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { StatusBadge } from '@/components/StatusBadge'
 import { ReactionsCard } from '@/components/ReactionsCard'
@@ -23,6 +24,12 @@ export function ArticleDetailPage() {
     queryFn: () => getArticleBySlug(slug!),
     enabled: !!slug,
     retry: false,
+  })
+
+  const commentsQuery = useQuery({
+    queryKey: ['comments', data?.id],
+    queryFn: () => listComments(data!.id, { pageSize: 50 }),
+    enabled: !!data?.id && !!user,
   })
 
   const headings = useMemo(() => {
@@ -59,6 +66,8 @@ export function ArticleDetailPage() {
   if (!data) return null
 
   const canEdit = !!user && (user.id === data.authorId || user.role === 'ADMIN')
+  const canViewReplyOnly =
+    canEdit || !!commentsQuery.data?.items.some((comment) => comment.userId === user?.id)
   const readTime = estimateReadTime(data.content)
 
   return (
@@ -146,7 +155,7 @@ export function ArticleDetailPage() {
       {/* Body + Right Rail */}
       <div className="mt-10 grid gap-12 pb-20 lg:grid-cols-[minmax(0,1fr)_240px]">
         <article className="min-w-0">
-          <MarkdownRenderer>{data.content}</MarkdownRenderer>
+          <MarkdownRenderer canViewReplyOnly={canViewReplyOnly}>{data.content}</MarkdownRenderer>
 
           <footer className="mt-12 pt-8 border-t border-whisper">
             <div className="flex flex-wrap items-center gap-2">

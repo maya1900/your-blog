@@ -14,6 +14,7 @@ import { userRouter } from './routes/user.routes.js'
 import { uploadRouter } from './routes/upload.routes.js'
 import { adminRouter } from './routes/admin.routes.js'
 import { siteRouter } from './routes/site.routes.js'
+import { linkPreviewRouter } from './routes/link-preview.routes.js'
 
 export function createApp(): Express {
   const app = express()
@@ -44,6 +45,7 @@ export function createApp(): Express {
   app.use('/api/users', userRouter)
   app.use('/api/upload', uploadRouter)
   app.use('/api/site', siteRouter)
+  app.use('/api', linkPreviewRouter)
   app.use('/api/admin', adminRouter)
 
   // 404 fallthrough

@@ -1,4 +1,13 @@
-import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type CSSProperties,
+  type DragEvent,
+  type KeyboardEvent,
+} from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Link } from '@/components/Link'
 import MDEditor from '@uiw/react-md-editor'
@@ -14,7 +23,32 @@ import {
 } from '@/api/articles'
 import { listCategories } from '@/api/taxonomy'
 import { uploadImage } from '@/api/upload'
+import { fetchLinkPreview } from '@/api/linkPreview'
 import { CoverDropzone } from '@/components/CoverDropzone'
+import {
+  filterSlashCommands,
+  filterEmoji,
+  createMarkdownEditorCommands,
+  createMarkdownTable,
+  EmojiSuggestMenu,
+  getEmojiState,
+  getSlashState,
+  insertEmoji,
+  insertMarkdownAtSelection,
+  insertInlineLinkForUrl,
+  insertOneboxForUrl,
+  insertSlashCommand,
+  markdownEditorComponents,
+  markdownEditorExtraCommands,
+  markdownTemplates,
+  MarkdownSlashMenu,
+  replaceTextEverywhere,
+  type SlashState,
+  type EmojiState,
+  type TableAlignment,
+  type TemplateId,
+} from '@/components/MarkdownEditorExtensions'
+import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { StatusBadge } from '@/components/StatusBadge'
 import { useAuthStore } from '@/stores/auth.store'
 import { estimateReadTime } from '@/utils/format'
@@ -45,6 +79,27 @@ export function WritePage() {
   const [editorHeight, setEditorHeight] = useState(720)
   const [pasteUploading, setPasteUploading] = useState(false)
   const editorWrapRef = useRef<HTMLDivElement>(null)
+  const editorTextareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [slashState, setSlashState] = useState<SlashState | null>(null)
+  const [slashIndex, setSlashIndex] = useState(0)
+  const [emojiState, setEmojiState] = useState<EmojiState | null>(null)
+  const [emojiIndex, setEmojiIndex] = useState(0)
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+  const [emojiPickerStyle, setEmojiPickerStyle] = useState<CSSProperties | undefined>()
+  const [templatePanelOpen, setTemplatePanelOpen] = useState(false)
+  const [activeTemplateId, setActiveTemplateId] = useState<TemplateId>('note')
+  const [templateDraft, setTemplateDraft] = useState(markdownTemplates[0]!.content)
+  const [tablePanelOpen, setTablePanelOpen] = useState(false)
+  const [tableRows, setTableRows] = useState(3)
+  const [tableColumns, setTableColumns] = useState(4)
+  const [tableHoverRows, setTableHoverRows] = useState(3)
+  const [tableHoverColumns, setTableHoverColumns] = useState(4)
+  const [tableAlignments, setTableAlignments] = useState<TableAlignment[]>([
+    'left',
+    'left',
+    'left',
+    'left',
+  ])
   // Always read the latest `content` inside paste/drop handlers so we don't
   // splice into stale state when the user pastes multiple images in a row.
   const contentRef = useRef(content)
@@ -205,6 +260,171 @@ export function WritePage() {
     setTags(tags.filter((t) => t !== name))
   }
 
+  function applyContent(next: string) {
+    contentRef.current = next
+    setContent(next)
+  }
+
+  function refreshSlashMenu(textarea: HTMLTextAreaElement) {
+    editorTextareaRef.current = textarea
+    const next = getSlashState(textarea)
+    setSlashState(next)
+    setSlashIndex(0)
+    const nextEmoji = getEmojiState(textarea)
+    setEmojiState(nextEmoji)
+    setEmojiIndex(0)
+  }
+
+  function closeSlashMenu() {
+    setSlashState(null)
+    setSlashIndex(0)
+  }
+
+  function closeEmojiMenu() {
+    setEmojiState(null)
+    setEmojiIndex(0)
+  }
+
+  const slashCommands = slashState ? filterSlashCommands(slashState.query) : []
+  const emojiSuggestions = emojiState ? filterEmoji(emojiState.query) : []
+  const emojiPickerItems = filterEmoji('')
+
+  const markdownCommands = useMemo(
+    () =>
+      createMarkdownEditorCommands(
+        (id) => {
+          openTemplatePanel(id)
+        },
+        () => {
+          setTablePanelOpen(true)
+          setTableHoverRows(tableRows)
+          setTableHoverColumns(tableColumns)
+          closeSlashMenu()
+          closeEmojiMenu()
+        },
+        () => {
+          const wrap = editorWrapRef.current
+          const button = wrap?.querySelector<HTMLButtonElement>('button[aria-label="插入 Emoji 短代码"]')
+          if (wrap && button) {
+            const wrapRect = wrap.getBoundingClientRect()
+            const buttonRect = button.getBoundingClientRect()
+            setEmojiPickerStyle({
+              left: Math.round(buttonRect.left - wrapRect.left),
+              top: Math.round(buttonRect.bottom - wrapRect.top + 6),
+            })
+          }
+          setEmojiPickerOpen((value) => !value)
+          closeSlashMenu()
+          closeEmojiMenu()
+        },
+      ),
+    [tableColumns, tableRows],
+  )
+
+  function openTemplatePanel(id: TemplateId) {
+    const template = markdownTemplates.find((item) => item.id === id) ?? markdownTemplates[0]!
+    setActiveTemplateId(template.id)
+    setTemplateDraft(template.content)
+    setTemplatePanelOpen(true)
+    closeSlashMenu()
+  }
+
+  function chooseTemplate(id: TemplateId) {
+    const template = markdownTemplates.find((item) => item.id === id) ?? markdownTemplates[0]!
+    setActiveTemplateId(template.id)
+    setTemplateDraft(template.content)
+  }
+
+  function insertTemplateDraft() {
+    insertMarkdownAtSelection(editorTextareaRef.current, templateDraft, applyContent, contentRef.current)
+    setTemplatePanelOpen(false)
+  }
+
+  function insertTableFromPanel() {
+    const alignments = Array.from({ length: tableColumns }, (_, idx) => tableAlignments[idx] ?? 'left')
+    const table = createMarkdownTable({ rows: tableRows, columns: tableColumns, alignments })
+    insertMarkdownAtSelection(editorTextareaRef.current, table, applyContent, contentRef.current)
+    setTablePanelOpen(false)
+  }
+
+  function chooseEmoji(item = emojiSuggestions[emojiIndex]) {
+    const textarea = editorTextareaRef.current
+    if (!textarea || !emojiState || !item) return
+    insertEmoji(textarea, item, emojiState, applyContent)
+    closeEmojiMenu()
+  }
+
+  function chooseSlashCommand(id = slashCommands[slashIndex]?.id) {
+    const textarea = editorTextareaRef.current
+    if (!textarea || !slashState || !id) return
+    if (id === 'table') {
+      setTablePanelOpen(true)
+      setTableHoverRows(tableRows)
+      setTableHoverColumns(tableColumns)
+      closeSlashMenu()
+      closeEmojiMenu()
+      return
+    }
+    if (id === 'note-template' || id === 'tutorial-template' || id === 'review-template') {
+      const templateId =
+        id === 'tutorial-template' ? 'tutorial' : id === 'review-template' ? 'review' : 'note'
+      openTemplatePanel(templateId)
+      return
+    }
+    insertSlashCommand(textarea, id, slashState, applyContent)
+    closeSlashMenu()
+    closeEmojiMenu()
+  }
+
+  function insertEmojiFromPicker(item: (typeof emojiPickerItems)[number]) {
+    insertAtCaret(editorTextareaRef.current, item.emoji)
+    setEmojiPickerOpen(false)
+  }
+
+  function handleEditorKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (emojiState) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeEmojiMenu()
+        return
+      }
+      if (emojiSuggestions.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          setEmojiIndex((idx) => (idx + 1) % emojiSuggestions.length)
+          return
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          setEmojiIndex((idx) => (idx - 1 + emojiSuggestions.length) % emojiSuggestions.length)
+          return
+        }
+        if (e.key === 'Enter' || e.key === 'Tab') {
+          e.preventDefault()
+          chooseEmoji()
+          return
+        }
+      }
+    }
+    if (!slashState) return
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      closeSlashMenu()
+      return
+    }
+    if (slashCommands.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSlashIndex((idx) => (idx + 1) % slashCommands.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSlashIndex((idx) => (idx - 1 + slashCommands.length) % slashCommands.length)
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault()
+      chooseSlashCommand()
+    }
+  }
+
   /** Insert text at the textarea's caret (or append if no caret). */
   function insertAtCaret(textarea: HTMLTextAreaElement | null, insert: string) {
     const current = contentRef.current
@@ -228,11 +448,12 @@ export function WritePage() {
     setPasteUploading(true)
     setFormError(null)
     // Insert a placeholder so the user gets feedback immediately.
+    const alt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim() || '图片'
     const placeholder = `![uploading…](${file.name})`
     insertAtCaret(textarea, placeholder)
     try {
       const res = await uploadImage(file)
-      const finalMd = `![${file.name.replace(/\.[^.]+$/, '')}](${res.url})`
+      const finalMd = `![${alt}](${res.url})`
       // Swap placeholder for the real URL (works even if user kept typing).
       setContent((prev) => prev.replace(placeholder, finalMd))
     } catch (err) {
@@ -243,13 +464,104 @@ export function WritePage() {
     }
   }
 
+  function isStandaloneUrlPaste(textarea: HTMLTextAreaElement, pastedText: string) {
+    const current = textarea.value
+    const start = textarea.selectionStart ?? current.length
+    const end = textarea.selectionEnd ?? current.length
+    const lineStart = current.lastIndexOf('\n', Math.max(0, start - 1)) + 1
+    const nextLine = current.indexOf('\n', end)
+    const lineEnd = nextLine === -1 ? current.length : nextLine
+    const lineWithoutSelection = `${current.slice(lineStart, start)}${current.slice(end, lineEnd)}`
+
+    return /^https?:\/\/\S+$/.test(pastedText.trim()) && lineWithoutSelection.trim() === ''
+  }
+
+  async function insertSmartLink(textarea: HTMLTextAreaElement, url: string) {
+    if (!isStandaloneUrlPaste(textarea, url)) {
+      insertInlineLinkForUrl(textarea, url, applyContent)
+      return
+    }
+
+    const placeholderTitle = '正在识别链接'
+    const placeholder = `[onebox="${placeholderTitle}"]\n${url}\n[/onebox]`
+    insertOneboxForUrl(textarea, url, applyContent, placeholderTitle)
+
+    try {
+      const preview = await fetchLinkPreview(url)
+      const final = `[onebox="${preview.title.replace(/"/g, '\\"')}"]\n${preview.url}\n[/onebox]`
+      replaceTextEverywhere(textarea, placeholder, final, applyContent, contentRef.current)
+    } catch {
+      const host = new URL(url).hostname.replace(/^www\./, '')
+      const final = `[onebox="${host}"]\n${url}\n[/onebox]`
+      replaceTextEverywhere(textarea, placeholder, final, applyContent, contentRef.current)
+    }
+  }
+
+  function htmlToMarkdown(html: string) {
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    const walk = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? ''
+      if (node.nodeType !== Node.ELEMENT_NODE) return ''
+      const el = node as HTMLElement
+      const children = Array.from(el.childNodes).map(walk).join('')
+      const tag = el.tagName.toLowerCase()
+      if (tag === 'strong' || tag === 'b') return `**${children}**`
+      if (tag === 'em' || tag === 'i') return `*${children}*`
+      if (tag === 'code') return `\`${children}\``
+      if (tag === 'a') {
+        const href = el.getAttribute('href')
+        return href ? `[${children || href}](${href})` : children
+      }
+      if (tag === 'br') return '\n'
+      if (tag === 'li') return `- ${children.trim()}\n`
+      if (/h[1-6]/.test(tag)) return `${'#'.repeat(Number(tag[1]))} ${children.trim()}\n\n`
+      if (tag === 'blockquote') return `${children.trim().split('\n').map((line) => `> ${line}`).join('\n')}\n\n`
+      if (tag === 'p' || tag === 'div') return `${children.trim()}\n\n`
+      if (tag === 'ul' || tag === 'ol') return `${children.trim()}\n\n`
+      if (tag === 'mark' || tag === 'kbd' || tag === 'sub' || tag === 'sup') return `<${tag}>${children}</${tag}>`
+      return children
+    }
+    return Array.from(doc.body.childNodes)
+      .map(walk)
+      .join('')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  }
+
   function handleEditorPaste(e: ClipboardEvent<HTMLTextAreaElement>) {
     const files = Array.from(e.clipboardData?.files ?? []).filter((f) =>
       f.type.startsWith('image/'),
     )
-    if (files.length === 0) return
+    if (files.length === 0) {
+      const html = e.clipboardData?.getData('text/html')
+      if (html) {
+        const markdown = htmlToMarkdown(html)
+        if (markdown) {
+          e.preventDefault()
+          const ta = e.currentTarget
+          editorTextareaRef.current = ta
+          insertAtCaret(ta, markdown)
+          closeSlashMenu()
+          closeEmojiMenu()
+          return
+        }
+      }
+      const text = e.clipboardData?.getData('text/plain')?.trim()
+      if (text && /^https?:\/\/\S+$/.test(text)) {
+        e.preventDefault()
+        const ta = e.currentTarget
+        editorTextareaRef.current = ta
+        void insertSmartLink(ta, text)
+        closeSlashMenu()
+        closeEmojiMenu()
+      }
+      return
+    }
     e.preventDefault()
     const ta = e.currentTarget
+    editorTextareaRef.current = ta
+    closeSlashMenu()
+    closeEmojiMenu()
     for (const f of files) void handleImageUpload(f, ta)
   }
 
@@ -260,6 +572,8 @@ export function WritePage() {
     if (files.length === 0) return
     e.preventDefault()
     const ta = e.currentTarget
+    editorTextareaRef.current = ta
+    closeSlashMenu()
     for (const f of files) void handleImageUpload(f, ta)
   }
 
@@ -422,24 +736,56 @@ export function WritePage() {
 
           {/* Resizable wrapper. User drags the bottom-right handle;
               ResizeObserver picks up the new height and passes it to MDEditor. */}
-          <div
-            ref={editorWrapRef}
-            data-color-mode={theme}
-            className="md-editor-shell resize-y overflow-hidden"
-            style={{ height: 720, minHeight: 320, maxHeight: '85vh' }}
-          >
-            <MDEditor
-              value={content}
-              onChange={(v) => setContent(v ?? '')}
-              height={editorHeight}
-              preview={showPreview ? 'live' : 'edit'}
-              visibleDragbar={false}
-              textareaProps={{
-                onPaste: handleEditorPaste,
-                onDrop: handleEditorDrop,
-                placeholder: '在这里写正文… 粘贴或拖入图片会自动上传',
-              }}
-            />
+          <div className="relative">
+            <div
+              ref={editorWrapRef}
+              data-color-mode={theme}
+              className="md-editor-shell resize-y overflow-hidden"
+              style={{ height: 720, minHeight: 320, maxHeight: '85vh' }}
+            >
+              <MDEditor
+                value={content}
+                onChange={(v) => applyContent(v ?? '')}
+                commands={markdownCommands}
+                extraCommands={markdownEditorExtraCommands}
+                components={markdownEditorComponents}
+                height={editorHeight}
+                preview={showPreview ? 'live' : 'edit'}
+                visibleDragbar={false}
+                textareaProps={{
+                  onClick: (e) => refreshSlashMenu(e.currentTarget),
+                  onKeyDown: handleEditorKeyDown,
+                  onKeyUp: (e) => refreshSlashMenu(e.currentTarget),
+                  onPaste: handleEditorPaste,
+                  onDrop: handleEditorDrop,
+                  onSelect: (e) => refreshSlashMenu(e.currentTarget),
+                  placeholder: '在这里写正文… 粘贴或拖入图片会自动上传',
+                }}
+              />
+            </div>
+            {slashState && (
+              <MarkdownSlashMenu
+                commands={slashCommands}
+                activeIndex={slashIndex}
+                onChoose={chooseSlashCommand}
+              />
+            )}
+            {emojiState && (
+              <EmojiSuggestMenu
+                items={emojiSuggestions}
+                activeIndex={emojiIndex}
+                onChoose={chooseEmoji}
+              />
+            )}
+            {emojiPickerOpen && !emojiState && (
+              <EmojiSuggestMenu
+                items={emojiPickerItems}
+                activeIndex={-1}
+                onChoose={insertEmojiFromPicker}
+                variant="picker"
+                style={emojiPickerStyle}
+              />
+            )}
           </div>
 
           <p className="mt-2 font-mono text-xs text-steel">
@@ -456,6 +802,179 @@ export function WritePage() {
           </p>
         )}
       </main>
+
+      {templatePanelOpen && (
+        <div className="template-dialog-backdrop" role="presentation">
+          <div className="template-dialog" role="dialog" aria-modal="true" aria-label="模板预览">
+            <div className="template-dialog-head">
+              <div>
+                <p className="template-dialog-kicker">TEMPLATES</p>
+                <h2>选择并调整模板</h2>
+              </div>
+              <button
+                type="button"
+                className="btn-icon"
+                onClick={() => setTemplatePanelOpen(false)}
+                aria-label="关闭模板面板"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="template-dialog-grid">
+              <div className="template-dialog-list">
+                {markdownTemplates.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    className={template.id === activeTemplateId ? 'is-active' : ''}
+                    onClick={() => chooseTemplate(template.id)}
+                  >
+                    <span>{template.label}</span>
+                    <small>{template.description}</small>
+                  </button>
+                ))}
+              </div>
+
+              <div className="template-dialog-editor">
+                <label className="field-label">EDIT BEFORE INSERT</label>
+                <textarea
+                  value={templateDraft}
+                  onChange={(e) => setTemplateDraft(e.target.value)}
+                  className="input template-dialog-textarea"
+                />
+              </div>
+
+              <div className="template-dialog-preview">
+                <p className="field-label">PREVIEW</p>
+                <div className="template-dialog-preview-body">
+                  <MarkdownRenderer>{templateDraft}</MarkdownRenderer>
+                </div>
+              </div>
+            </div>
+
+            <div className="template-dialog-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setTemplatePanelOpen(false)}
+              >
+                取消
+              </button>
+              <button type="button" className="btn-primary" onClick={insertTemplateDraft}>
+                插入模板
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tablePanelOpen && (
+        <div className="table-dialog-backdrop" role="presentation">
+          <div className="table-dialog" role="dialog" aria-modal="true" aria-label="表格插入器">
+            <div className="table-dialog-head">
+              <div>
+                <p className="template-dialog-kicker">TABLE</p>
+                <h2>插入 Markdown 表格</h2>
+              </div>
+              <button
+                type="button"
+                className="btn-icon"
+                onClick={() => setTablePanelOpen(false)}
+                aria-label="关闭表格插入器"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="table-dialog-body">
+              <div className="table-size-picker">
+                {Array.from({ length: 6 }, (_, row) =>
+                  Array.from({ length: 8 }, (_, col) => {
+                    const active = row < tableHoverRows && col < tableHoverColumns
+                    const selected = row < tableRows && col < tableColumns
+                    return (
+                      <button
+                        key={`${row}-${col}`}
+                        type="button"
+                        className={`${active ? 'is-active' : ''} ${selected ? 'is-selected' : ''}`}
+                        onMouseEnter={() => {
+                          setTableHoverRows(row + 1)
+                          setTableHoverColumns(col + 1)
+                        }}
+                        onClick={() => {
+                          setTableRows(row + 1)
+                          setTableColumns(col + 1)
+                          setTableHoverRows(row + 1)
+                          setTableHoverColumns(col + 1)
+                        }}
+                        aria-label={`${row + 1} 行 ${col + 1} 列`}
+                      />
+                    )
+                  }),
+                )}
+              </div>
+
+              <div className="table-dialog-side">
+                <p className="font-mono text-xs text-steel">
+                  预览 {tableHoverRows} 行 × {tableHoverColumns} 列 · 已选 {tableRows} 行 × {tableColumns} 列
+                </p>
+                <div className="table-align-grid">
+                  {Array.from({ length: tableColumns }, (_, idx) => (
+                    <label key={idx}>
+                      <span>列 {idx + 1}</span>
+                      <select
+                        value={tableAlignments[idx] ?? 'left'}
+                        onChange={(e) => {
+                          const next = [...tableAlignments]
+                          next[idx] = e.target.value as TableAlignment
+                          setTableAlignments(next)
+                        }}
+                      >
+                        <option value="left">左对齐</option>
+                        <option value="center">居中</option>
+                        <option value="right">右对齐</option>
+                      </select>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <pre className="table-dialog-preview">
+              {createMarkdownTable({
+                rows: tableRows,
+                columns: tableColumns,
+                alignments: tableAlignments,
+              })}
+            </pre>
+
+            <div className="template-dialog-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setTableRows((value) => Math.min(20, value + 1))
+                }}
+              >
+                添加行
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setTableColumns((value) => Math.min(10, value + 1))
+                }}
+              >
+                添加列
+              </button>
+              <button type="button" className="btn-primary" onClick={insertTableFromPanel}>
+                插入表格
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sticky action bar */}
       <div className="sticky bottom-0 z-30 backdrop-blur-md bg-surface/85 border-t border-whisper">

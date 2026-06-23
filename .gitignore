@@ -31,6 +31,8 @@ coverage/
 .nyc_output/
 
 # runtime uploads (keep folder, ignore contents)
+/uploads/*
+!/uploads/.gitkeep
 server/uploads/*
 !server/uploads/.gitkeep
 

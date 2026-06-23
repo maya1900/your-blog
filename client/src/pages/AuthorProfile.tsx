@@ -8,6 +8,7 @@ import { ArticleList } from '@/components/ArticleList'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
+import { Seo } from '@/components/Seo'
 import { useUrlNumberParam } from '@/hooks/useUrlParam'
 import { formatDate } from '@/utils/format'
 import { displayName } from '@/utils/displayName'
@@ -64,6 +65,13 @@ export function AuthorProfilePage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
+      <Seo
+        title={name}
+        description={user.bio || `${name} 已发布 ${user.articleCount} 篇文章。`}
+        image={user.avatar}
+        type="profile"
+        canonicalPath={`/users/${encodeURIComponent(user.username)}`}
+      />
       <header className="mb-12 flex items-start gap-6 flex-wrap">
         <Avatar username={name} avatar={user.avatar} size={96} />
 
@@ -72,9 +80,7 @@ export function AuthorProfilePage() {
             <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
             <span className="font-mono text-xs text-steel">@{user.username}</span>
           </div>
-          {user.bio && (
-            <p className="mt-3 text-steel max-w-2xl leading-relaxed">{user.bio}</p>
-          )}
+          {user.bio && <p className="mt-3 text-steel max-w-2xl leading-relaxed">{user.bio}</p>}
           <div className="mt-4 flex items-center gap-5 font-mono text-xs text-steel flex-wrap">
             <span className="inline-flex items-center gap-1.5">
               <Calendar size={13} />
@@ -91,9 +97,7 @@ export function AuthorProfilePage() {
 
       <section>
         <div className="flex items-baseline justify-between mb-6">
-          <h2 className="font-mono text-xs text-steel tracking-[0.08em] uppercase">
-            Articles
-          </h2>
+          <h2 className="font-mono text-xs text-steel tracking-[0.08em] uppercase">Articles</h2>
           {data && (
             <span className="font-mono text-xs text-steel">
               {data.total > 0
@@ -103,15 +107,10 @@ export function AuthorProfilePage() {
           )}
         </div>
 
-        {articlesQuery.isLoading && (
-          <p className="text-steel font-mono text-sm py-8">LOADING…</p>
-        )}
+        {articlesQuery.isLoading && <p className="text-steel font-mono text-sm py-8">LOADING…</p>}
 
         {data && data.items.length === 0 && (
-          <EmptyState
-            title="还没有公开发布的文章"
-            description={`${name} 暂时没有可阅读的文章`}
-          />
+          <EmptyState title="还没有公开发布的文章" description={`${name} 暂时没有可阅读的文章`} />
         )}
 
         {data && data.items.length > 0 && (

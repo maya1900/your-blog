@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Link } from '@/components/Link'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { ArrowRight } from 'lucide-react'
@@ -34,7 +33,6 @@ export function RegisterPage() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
     defaultValues: { username: '', email: '', password: '' },
   })
 
@@ -52,7 +50,12 @@ export function RegisterPage() {
 
   const onSubmit = (values: FormValues) => {
     setServerError(null)
-    mutation.mutate(values)
+    const parsed = schema.safeParse(values)
+    if (!parsed.success) {
+      setServerError(parsed.error.issues[0]?.message ?? '表单校验失败')
+      return
+    }
+    mutation.mutate(parsed.data)
   }
 
   return (

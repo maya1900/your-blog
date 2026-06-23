@@ -12,6 +12,7 @@ import { ArticleShareButton, ArticleShareCard } from '@/components/ArticleShare'
 import { CommentsSection } from '@/components/CommentsSection'
 import { DefaultCoverGradient } from '@/components/DefaultCoverGradient'
 import { Avatar } from '@/components/Avatar'
+import { Seo } from '@/components/Seo'
 import { formatDate, estimateReadTime } from '@/utils/format'
 import { useAuthStore } from '@/stores/auth.store'
 import { displayName } from '@/utils/displayName'
@@ -58,7 +59,10 @@ export function ArticleDetailPage() {
         <p className="font-mono text-xs text-steel tracking-[0.04em] mb-4">404 · NOT FOUND</p>
         <h1 className="text-2xl font-semibold mb-2">文章不存在</h1>
         <p className="text-steel mb-6">{(error as Error).message}</p>
-        <button onClick={() => navigate('/', { viewTransition: true })} className="btn-secondary inline-flex">
+        <button
+          onClick={() => navigate('/', { viewTransition: true })}
+          className="btn-secondary inline-flex"
+        >
           <ArrowLeft size={14} />
           返回首页
         </button>
@@ -76,6 +80,13 @@ export function ArticleDetailPage() {
 
   return (
     <div className="max-w-[1080px] mx-auto px-6 md:px-10">
+      <Seo
+        title={data.title}
+        description={data.summary || data.content.slice(0, 160)}
+        image={data.coverUrl}
+        type="article"
+        canonicalPath={`/articles/${data.slug}`}
+      />
       {/* Breadcrumb */}
       <p className="font-mono text-xs text-steel pt-8 mb-6">
         <Link to="/" className="hover:text-ink">
@@ -124,7 +135,9 @@ export function ArticleDetailPage() {
             <Avatar username={authorName} avatar={data.author.avatar} size={24} />
             <span className="text-sm font-medium text-ink">{authorName}</span>
           </div>
-          <span className="font-mono text-xs">{formatDate(data.publishedAt ?? data.createdAt)}</span>
+          <span className="font-mono text-xs">
+            {formatDate(data.publishedAt ?? data.createdAt)}
+          </span>
           <span className="font-mono text-xs flex items-center gap-1.5">
             <Clock size={13} />
             {readTime} 分钟阅读
@@ -171,9 +184,7 @@ export function ArticleDetailPage() {
                 </Link>
               ))}
             </div>
-            <p className="mt-4 font-mono text-xs text-steel">
-              本文链接 · /articles/{data.slug}
-            </p>
+            <p className="mt-4 font-mono text-xs text-steel">本文链接 · /articles/{data.slug}</p>
             <ArticleShareCard article={data} className="mt-6 lg:hidden" />
           </footer>
         </article>
@@ -197,7 +208,10 @@ export function ArticleDetailPage() {
               className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-steel hover:text-klein transition-colors"
             >
               查看 {authorName} 的全部文章
-              <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
+              <ArrowRight
+                size={12}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
             </Link>
           </div>
 

@@ -5,9 +5,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const appPackage = JSON.parse(
-  readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'),
-) as { version: string }
+const appPackage = JSON.parse(readFileSync(path.resolve(__dirname, '../package.json'), 'utf8')) as {
+  version: string
+}
 
 export default defineConfig({
   plugins: [react()],
@@ -28,6 +28,18 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/uploads': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/rss.xml': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/sitemap.xml': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/robots.txt': {
         target: 'http://localhost:4000',
         changeOrigin: true,
       },

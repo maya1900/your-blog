@@ -2,6 +2,7 @@ import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { Tag as TagIcon } from 'lucide-react'
 import { listTags } from '@/api/taxonomy'
+import { Seo } from '@/components/Seo'
 
 export function TagIndexPage() {
   const { data, isLoading, isError } = useQuery({
@@ -22,6 +23,7 @@ export function TagIndexPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
+      <Seo title="所有标签" description="按标签浏览所有已发布文章。" canonicalPath="/tags" />
       <header className="mb-10">
         <p className="font-mono text-xs text-steel tracking-[0.04em] mb-3 inline-flex items-center gap-2">
           <TagIcon size={13} />

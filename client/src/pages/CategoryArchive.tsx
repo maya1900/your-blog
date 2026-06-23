@@ -7,6 +7,7 @@ import { listCategories } from '@/api/taxonomy'
 import { ArticleList } from '@/components/ArticleList'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState } from '@/components/EmptyState'
+import { Seo } from '@/components/Seo'
 import { useUrlNumberParam } from '@/hooks/useUrlParam'
 
 const PAGE_SIZE = 6
@@ -37,7 +38,11 @@ export function CategoryArchivePage() {
   })
 
   if (catQuery.isLoading) {
-    return <p className="max-w-[1080px] mx-auto px-6 md:px-10 py-16 text-steel font-mono text-sm">LOADING…</p>
+    return (
+      <p className="max-w-[1080px] mx-auto px-6 md:px-10 py-16 text-steel font-mono text-sm">
+        LOADING…
+      </p>
+    )
   }
   if (!category) {
     return (
@@ -56,6 +61,11 @@ export function CategoryArchivePage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
+      <Seo
+        title={category.name}
+        description={`浏览「${category.name}」分类下的已发布文章。`}
+        canonicalPath={`/categories/${category.slug}`}
+      />
       <header className="mb-12">
         <Link
           to="/categories"
@@ -67,9 +77,7 @@ export function CategoryArchivePage() {
         <div className="flex items-baseline gap-4 flex-wrap">
           <BookOpen size={28} strokeWidth={1.5} className="text-klein" />
           <h1 className="text-3xl font-semibold tracking-tight">{category.name}</h1>
-          <span className="font-mono text-sm text-steel">
-            {data ? `${data.total} 篇` : '—'}
-          </span>
+          <span className="font-mono text-sm text-steel">{data ? `${data.total} 篇` : '—'}</span>
         </div>
       </header>
 

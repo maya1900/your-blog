@@ -7,7 +7,10 @@
     "dev": "concurrently -n client,server -c blue,green --kill-others-on-fail \"pnpm -C client dev\" \"pnpm -C server dev\"",
     "build": "pnpm -C client build && pnpm -C server build",
     "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --check",
+    "format:write": "prettier . --write",
     "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "hooks:install": "git config core.hooksPath .githooks",
     "version:patch": "node scripts/bump-patch-version.mjs --patch",
@@ -20,9 +23,27 @@
     "db:reset": "pnpm -C server prisma migrate reset",
     "db:seed": "pnpm -C server db:seed"
   },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,html,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "concurrently": "^9.1.0",
-    "typescript": "^5.6.3"
+    "eslint": "^10.5.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.8.4",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.61.1",
+    "zod": "3.23.8"
   },
   "packageManager": "pnpm@11.0.9",
   "engines": {

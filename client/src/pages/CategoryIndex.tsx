@@ -2,6 +2,7 @@ import { Link } from '@/components/Link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, BookOpen } from 'lucide-react'
 import { listCategories } from '@/api/taxonomy'
+import { Seo } from '@/components/Seo'
 
 export function CategoryIndexPage() {
   const { data, isLoading, isError } = useQuery({
@@ -12,6 +13,7 @@ export function CategoryIndexPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
+      <Seo title="所有分类" description="按主题浏览所有已发布文章。" canonicalPath="/categories" />
       <header className="mb-10">
         <p className="font-mono text-xs text-steel tracking-[0.04em] mb-3 inline-flex items-center gap-2">
           <BookOpen size={13} />
@@ -49,7 +51,11 @@ export function CategoryIndexPage() {
                   {count > 0 ? `${count} 篇文章` : '暂无文章'}
                 </p>
                 <div className="mt-4 inline-flex items-center gap-1.5 text-sm text-klein opacity-0 group-hover:opacity-100 transition">
-                  浏览 <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+                  浏览{' '}
+                  <ArrowRight
+                    size={14}
+                    className="transition-transform group-hover:translate-x-0.5"
+                  />
                 </div>
               </Link>
             )

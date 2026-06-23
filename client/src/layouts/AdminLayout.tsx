@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Link, NavLink } from '@/components/Link'
 import {
   ChevronDown,
+  Download,
   FileText,
   Info,
   LayoutDashboard,
@@ -39,6 +40,7 @@ const navSections: {
     items: [
       { to: '/admin/articles', icon: <FileText size={16} />, label: '文章' },
       { to: '/admin/comments', icon: <MessageSquare size={16} />, label: '评论' },
+      { to: '/admin/export', icon: <Download size={16} />, label: '导出' },
       { to: '/admin/categories', icon: <Tags size={16} />, label: '分类' },
       { to: '/admin/tags', icon: <TagIcon size={16} />, label: '标签' },
     ],
@@ -150,9 +152,7 @@ export function AdminLayout() {
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-signal animate-pulse" />
             <span>SYSTEM HEALTHY</span>
           </div>
-          <p className="font-mono text-[13px] text-steel mt-1">
-            v{__APP_VERSION__} · M6
-          </p>
+          <p className="font-mono text-[13px] text-steel mt-1">v{__APP_VERSION__} · M6</p>
         </div>
       </aside>
 
@@ -165,10 +165,7 @@ export function AdminLayout() {
             <div className="flex items-center gap-3">
               <ThemeToggle />
 
-              <Link
-                to="/"
-                className="text-sm text-steel hover:text-ink transition-colors"
-              >
+              <Link to="/" className="text-sm text-steel hover:text-ink transition-colors">
                 返回首页 →
               </Link>
               <div
@@ -190,10 +187,17 @@ export function AdminLayout() {
                 {menuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-44 bg-surface border border-whisper rounded-lg py-2 shadow-sm">
                     <div className="px-3 py-1.5 border-b border-whisper">
-                      <p className="text-sm font-medium text-ink truncate">{user ? displayName(user) : ''}</p>
-                      <p className="text-xs text-steel font-mono truncate">{user ? `@${user.username}` : ''}</p>
+                      <p className="text-sm font-medium text-ink truncate">
+                        {user ? displayName(user) : ''}
+                      </p>
+                      <p className="text-xs text-steel font-mono truncate">
+                        {user ? `@${user.username}` : ''}
+                      </p>
                     </div>
-                    <Link to="/me" className="block px-3 py-2 text-sm hover:bg-whisper-soft transition">
+                    <Link
+                      to="/me"
+                      className="block px-3 py-2 text-sm hover:bg-whisper-soft transition"
+                    >
                       个人中心
                     </Link>
                     <button
@@ -227,6 +231,7 @@ function Breadcrumbs() {
     '/admin': '仪表盘',
     '/admin/articles': '文章管理',
     '/admin/comments': '评论管理',
+    '/admin/export': '整站导出',
     '/admin/categories': '分类管理',
     '/admin/tags': '标签管理',
     '/admin/users': '用户管理',

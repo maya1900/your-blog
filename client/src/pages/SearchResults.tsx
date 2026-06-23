@@ -7,6 +7,7 @@ import { listArticles } from '@/api/articles'
 import { ArticleList } from '@/components/ArticleList'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState } from '@/components/EmptyState'
+import { Seo } from '@/components/Seo'
 import { useUrlNumberParam, useUrlParam } from '@/hooks/useUrlParam'
 import { useDebounce } from '@/hooks/useDebounce'
 
@@ -45,6 +46,11 @@ export function SearchResultsPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
+      <Seo
+        title={debounced ? `搜索：${debounced}` : '搜索'}
+        description="搜索已发布文章。"
+        canonicalPath={debounced ? `/search?keyword=${encodeURIComponent(debounced)}` : '/search'}
+      />
       <header className="mb-10">
         <Link
           to="/"
@@ -78,10 +84,7 @@ export function SearchResultsPage() {
       ) : isLoading ? (
         <p className="text-steel font-mono text-sm py-8">LOADING…</p>
       ) : data && data.items.length === 0 ? (
-        <EmptyState
-          title="没有找到结果"
-          description={`没有标题包含「${debounced}」的文章`}
-        />
+        <EmptyState title="没有找到结果" description={`没有标题包含「${debounced}」的文章`} />
       ) : data && data.items.length > 0 ? (
         <>
           <ArticleList items={data.items} total={data.total} startIndex={(page - 1) * PAGE_SIZE} />

@@ -16,6 +16,17 @@ export const stats: RequestHandler = async (_req, res, next) => {
   }
 }
 
+export const exportSite: RequestHandler = async (_req, res, next) => {
+  try {
+    const { filename, payload } = await adminService.buildSiteExport()
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.send(JSON.stringify(payload, null, 2))
+  } catch (err) {
+    next(err)
+  }
+}
+
 // ===== Users =====
 
 export const listUsers: RequestHandler = async (req, res, next) => {

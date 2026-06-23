@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { Link, NavLink } from '@/components/Link'
-import { LogOut, PenSquare, Search } from 'lucide-react'
+import { LogOut, PenSquare, Rss, Search } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth.store'
 import { SearchPalette } from '@/components/SearchPalette'
 import { useSiteSettings } from '@/hooks/useSiteSettings'
@@ -43,7 +43,11 @@ export function PublicLayout() {
             title={siteTitle}
           >
             {siteLogo ? (
-              <img src={siteLogo} alt={siteTitle} className="h-8 w-auto max-w-[200px] object-contain" />
+              <img
+                src={siteLogo}
+                alt={siteTitle}
+                className="h-8 w-auto max-w-[200px] object-contain"
+              />
             ) : (
               siteTitle
             )}
@@ -78,7 +82,11 @@ export function PublicLayout() {
 
             {user ? (
               <>
-                <Link to="/write" viewTransition={false} className="btn-primary !py-2 !px-4 text-sm">
+                <Link
+                  to="/write"
+                  viewTransition={false}
+                  className="btn-primary !py-2 !px-4 text-sm"
+                >
                   <PenSquare size={16} />
                   写文章
                 </Link>
@@ -124,7 +132,11 @@ export function PublicLayout() {
                 <Link to="/login" viewTransition={false} className="btn-secondary">
                   登录
                 </Link>
-                <Link to="/register" viewTransition={false} className="btn-primary !py-2 !px-4 text-sm">
+                <Link
+                  to="/register"
+                  viewTransition={false}
+                  className="btn-primary !py-2 !px-4 text-sm"
+                >
                   注册
                 </Link>
               </>
@@ -143,17 +155,28 @@ export function PublicLayout() {
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
             {siteLogo ? (
-              <img src={siteLogo} alt={siteTitle} className="h-9 w-auto max-w-[220px] object-contain" />
+              <img
+                src={siteLogo}
+                alt={siteTitle}
+                className="h-9 w-auto max-w-[220px] object-contain"
+              />
             ) : (
               <p className="text-[22px] font-semibold tracking-tight text-ink">{siteTitle}</p>
             )}
-            <p className="mt-2 text-sm text-steel">
-              {siteTagline}
+            <p className="mt-2 text-sm text-steel">{siteTagline}</p>
+          </div>
+          <div className="flex flex-col md:items-end gap-3">
+            <a
+              href="/rss.xml"
+              className="inline-flex items-center gap-1.5 text-xs text-steel hover:text-klein font-mono transition-colors"
+            >
+              <Rss size={13} />
+              RSS
+            </a>
+            <p className="text-xs text-steel font-mono">
+              © 2026 {siteTitle} · v{__APP_VERSION__}
             </p>
           </div>
-          <p className="text-xs text-steel font-mono">
-            © 2026 {siteTitle} · v{__APP_VERSION__}
-          </p>
         </div>
       </footer>
     </div>

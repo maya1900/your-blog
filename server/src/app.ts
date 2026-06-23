@@ -16,6 +16,7 @@ import { adminRouter } from './routes/admin.routes.js'
 import { siteRouter } from './routes/site.routes.js'
 import { linkPreviewRouter } from './routes/link-preview.routes.js'
 import { analyticsRouter } from './routes/analytics.routes.js'
+import { seoRouter } from './routes/seo.routes.js'
 
 export function createApp(): Express {
   const app = express()
@@ -35,6 +36,9 @@ export function createApp(): Express {
 
   // Parse JWT into req.user if present (optional)
   app.use(auth)
+
+  // Public metadata endpoints for crawlers/readers.
+  app.use('/', seoRouter)
 
   // API routes
   app.use('/api', healthRouter)

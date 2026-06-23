@@ -11,6 +11,7 @@ adminRouter.use(requireAuth, requireRole('ADMIN'))
 
 // Dashboard
 adminRouter.get('/stats', adminController.stats)
+adminRouter.get('/export', adminController.exportSite)
 
 // Users
 adminRouter.get('/users', adminController.listUsers)

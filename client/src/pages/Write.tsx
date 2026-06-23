@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -55,6 +56,7 @@ import { estimateReadTime } from '@/utils/format'
 import { useTheme } from '@/hooks/useTheme'
 
 const TAG_MAX = 6
+type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
 
 export function WritePage() {
   const { id: idParam } = useParams<{ id?: string }>()
@@ -76,6 +78,8 @@ export function WritePage() {
   const [tagDraft, setTagDraft] = useState('')
   const [showPreview, setShowPreview] = useState(true)
   const [formError, setFormError] = useState<string | null>(null)
+  const [saveState, setSaveState] = useState<SaveState>('idle')
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [editorHeight, setEditorHeight] = useState(720)
   const [pasteUploading, setPasteUploading] = useState(false)
   const editorWrapRef = useRef<HTMLDivElement>(null)
@@ -100,6 +104,8 @@ export function WritePage() {
     'left',
     'left',
   ])
+  const hydratedRef = useRef(false)
+  const lastSavedSnapshotRef = useRef('')
   // Always read the latest `content` inside paste/drop handlers so we don't
   // splice into stale state when the user pastes multiple images in a row.
   const contentRef = useRef(content)
@@ -153,22 +159,29 @@ export function WritePage() {
     setCoverUrl(a.coverUrl ?? '')
     setCategoryId(a.categoryId)
     setTags(a.tags.map((t) => t.name))
+    const snapshot = JSON.stringify({
+      title: a.title,
+      summary: a.summary ?? '',
+      content: a.content,
+      coverUrl: a.coverUrl ?? '',
+      categoryId: a.categoryId,
+      tags: a.tags.map((t) => t.name),
+      status: a.status,
+    })
+    lastSavedSnapshotRef.current = snapshot
+    hydratedRef.current = true
+    setSaveState('saved')
+    setLastSavedAt(new Date(a.updatedAt))
   }, [articleQuery.data])
 
-  const saveMutation = useMutation({
-    mutationFn: async (payload: ArticleInput) => {
-      return isEdit ? updateArticle(editingId!, payload) : createArticle(payload)
-    },
-    onSuccess: (saved) => {
-      qc.invalidateQueries({ queryKey: ['articles'] })
-      qc.invalidateQueries({ queryKey: ['article'] })
-      qc.invalidateQueries({ queryKey: ['my-articles'] })
-      if (!isEdit) {
-        navigate(`/write/${saved.id}`, { replace: true })
-      }
-    },
-    onError: (err: Error) => setFormError(err.message),
-  })
+  useEffect(() => {
+    if (!isEdit && categoryId !== undefined && !hydratedRef.current) {
+      hydratedRef.current = true
+      lastSavedSnapshotRef.current = currentSnapshot()
+      setSaveState('idle')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, categoryId])
 
   const publishMutation = useMutation({
     mutationFn: async () => {
@@ -184,9 +197,15 @@ export function WritePage() {
       qc.invalidateQueries({ queryKey: ['articles'] })
       qc.invalidateQueries({ queryKey: ['article'] })
       qc.invalidateQueries({ queryKey: ['my-articles'] })
+      lastSavedSnapshotRef.current = currentSnapshot(saved.status)
+      setLastSavedAt(new Date(saved.updatedAt))
+      setSaveState('saved')
       navigate(`/articles/${saved.slug}`, { viewTransition: true })
     },
-    onError: (err: Error) => setFormError(err.message),
+    onError: (err: Error) => {
+      setSaveState('error')
+      setFormError(err.message)
+    },
   })
 
   const deleteMutation = useMutation({
@@ -211,17 +230,87 @@ export function WritePage() {
     }
   }
 
+  function currentSnapshot(statusOverride = articleQuery.data?.status ?? 'DRAFT') {
+    return JSON.stringify({
+      title: title.trim(),
+      summary: summary.trim(),
+      content,
+      coverUrl: coverUrl.trim(),
+      categoryId,
+      tags,
+      status: statusOverride,
+    })
+  }
+
+  const persistDraft = useCallback(
+    async (source: 'manual' | 'auto') => {
+      if (!validate()) {
+        if (source === 'auto') setSaveState('dirty')
+        return null
+      }
+      const payload = { ...buildPayload(), status: 'DRAFT' as const }
+      setSaveState('saving')
+      const saved = isEdit ? await updateArticle(editingId!, payload) : await createArticle(payload)
+      qc.invalidateQueries({ queryKey: ['articles'] })
+      qc.invalidateQueries({ queryKey: ['article'] })
+      qc.invalidateQueries({ queryKey: ['my-articles'] })
+      lastSavedSnapshotRef.current = currentSnapshot(saved.status)
+      setLastSavedAt(new Date(saved.updatedAt))
+      setSaveState('saved')
+      if (!isEdit) {
+        navigate(`/write/${saved.id}`, { replace: true })
+      }
+      return saved
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [title, summary, content, coverUrl, categoryId, tags, isEdit, editingId, qc, navigate],
+  )
+
+  const saveMutation = useMutation({
+    mutationFn: () => persistDraft('manual'),
+    onError: (err: Error) => {
+      setSaveState('error')
+      setFormError(err.message)
+    },
+  })
+
+  useEffect(() => {
+    if (!hydratedRef.current) return
+    const snapshot = currentSnapshot()
+    if (snapshot === lastSavedSnapshotRef.current) return
+    if (saveState !== 'saving') setSaveState('dirty')
+
+    if (!title.trim() || !content.trim() || !categoryId) return
+    const timer = window.setTimeout(() => {
+      void persistDraft('auto').catch((err: Error) => {
+        setSaveState('error')
+        setFormError(err.message)
+      })
+    }, 2500)
+    return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, summary, content, coverUrl, categoryId, tags, persistDraft])
+
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (saveState !== 'dirty' && saveState !== 'error') return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [saveState])
+
   function validate(): boolean {
     setFormError(null)
-    if (!title.trim()) return setFormError('请填写标题'), false
-    if (!content.trim()) return setFormError('请填写正文'), false
-    if (!categoryId) return setFormError('请选择分类'), false
+    if (!title.trim()) return (setFormError('请填写标题'), false)
+    if (!content.trim()) return (setFormError('请填写正文'), false)
+    if (!categoryId) return (setFormError('请选择分类'), false)
     return true
   }
 
   function handleSaveDraft() {
-    if (!validate()) return
-    saveMutation.mutate({ ...buildPayload(), status: 'DRAFT' })
+    saveMutation.mutate()
   }
 
   function handlePublish() {
@@ -304,7 +393,9 @@ export function WritePage() {
         },
         () => {
           const wrap = editorWrapRef.current
-          const button = wrap?.querySelector<HTMLButtonElement>('button[aria-label="插入 Emoji 短代码"]')
+          const button = wrap?.querySelector<HTMLButtonElement>(
+            'button[aria-label="插入 Emoji 短代码"]',
+          )
           if (wrap && button) {
             const wrapRect = wrap.getBoundingClientRect()
             const buttonRect = button.getBoundingClientRect()
@@ -336,12 +427,20 @@ export function WritePage() {
   }
 
   function insertTemplateDraft() {
-    insertMarkdownAtSelection(editorTextareaRef.current, templateDraft, applyContent, contentRef.current)
+    insertMarkdownAtSelection(
+      editorTextareaRef.current,
+      templateDraft,
+      applyContent,
+      contentRef.current,
+    )
     setTemplatePanelOpen(false)
   }
 
   function insertTableFromPanel() {
-    const alignments = Array.from({ length: tableColumns }, (_, idx) => tableAlignments[idx] ?? 'left')
+    const alignments = Array.from(
+      { length: tableColumns },
+      (_, idx) => tableAlignments[idx] ?? 'left',
+    )
     const table = createMarkdownTable({ rows: tableRows, columns: tableColumns, alignments })
     insertMarkdownAtSelection(editorTextareaRef.current, table, applyContent, contentRef.current)
     setTablePanelOpen(false)
@@ -448,7 +547,11 @@ export function WritePage() {
     setPasteUploading(true)
     setFormError(null)
     // Insert a placeholder so the user gets feedback immediately.
-    const alt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim() || '图片'
+    const alt =
+      file.name
+        .replace(/\.[^.]+$/, '')
+        .replace(/[-_]+/g, ' ')
+        .trim() || '图片'
     const placeholder = `![uploading…](${file.name})`
     insertAtCaret(textarea, placeholder)
     try {
@@ -515,10 +618,16 @@ export function WritePage() {
       if (tag === 'br') return '\n'
       if (tag === 'li') return `- ${children.trim()}\n`
       if (/h[1-6]/.test(tag)) return `${'#'.repeat(Number(tag[1]))} ${children.trim()}\n\n`
-      if (tag === 'blockquote') return `${children.trim().split('\n').map((line) => `> ${line}`).join('\n')}\n\n`
+      if (tag === 'blockquote')
+        return `${children
+          .trim()
+          .split('\n')
+          .map((line) => `> ${line}`)
+          .join('\n')}\n\n`
       if (tag === 'p' || tag === 'div') return `${children.trim()}\n\n`
       if (tag === 'ul' || tag === 'ol') return `${children.trim()}\n\n`
-      if (tag === 'mark' || tag === 'kbd' || tag === 'sub' || tag === 'sup') return `<${tag}>${children}</${tag}>`
+      if (tag === 'mark' || tag === 'kbd' || tag === 'sub' || tag === 'sup')
+        return `<${tag}>${children}</${tag}>`
       return children
     }
     return Array.from(doc.body.childNodes)
@@ -566,9 +675,7 @@ export function WritePage() {
   }
 
   function handleEditorDrop(e: DragEvent<HTMLTextAreaElement>) {
-    const files = Array.from(e.dataTransfer?.files ?? []).filter((f) =>
-      f.type.startsWith('image/'),
-    )
+    const files = Array.from(e.dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/'))
     if (files.length === 0) return
     e.preventDefault()
     const ta = e.currentTarget
@@ -581,6 +688,27 @@ export function WritePage() {
   const readTime = estimateReadTime(content)
   const status = articleQuery.data?.status ?? 'DRAFT'
   const isSaving = saveMutation.isPending || publishMutation.isPending
+  const saveLabel = publishMutation.isPending
+    ? '发布中…'
+    : saveState === 'saving' || saveMutation.isPending
+      ? '保存中…'
+      : saveState === 'dirty'
+        ? '有未保存修改'
+        : saveState === 'error'
+          ? '保存失败'
+          : lastSavedAt
+            ? `已保存 · ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+            : status === 'PUBLISHED'
+              ? '已发布'
+              : '草稿'
+  const saveDotClass =
+    saveState === 'dirty'
+      ? 'bg-amber-500'
+      : saveState === 'error'
+        ? 'bg-red-500'
+        : saveState === 'saving' || saveMutation.isPending || publishMutation.isPending
+          ? 'bg-klein'
+          : 'bg-emerald-signal'
 
   if (isEdit && articleQuery.isLoading) {
     return (
@@ -602,7 +730,13 @@ export function WritePage() {
   }
 
   // Guard: edit mode requires ownership (server enforces too, this is UX)
-  if (isEdit && articleQuery.data && user && articleQuery.data.authorId !== user.id && user.role !== 'ADMIN') {
+  if (
+    isEdit &&
+    articleQuery.data &&
+    user &&
+    articleQuery.data.authorId !== user.id &&
+    user.role !== 'ADMIN'
+  ) {
     return (
       <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
         <p className="text-red-600">无权编辑该文章</p>
@@ -790,9 +924,7 @@ export function WritePage() {
 
           <p className="mt-2 font-mono text-xs text-steel">
             提示 · 粘贴 / 拖入图片自动上传 · 右下角拖拽调整高度
-            {pasteUploading && (
-              <span className="ml-2 text-klein">· 图片上传中…</span>
-            )}
+            {pasteUploading && <span className="ml-2 text-klein">· 图片上传中…</span>}
           </p>
         </div>
 
@@ -917,7 +1049,8 @@ export function WritePage() {
 
               <div className="table-dialog-side">
                 <p className="font-mono text-xs text-steel">
-                  预览 {tableHoverRows} 行 × {tableHoverColumns} 列 · 已选 {tableRows} 行 × {tableColumns} 列
+                  预览 {tableHoverRows} 行 × {tableHoverColumns} 列 · 已选 {tableRows} 行 ×{' '}
+                  {tableColumns} 列
                 </p>
                 <div className="table-align-grid">
                   {Array.from({ length: tableColumns }, (_, idx) => (
@@ -981,14 +1114,8 @@ export function WritePage() {
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 text-steel font-mono text-xs">
             <span className="inline-flex items-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-signal" />
-              {saveMutation.isPending
-                ? '保存中…'
-                : publishMutation.isPending
-                  ? '发布中…'
-                  : status === 'PUBLISHED'
-                    ? '已发布'
-                    : '草稿'}
+              <span className={`inline-block w-1.5 h-1.5 rounded-full ${saveDotClass}`} />
+              {saveLabel}
             </span>
           </div>
           <div className="flex items-center gap-3">

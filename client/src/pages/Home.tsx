@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { ArticleList } from '@/components/ArticleList'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState } from '@/components/EmptyState'
+import { Seo } from '@/components/Seo'
 import { useUrlNumberParam } from '@/hooks/useUrlParam'
 import { displayName } from '@/utils/displayName'
 
@@ -27,6 +28,10 @@ export function HomePage() {
 
   return (
     <>
+      <Seo
+        description="一个慢工出细活的技术博客。这里写代码、写思考、写做错的事。"
+        canonicalPath="/"
+      />
       {/* === Hero === */}
       <section className="relative overflow-hidden border-b border-whisper">
         <div className="absolute inset-0 hairline-grid pointer-events-none" />
@@ -46,9 +51,7 @@ export function HomePage() {
           <p className="mt-6 text-lg text-steel max-w-md leading-relaxed">
             一个慢工出细活的技术博客。
             <br />
-            {user
-              ? `欢迎回来,${displayName(user)}。`
-              : '这里写代码、写思考、写做错的事。'}
+            {user ? `欢迎回来,${displayName(user)}。` : '这里写代码、写思考、写做错的事。'}
           </p>
           <div className="mt-9 flex items-center gap-3 flex-wrap">
             <button type="button" onClick={scrollToLatest} className="btn-primary">
@@ -77,24 +80,23 @@ export function HomePage() {
               所有分类
             </Link>
             <span className="w-px h-3 bg-whisper" />
-            <Link
-              to="/tags"
-              className="inline-flex items-center gap-2 hover:text-klein transition"
-            >
+            <Link to="/tags" className="inline-flex items-center gap-2 hover:text-klein transition">
               <TagIcon size={14} />
               所有标签
             </Link>
             <span className="w-px h-3 bg-whisper" />
             <span>
-              已发布{' '}
-              <span className="text-ink font-medium">{data?.total ?? '—'}</span> 篇
+              已发布 <span className="text-ink font-medium">{data?.total ?? '—'}</span> 篇
             </span>
           </div>
         </div>
       </section>
 
       {/* === Section divider === */}
-      <div className="reveal-on-scroll relative max-w-[1280px] mx-auto px-6 md:px-10 pt-16" id="latest">
+      <div
+        className="reveal-on-scroll relative max-w-[1280px] mx-auto px-6 md:px-10 pt-16"
+        id="latest"
+      >
         <div className="flex items-baseline justify-between">
           <h2 className="text-2xl font-semibold tracking-tight">最新文章</h2>
           <span className="font-mono text-xs text-steel">
@@ -143,7 +145,10 @@ export function HomePage() {
                 pageCount={data.pageCount}
                 onChange={(p) => {
                   setPage(p)
-                  window.scrollTo({ top: document.getElementById('latest')?.offsetTop ?? 0, behavior: 'smooth' })
+                  window.scrollTo({
+                    top: document.getElementById('latest')?.offsetTop ?? 0,
+                    behavior: 'smooth',
+                  })
                 }}
                 compact
               />

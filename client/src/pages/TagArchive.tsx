@@ -6,6 +6,7 @@ import { listArticles } from '@/api/articles'
 import { ArticleList } from '@/components/ArticleList'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState } from '@/components/EmptyState'
+import { Seo } from '@/components/Seo'
 import { useUrlNumberParam } from '@/hooks/useUrlParam'
 
 const PAGE_SIZE = 6
@@ -24,6 +25,11 @@ export function TagArchivePage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
+      <Seo
+        title={`#${tagName}`}
+        description={`浏览标签「${tagName}」下的已发布文章。`}
+        canonicalPath={`/tags/${encodeURIComponent(tagName)}`}
+      />
       <header className="mb-12">
         <Link
           to="/tags"
@@ -35,19 +41,14 @@ export function TagArchivePage() {
         <div className="flex items-baseline gap-4 flex-wrap">
           <TagIcon size={26} strokeWidth={1.5} className="text-klein" />
           <h1 className="text-3xl font-semibold tracking-tight">#{tagName}</h1>
-          <span className="font-mono text-sm text-steel">
-            {data ? `${data.total} 篇` : '—'}
-          </span>
+          <span className="font-mono text-sm text-steel">{data ? `${data.total} 篇` : '—'}</span>
         </div>
       </header>
 
       {isLoading && <p className="text-steel font-mono text-sm py-8">LOADING…</p>}
 
       {data && data.items.length === 0 && (
-        <EmptyState
-          title="该标签下没有文章"
-          description={`没有标记为「${tagName}」的已发布文章`}
-        />
+        <EmptyState title="该标签下没有文章" description={`没有标记为「${tagName}」的已发布文章`} />
       )}
 
       {data && data.items.length > 0 && (

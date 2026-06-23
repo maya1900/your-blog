@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { lazy, Suspense } from 'react'
 import { Info } from 'lucide-react'
 import { getAbout } from '@/api/site'
+import { Seo } from '@/components/Seo'
 import { formatDate } from '@/utils/format'
 
 const MarkdownRenderer = lazy(() =>
@@ -30,6 +31,7 @@ export function AboutPage() {
 
   return (
     <div className="max-w-[760px] mx-auto px-6 md:px-10 py-16">
+      <Seo title="关于" description="关于本站和作者。" canonicalPath="/about" />
       <p className="font-mono text-xs text-steel tracking-[0.08em] inline-flex items-center gap-2 mb-6">
         <Info size={13} />
         ABOUT

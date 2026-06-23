@@ -1,18 +1,9 @@
 import { z } from 'zod'
 import { Role } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
-import {
-  BadRequestError,
-  ConflictError,
-  ForbiddenError,
-  NotFoundError,
-} from '../utils/errors.js'
+import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '../utils/errors.js'
 import { hashPassword } from '../utils/password.js'
-import {
-  paginated,
-  skipTake,
-  type PaginationInput,
-} from '../utils/pagination.js'
+import { paginated, skipTake, type PaginationInput } from '../utils/pagination.js'
 import { generateSlug, withSuffix } from '../utils/slug.js'
 
 // ============ Zod schemas ============
@@ -26,12 +17,7 @@ export const ListUsersSchema = z.object({
 
 export const UpdateUserSchema = z
   .object({
-    nickname: z
-      .string()
-      .trim()
-      .min(1, '昵称不能为空')
-      .max(32, '昵称最多 32 个字符')
-      .optional(),
+    nickname: z.string().trim().min(1, '昵称不能为空').max(32, '昵称最多 32 个字符').optional(),
     email: z.string().email('邮箱格式不正确').max(120).optional(),
     bio: z.string().max(200, '简介最多 200 字').nullable().optional(),
     avatar: z
@@ -41,20 +27,13 @@ export const UpdateUserSchema = z
       .optional()
       .refine(
         (v) =>
-          v === undefined ||
-          v === null ||
-          v === '' ||
-          v.startsWith('/') ||
-          /^https?:\/\//.test(v),
+          v === undefined || v === null || v === '' || v.startsWith('/') || /^https?:\/\//.test(v),
         '头像必须是 http(s):// 链接或 /uploads/… 路径',
       ),
     role: z.nativeEnum(Role).optional(),
     isActive: z.boolean().optional(),
   })
-  .refine(
-    (v) => Object.values(v).some((x) => x !== undefined),
-    '未提供更新字段',
-  )
+  .refine((v) => Object.values(v).some((x) => x !== undefined), '未提供更新字段')
 
 export const ListCommentsSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -63,18 +42,11 @@ export const ListCommentsSchema = z.object({
 })
 
 export const ResetPasswordSchema = z.object({
-  newPassword: z
-    .string()
-    .min(8, '新密码至少 8 位')
-    .max(64, '新密码最多 64 位'),
+  newPassword: z.string().min(8, '新密码至少 8 位').max(64, '新密码最多 64 位'),
 })
 
 export const CategoryInputSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, '分类名不能为空')
-    .max(32, '分类名最多 32 个字符'),
+  name: z.string().trim().min(1, '分类名不能为空').max(32, '分类名最多 32 个字符'),
   slug: z
     .string()
     .trim()
@@ -90,6 +62,84 @@ export type UpdateUserInput = z.infer<typeof UpdateUserSchema>
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>
 export type ListCommentsInput = z.infer<typeof ListCommentsSchema>
 export type CategoryInput = z.infer<typeof CategoryInputSchema>
+
+// ============ Site export ============
+
+export async function buildSiteExport() {
+  const exportedAt = new Date()
+  const [users, articles, comments, categories, tags, settings] = await Promise.all([
+    prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        nickname: true,
+        email: true,
+        role: true,
+        avatar: true,
+        bio: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: { id: 'asc' },
+    }),
+    prisma.article.findMany({
+      include: {
+        author: { select: { id: true, username: true, nickname: true } },
+        category: { select: { id: true, name: true, slug: true } },
+        tags: { include: { tag: { select: { id: true, name: true } } } },
+        _count: { select: { comments: true, likes: true, favorites: true } },
+      },
+      orderBy: { id: 'asc' },
+    }),
+    prisma.comment.findMany({
+      include: {
+        user: { select: { id: true, username: true, nickname: true } },
+        article: { select: { id: true, slug: true, title: true } },
+      },
+      orderBy: { id: 'asc' },
+    }),
+    prisma.category.findMany({
+      include: { _count: { select: { articles: true } } },
+      orderBy: { id: 'asc' },
+    }),
+    prisma.tag.findMany({
+      include: { _count: { select: { articles: true } } },
+      orderBy: { id: 'asc' },
+    }),
+    prisma.siteSetting.findMany({ orderBy: { key: 'asc' } }),
+  ])
+
+  const payload = {
+    manifest: {
+      app: 'your-blog',
+      version: 1,
+      exportedAt: exportedAt.toISOString(),
+      counts: {
+        users: users.length,
+        articles: articles.length,
+        comments: comments.length,
+        categories: categories.length,
+        tags: tags.length,
+        settings: settings.length,
+      },
+      note: 'Users are exported without passwordHash. Uploaded files are referenced by URL but not bundled in this JSON export.',
+    },
+    users,
+    articles: articles.map(({ tags: articleTags, ...article }) => ({
+      ...article,
+      tags: articleTags.map(({ tag }) => tag),
+    })),
+    comments,
+    categories,
+    tags,
+    settings,
+  }
+
+  return {
+    filename: `your-blog-export-${exportedAt.toISOString().slice(0, 10)}.json`,
+    payload,
+  }
+}
 
 // ============ Dashboard stats ============
 
@@ -257,24 +307,23 @@ export async function getStats(): Promise<AdminStats> {
 
 async function getPageViewStats(weekAgo: Date, monthAgo: Date) {
   try {
-    const [pageviews, weekPageviews, visitorRows, weekVisitorRows, monthRows] =
-      await Promise.all([
-        prisma.pageView.count(),
-        prisma.pageView.count({ where: { createdAt: { gte: weekAgo } } }),
-        prisma.pageView.findMany({
-          distinct: ['visitorId'],
-          select: { visitorId: true },
-        }),
-        prisma.pageView.findMany({
-          where: { createdAt: { gte: weekAgo } },
-          distinct: ['visitorId'],
-          select: { visitorId: true },
-        }),
-        prisma.pageView.findMany({
-          where: { createdAt: { gte: monthAgo } },
-          select: { createdAt: true },
-        }),
-      ])
+    const [pageviews, weekPageviews, visitorRows, weekVisitorRows, monthRows] = await Promise.all([
+      prisma.pageView.count(),
+      prisma.pageView.count({ where: { createdAt: { gte: weekAgo } } }),
+      prisma.pageView.findMany({
+        distinct: ['visitorId'],
+        select: { visitorId: true },
+      }),
+      prisma.pageView.findMany({
+        where: { createdAt: { gte: weekAgo } },
+        distinct: ['visitorId'],
+        select: { visitorId: true },
+      }),
+      prisma.pageView.findMany({
+        where: { createdAt: { gte: monthAgo } },
+        select: { createdAt: true },
+      }),
+    ])
 
     return {
       pageviews,
@@ -335,11 +384,7 @@ export async function listUsers(input: ListUsersInput) {
   return paginated(rows, total, pagination)
 }
 
-export async function updateUser(
-  viewerId: number,
-  targetId: number,
-  input: UpdateUserInput,
-) {
+export async function updateUser(viewerId: number, targetId: number, input: UpdateUserInput) {
   const target = await prisma.user.findUnique({ where: { id: targetId } })
   if (!target) throw new NotFoundError('用户不存在')
 
@@ -391,10 +436,7 @@ export async function updateUser(
  * Admin password reset. No current-password verification — admin authority.
  * Used to recover access for users who forgot their password.
  */
-export async function resetUserPassword(
-  targetId: number,
-  input: ResetPasswordInput,
-) {
+export async function resetUserPassword(targetId: number, input: ResetPasswordInput) {
   const target = await prisma.user.findUnique({
     where: { id: targetId },
     select: { id: true },
@@ -481,9 +523,7 @@ export async function deleteCategory(id: number) {
   })
   if (!target) throw new NotFoundError('分类不存在')
   if (target._count.articles > 0) {
-    throw new BadRequestError(
-      `分类下还有 ${target._count.articles} 篇文章,无法删除`,
-    )
+    throw new BadRequestError(`分类下还有 ${target._count.articles} 篇文章,无法删除`)
   }
   await prisma.category.delete({ where: { id } })
 }

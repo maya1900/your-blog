@@ -52,6 +52,22 @@ export async function getStats(): Promise<AdminStats> {
   return data.data
 }
 
+export async function downloadSiteExport(): Promise<void> {
+  const resp = await http.get<Blob>('/admin/export', { responseType: 'blob' })
+  const cd = (resp.headers['content-disposition'] as string | undefined) ?? ''
+  const match = /filename="([^"]+)"/.exec(cd)
+  const filename = match ? match[1] : 'your-blog-export.json'
+
+  const url = URL.createObjectURL(resp.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
 // ===== Users =====
 
 export interface AdminUser extends User {

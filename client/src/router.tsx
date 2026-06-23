@@ -29,19 +29,19 @@ const ArticleDetailPage = lazyNamed(() => import('./pages/ArticleDetail'), 'Arti
 const AdminLayout = lazyNamed(() => import('./layouts/AdminLayout'), 'AdminLayout')
 const AdminDashboardPage = lazyNamed(() => import('./pages/admin/Dashboard'), 'AdminDashboardPage')
 const AdminArticlesPage = lazyNamed(() => import('./pages/admin/Articles'), 'AdminArticlesPage')
-const AdminCategoriesPage = lazyNamed(() => import('./pages/admin/Categories'), 'AdminCategoriesPage')
+const AdminCategoriesPage = lazyNamed(
+  () => import('./pages/admin/Categories'),
+  'AdminCategoriesPage',
+)
 const AdminTagsPage = lazyNamed(() => import('./pages/admin/Tags'), 'AdminTagsPage')
 const AdminUsersPage = lazyNamed(() => import('./pages/admin/Users'), 'AdminUsersPage')
 const AdminCommentsPage = lazyNamed(() => import('./pages/admin/Comments'), 'AdminCommentsPage')
 const AdminAboutPage = lazyNamed(() => import('./pages/admin/About'), 'AdminAboutPage')
 const AdminSiteInfoPage = lazyNamed(() => import('./pages/admin/SiteInfo'), 'AdminSiteInfoPage')
+const AdminExportPage = lazyNamed(() => import('./pages/admin/Export'), 'AdminExportPage')
 
 function RouteLoading() {
-  return (
-    <div className="px-6 py-16 text-center text-steel font-mono text-sm">
-      LOADING…
-    </div>
-  )
+  return <div className="px-6 py-16 text-center text-steel font-mono text-sm">LOADING…</div>
 }
 
 function withSuspense(element: ReactElement) {
@@ -92,6 +92,7 @@ export const router = createBrowserRouter([
           { path: '/admin/tags', element: withSuspense(<AdminTagsPage />) },
           { path: '/admin/users', element: withSuspense(<AdminUsersPage />) },
           { path: '/admin/comments', element: withSuspense(<AdminCommentsPage />) },
+          { path: '/admin/export', element: withSuspense(<AdminExportPage />) },
           { path: '/admin/about', element: withSuspense(<AdminAboutPage />) },
           { path: '/admin/site', element: withSuspense(<AdminSiteInfoPage />) },
         ],

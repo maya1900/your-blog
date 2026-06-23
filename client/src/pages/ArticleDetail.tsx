@@ -8,11 +8,14 @@ import { listComments } from '@/api/comments'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { StatusBadge } from '@/components/StatusBadge'
 import { ReactionsCard } from '@/components/ReactionsCard'
+import { ArticleShareButton, ArticleShareCard } from '@/components/ArticleShare'
 import { CommentsSection } from '@/components/CommentsSection'
 import { DefaultCoverGradient } from '@/components/DefaultCoverGradient'
 import { Avatar } from '@/components/Avatar'
 import { formatDate, estimateReadTime } from '@/utils/format'
 import { useAuthStore } from '@/stores/auth.store'
+import { displayName } from '@/utils/displayName'
+import { markdownHeadingText, slugifyHeading } from '@/utils/headingId'
 
 export function ArticleDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -37,7 +40,7 @@ export function ArticleDetailPage() {
     const matches = data.content.matchAll(/^(##?)\s+(.+)$/gm)
     return Array.from(matches).map((m) => ({
       level: m[1]!.length,
-      text: m[2]!.trim(),
+      text: markdownHeadingText(m[2]!.trim()),
     }))
   }, [data?.content])
 
@@ -69,6 +72,7 @@ export function ArticleDetailPage() {
   const canViewReplyOnly =
     canEdit || !!commentsQuery.data?.items.some((comment) => comment.userId === user?.id)
   const readTime = estimateReadTime(data.content)
+  const authorName = displayName(data.author)
 
   return (
     <div className="max-w-[1080px] mx-auto px-6 md:px-10">
@@ -117,8 +121,8 @@ export function ArticleDetailPage() {
 
         <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-steel">
           <div className="flex items-center gap-2">
-            <Avatar username={data.author.username} avatar={data.author.avatar} size={24} />
-            <span className="text-sm font-medium text-ink">{data.author.username}</span>
+            <Avatar username={authorName} avatar={data.author.avatar} size={24} />
+            <span className="text-sm font-medium text-ink">{authorName}</span>
           </div>
           <span className="font-mono text-xs">{formatDate(data.publishedAt ?? data.createdAt)}</span>
           <span className="font-mono text-xs flex items-center gap-1.5">
@@ -133,6 +137,7 @@ export function ArticleDetailPage() {
             <MessageSquare size={13} />
             {data._count.comments} 评论
           </span>
+          <ArticleShareButton article={data} />
 
           {canEdit && (
             <Link
@@ -169,54 +174,54 @@ export function ArticleDetailPage() {
             <p className="mt-4 font-mono text-xs text-steel">
               本文链接 · /articles/{data.slug}
             </p>
+            <ArticleShareCard article={data} className="mt-6 lg:hidden" />
           </footer>
         </article>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-24 space-y-8">
-            {headings.length > 0 && (
+        <aside className="hidden lg:block space-y-8">
+          <div className="border border-whisper rounded-xl p-5 bg-surface">
+            <Link
+              to={`/users/${encodeURIComponent(data.author.username)}`}
+              className="flex items-center gap-3 group"
+            >
+              <Avatar username={authorName} avatar={data.author.avatar} size={48} />
               <div>
-                <p className="font-mono text-xs text-steel tracking-[0.04em] mb-3">目录 / TOC</p>
-                <nav className="border-l border-whisper">
-                  {headings.map((h, i) => (
-                    <a
-                      key={i}
-                      href={`#${slugifyHash(h.text)}`}
-                      className={`block py-1.5 text-sm text-steel hover:text-ink transition-colors ${
-                        h.level === 2 ? 'pl-3' : 'pl-7'
-                      }`}
-                    >
-                      {h.text}
-                    </a>
-                  ))}
-                </nav>
+                <p className="font-semibold text-ink group-hover:text-klein transition-colors">
+                  {authorName}
+                </p>
+                <p className="font-mono text-xs text-steel">@{data.author.username}</p>
               </div>
-            )}
-
-            <div className="border border-whisper rounded-xl p-5 bg-surface">
-              <Link
-                to={`/users/${encodeURIComponent(data.author.username)}`}
-                className="flex items-center gap-3 group"
-              >
-                <Avatar username={data.author.username} avatar={data.author.avatar} size={48} />
-                <div>
-                  <p className="font-semibold text-ink group-hover:text-klein transition-colors">
-                    {data.author.username}
-                  </p>
-                  <p className="font-mono text-xs text-steel">@{data.author.username}</p>
-                </div>
-              </Link>
-              <Link
-                to={`/users/${encodeURIComponent(data.author.username)}`}
-                className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-steel hover:text-klein transition-colors"
-              >
-                查看 {data.author.username} 的全部文章
-                <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
-              </Link>
-            </div>
-
-            <ReactionsCard article={data} />
+            </Link>
+            <Link
+              to={`/users/${encodeURIComponent(data.author.username)}`}
+              className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-steel hover:text-klein transition-colors"
+            >
+              查看 {authorName} 的全部文章
+              <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
           </div>
+
+          <ReactionsCard article={data} />
+          <ArticleShareCard article={data} />
+
+          {headings.length > 0 && (
+            <div className="sticky top-24">
+              <p className="font-mono text-xs text-steel tracking-[0.04em] mb-3">目录 / TOC</p>
+              <nav className="border-l border-whisper">
+                {headings.map((h, i) => (
+                  <a
+                    key={i}
+                    href={`#${slugifyHeading(h.text)}`}
+                    className={`block py-1.5 text-sm text-steel hover:text-ink transition-colors ${
+                      h.level === 2 ? 'pl-3' : 'pl-7'
+                    }`}
+                  >
+                    {h.text}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          )}
         </aside>
       </div>
 
@@ -225,13 +230,4 @@ export function ArticleDetailPage() {
       </div>
     </div>
   )
-}
-
-function slugifyHash(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\p{Letter}\p{Number}\s-]/gu, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
 }

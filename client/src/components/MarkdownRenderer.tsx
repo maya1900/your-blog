@@ -15,6 +15,7 @@ import {
   Play,
 } from 'lucide-react'
 import { replaceEmojiShortcodes } from '@/utils/emoji'
+import { slugifyHeading, textFromReactNode } from '@/utils/headingId'
 
 // Allow `className` on `<code>` so rehype-highlight can color tokens.
 const schema = {
@@ -398,6 +399,16 @@ export function MarkdownRenderer({ children, className, canViewReplyOnly }: Prop
             // class names survive sanitization (we allow `className` above).
             rehypePlugins={[rehypeRaw, rehypeHighlight, [rehypeSanitize, schema]]}
             components={{
+              h1: ({ children: headingChildren }) => (
+                <h1 id={slugifyHeading(textFromReactNode(headingChildren))}>
+                  {headingChildren}
+                </h1>
+              ),
+              h2: ({ children: headingChildren }) => (
+                <h2 id={slugifyHeading(textFromReactNode(headingChildren))}>
+                  {headingChildren}
+                </h2>
+              ),
               a: ({ href, children: linkChildren }) => (
                 <a href={href} target="_blank" rel="noreferrer">
                   {linkChildren}

@@ -11,6 +11,7 @@ async function main() {
     update: {},
     create: {
       username: 'admin',
+      nickname: 'admin',
       email: 'admin@moji.local',
       passwordHash,
       role: Role.ADMIN,

@@ -9,6 +9,7 @@ import { useUrlNumberParam, useUrlParam } from '@/hooks/useUrlParam'
 import { formatDate } from '@/utils/format'
 import { Pagination } from '@/components/Pagination'
 import { Avatar } from '@/components/Avatar'
+import { displayName } from '@/utils/displayName'
 
 export function AdminCommentsPage() {
   const [keyword, setKeyword] = useUrlParam('keyword', '')
@@ -99,8 +100,8 @@ export function AdminCommentsPage() {
                 <tr key={c.id}>
                   <td>
                     <div className="flex items-center gap-2">
-                      <Avatar username={c.user.username} avatar={c.user.avatar} size={28} />
-                      <span className="text-sm">{c.user.username}</span>
+                      <Avatar username={displayName(c.user)} avatar={c.user.avatar} size={28} />
+                      <span className="text-sm">{displayName(c.user)}</span>
                     </div>
                   </td>
                   <td>

@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { Avatar } from '@/components/Avatar'
 import { useUrlNumberParam } from '@/hooks/useUrlParam'
 import { formatDate } from '@/utils/format'
+import { displayName } from '@/utils/displayName'
 
 const PAGE_SIZE = 6
 
@@ -59,15 +60,16 @@ export function AuthorProfilePage() {
 
   const user = userQuery.data
   const data = articlesQuery.data
+  const name = displayName(user)
 
   return (
     <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16">
       <header className="mb-12 flex items-start gap-6 flex-wrap">
-        <Avatar username={user.username} avatar={user.avatar} size={96} />
+        <Avatar username={name} avatar={user.avatar} size={96} />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-3 flex-wrap">
-            <h1 className="text-3xl font-semibold tracking-tight">{user.username}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
             <span className="font-mono text-xs text-steel">@{user.username}</span>
           </div>
           {user.bio && (
@@ -108,7 +110,7 @@ export function AuthorProfilePage() {
         {data && data.items.length === 0 && (
           <EmptyState
             title="还没有公开发布的文章"
-            description={`${user.username} 暂时没有可阅读的文章`}
+            description={`${name} 暂时没有可阅读的文章`}
           />
         )}
 

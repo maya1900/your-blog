@@ -14,6 +14,7 @@ import { getStats, type AdminStats } from '@/api/admin'
 import { formatDate } from '@/utils/format'
 import { cn } from '@/utils/cn'
 import { Avatar } from '@/components/Avatar'
+import { displayName } from '@/utils/displayName'
 
 export function AdminDashboardPage() {
   const { data, isLoading } = useQuery({
@@ -171,11 +172,11 @@ export function AdminDashboardPage() {
                     <td>
                       <div className="flex items-center gap-2">
                         <Avatar
-                          username={a.author.username}
+                          username={displayName(a.author)}
                           avatar={a.author.avatar}
                           size={24}
                         />
-                        <span className="text-sm">{a.author.username}</span>
+                        <span className="text-sm">{displayName(a.author)}</span>
                       </div>
                     </td>
                     <td>
@@ -210,10 +211,10 @@ export function AdminDashboardPage() {
             ) : (
               data.recentComments.map((c) => (
                 <div key={c.id} className="flex items-start gap-3">
-                  <Avatar username={c.user.username} avatar={c.user.avatar} size={28} />
+                  <Avatar username={displayName(c.user)} avatar={c.user.avatar} size={28} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
-                      <span className="font-medium">{c.user.username}</span>
+                      <span className="font-medium">{displayName(c.user)}</span>
                       <span className="text-steel"> 评论了 </span>
                       <Link
                         to={`/articles/${c.article.slug}`}

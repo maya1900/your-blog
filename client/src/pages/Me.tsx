@@ -19,6 +19,7 @@ import { AvatarEditor } from "@/components/AvatarEditor";
 import { Avatar } from "@/components/Avatar";
 import { formatDate } from "@/utils/format";
 import { cn } from "@/utils/cn";
+import { displayName } from "@/utils/displayName";
 
 type Tab = "published" | "drafts" | "favorites" | "profile";
 
@@ -66,6 +67,7 @@ export function MePage() {
   const publishedCount = publishedQuery.data?.total ?? 0;
   const draftsCount = draftsQuery.data?.total ?? 0;
   const favoritesCount = favoritesQuery.data?.total ?? 0;
+  const name = displayName(user);
 
   return (
     <>
@@ -74,7 +76,7 @@ export function MePage() {
         <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-12">
           <div className="flex items-start gap-8 flex-wrap">
             <Avatar
-              username={user.username}
+              username={name}
               avatar={user.avatar}
               size={96}
               className="!ring-0 border border-whisper"
@@ -83,7 +85,7 @@ export function MePage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-3xl font-semibold tracking-tight">
-                  {user.username}
+                  {name}
                 </h1>
                 <span
                   className={cn("chip", user.role === "ADMIN" && "chip-active")}
@@ -434,7 +436,7 @@ function FavoritesList({
               </p>
             )}
             <div className="mt-3 flex items-center gap-3 font-mono text-xs text-steel">
-              <span>作者 · {a.author.username}</span>
+              <span>作者 · {displayName(a.author)}</span>
               <span className="text-whisper">·</span>
               <span className="inline-flex items-center gap-1">
                 <Bookmark size={12} />
@@ -463,21 +465,21 @@ function ProfileView() {
   const setUser = useAuthStore((s) => s.setUser);
   const qc = useQueryClient();
 
-  const [username, setUsername] = useState(user.username);
+  const [nickname, setNickname] = useState(displayName(user));
   const [bio, setBio] = useState(user.bio ?? "");
   const [avatar, setAvatar] = useState<string | null>(user.avatar);
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
   const dirty =
-    username.trim() !== user.username ||
+    nickname.trim() !== displayName(user) ||
     (bio || "") !== (user.bio ?? "") ||
     (avatar ?? null) !== (user.avatar ?? null);
 
   const saveMu = useMutation({
     mutationFn: () =>
       updateMe({
-        username:
-          username.trim() !== user.username ? username.trim() : undefined,
+        nickname:
+          nickname.trim() !== displayName(user) ? nickname.trim() : undefined,
         bio: (bio || "") !== (user.bio ?? "") ? bio || null : undefined,
         avatar:
           (avatar ?? null) !== (user.avatar ?? null)
@@ -509,26 +511,26 @@ function ProfileView() {
         <AvatarEditor
           value={avatar}
           onChange={setAvatar}
-          fallback={user.username}
+          fallback={displayName(user)}
         />
       </div>
 
-      {/* Username */}
+      {/* Nickname */}
       <div className="mb-5">
-        <label className="field-label" htmlFor="me-username">
-          昵称 / 用户名
+        <label className="field-label" htmlFor="me-nickname">
+          昵称
         </label>
         <input
-          id="me-username"
+          id="me-nickname"
           type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
           maxLength={32}
-          placeholder="3-32 字符,允许中文 / 字母 / 数字 / _ -"
+          placeholder="最多 32 个字符"
           className="input"
         />
         <p className="mt-1 font-mono text-xs text-steel">
-          也是登录用户名(改后下次登录用新的)
+          昵称用于页面展示；登录用户名不可修改。
         </p>
       </div>
 
@@ -561,7 +563,7 @@ function ProfileView() {
         <button
           type="button"
           onClick={() => saveMu.mutate()}
-          disabled={!dirty || saveMu.isPending || username.trim().length < 3}
+          disabled={!dirty || saveMu.isPending || nickname.trim().length < 1}
           className="btn-primary !py-2 !px-5 text-sm"
         >
           {saveMu.isPending ? "保存中…" : "保存修改"}
@@ -571,7 +573,7 @@ function ProfileView() {
           <button
             type="button"
             onClick={() => {
-              setUsername(user.username);
+              setNickname(displayName(user));
               setBio(user.bio ?? "");
               setAvatar(user.avatar);
               saveMu.reset();
@@ -591,6 +593,8 @@ function ProfileView() {
 
       {/* Read-only info */}
       <dl className="mt-8 pt-6 border-t border-whisper grid grid-cols-[100px_1fr] gap-y-2.5 font-mono text-sm">
+        <dt className="text-steel">USERNAME</dt>
+        <dd className="text-ink">@{user.username}</dd>
         <dt className="text-steel">EMAIL</dt>
         <dd className="text-ink">{user.email}</dd>
         <dt className="text-steel">ROLE</dt>
@@ -719,4 +723,3 @@ function PasswordChangeCard() {
 }
 
 // ============ Avatar editor ============
-

@@ -6,6 +6,7 @@ import { formatDate, estimateReadTime } from '@/utils/format'
 import { StatusBadge } from './StatusBadge'
 import { DefaultCoverGradient } from './DefaultCoverGradient'
 import { Avatar } from './Avatar'
+import { displayName } from '@/utils/displayName'
 
 interface Props {
   items: Article[]
@@ -28,6 +29,7 @@ export function ArticleList({ items, numbered = true, total, startIndex = 0 }: P
       {items.map((a, i) => {
         const idx = startIndex + i
         const imageRight = idx % 2 === 1
+        const authorName = displayName(a.author)
         return (
           <Link
             to={`/articles/${a.slug}`}
@@ -85,11 +87,11 @@ export function ArticleList({ items, numbered = true, total, startIndex = 0 }: P
               <div className="mt-4 flex items-center justify-between max-w-xl">
                 <div className="flex items-center gap-2 text-sm text-steel">
                   <Avatar
-                    username={a.author.username}
+                    username={authorName}
                     avatar={a.author.avatar}
                     size={20}
                   />
-                  <span className="text-[13px]">{a.author.username}</span>
+                  <span className="text-[13px]">{authorName}</span>
                   <span className="text-whisper">·</span>
                   <span className="font-mono text-xs">
                     {estimateReadTime(a.content)} 分钟 · {formatDate(a.publishedAt ?? a.createdAt)}

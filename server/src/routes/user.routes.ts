@@ -4,7 +4,6 @@ import { prisma } from '../lib/prisma.js'
 import { requireAuth } from '../middlewares/requireAuth.js'
 import {
   BadRequestError,
-  ConflictError,
   UnauthorizedError,
 } from '../utils/errors.js'
 import { hashPassword, verifyPassword } from '../utils/password.js'
@@ -17,15 +16,14 @@ const PaginationQuery = z.object({
   pageSize: z.coerce.number().int().min(1).max(50).default(10),
 })
 
-/** Editable subset of the user profile. Email + role + isActive stay locked. */
+/** Editable subset of the user profile. Username + email + role + isActive stay locked. */
 const UpdateMeSchema = z
   .object({
-    username: z
+    nickname: z
       .string()
       .trim()
-      .min(3, '用户名至少 3 个字符')
-      .max(32, '用户名最多 32 个字符')
-      .regex(/^[a-zA-Z0-9_\-一-龥]+$/, '只允许字母、数字、下划线、连字符、中文')
+      .min(1, '昵称不能为空')
+      .max(32, '昵称最多 32 个字符')
       .optional(),
     bio: z
       .string()
@@ -49,7 +47,7 @@ const UpdateMeSchema = z
   })
   .refine(
     (v) =>
-      v.username !== undefined || v.bio !== undefined || v.avatar !== undefined,
+      v.nickname !== undefined || v.bio !== undefined || v.avatar !== undefined,
     '未提供更新字段',
   )
 
@@ -67,7 +65,7 @@ const listMyFavorites: RequestHandler = async (req, res, next) => {
         include: {
           article: {
             include: {
-              author: { select: { id: true, username: true, avatar: true } },
+              author: { select: { id: true, username: true, nickname: true, avatar: true } },
               category: { select: { id: true, name: true, slug: true } },
               tags: { include: { tag: { select: { id: true, name: true } } } },
               _count: { select: { comments: true, likes: true, favorites: true } },
@@ -99,16 +97,8 @@ const updateMe: RequestHandler = async (req, res, next) => {
     if (!req.user) throw new UnauthorizedError()
     const input = UpdateMeSchema.parse(req.body)
 
-    // Username uniqueness check (only when actually changing)
-    if (input.username !== undefined) {
-      const dup = await prisma.user.findFirst({
-        where: { username: input.username, NOT: { id: req.user.id } },
-      })
-      if (dup) throw new ConflictError('用户名已被占用')
-    }
-
     const data: import('@prisma/client').Prisma.UserUpdateInput = {}
-    if (input.username !== undefined) data.username = input.username
+    if (input.nickname !== undefined) data.nickname = input.nickname
     if (input.bio !== undefined) data.bio = input.bio || null
     if (input.avatar !== undefined) data.avatar = input.avatar || null
 
@@ -118,6 +108,7 @@ const updateMe: RequestHandler = async (req, res, next) => {
       select: {
         id: true,
         username: true,
+        nickname: true,
         email: true,
         role: true,
         avatar: true,
@@ -186,6 +177,7 @@ const getPublicProfile: RequestHandler = async (req, res, next) => {
       select: {
         id: true,
         username: true,
+        nickname: true,
         avatar: true,
         bio: true,
         createdAt: true,

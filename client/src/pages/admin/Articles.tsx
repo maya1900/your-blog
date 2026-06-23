@@ -24,6 +24,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useUrlNumberParam, useUrlParam } from '@/hooks/useUrlParam'
 import { formatDate } from '@/utils/format'
 import { cn } from '@/utils/cn'
+import { displayName } from '@/utils/displayName'
 import type { Article, ArticleStatus } from '@/types/api'
 
 export function AdminArticlesPage() {
@@ -341,11 +342,11 @@ function ArticleRow({
       <td>
         <div className="flex items-center gap-2">
           <Avatar
-            username={article.author.username}
+            username={displayName(article.author)}
             avatar={article.author.avatar}
             size={24}
           />
-          <span className="text-sm">{article.author.username}</span>
+          <span className="text-sm">{displayName(article.author)}</span>
         </div>
       </td>
       <td>

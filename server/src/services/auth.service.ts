@@ -29,6 +29,7 @@ export type LoginInput = z.infer<typeof LoginSchema>
 export interface SafeUser {
   id: number
   username: string
+  nickname: string
   email: string
   role: Role
   avatar: string | null
@@ -56,6 +57,7 @@ export async function register(input: RegisterInput) {
   const user = await prisma.user.create({
     data: {
       username: input.username,
+      nickname: input.username,
       email: input.email,
       passwordHash,
     },

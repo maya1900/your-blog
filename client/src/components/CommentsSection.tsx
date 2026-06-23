@@ -10,6 +10,7 @@ import {
 import type { Article } from '@/types/api'
 import { useAuthStore } from '@/stores/auth.store'
 import { formatDate } from '@/utils/format'
+import { displayName } from '@/utils/displayName'
 import { Avatar } from './Avatar'
 
 interface Props {
@@ -86,7 +87,7 @@ export function CommentsSection({ article }: Props) {
           className="border border-whisper rounded-xl bg-surface p-5 mb-10 max-w-[768px]"
         >
           <div className="flex items-start gap-3">
-            <Avatar username={user.username} avatar={user.avatar} size={32} />
+            <Avatar username={displayName(user)} avatar={user.avatar} size={32} />
             <div className="flex-1">
               <textarea
                 rows={3}
@@ -139,10 +140,10 @@ export function CommentsSection({ article }: Props) {
         {items.map((c) => (
           <li key={c.id} className="pb-6 border-b border-whisper">
             <div className="flex items-start gap-3">
-              <Avatar username={c.user.username} avatar={c.user.avatar} size={36} />
+              <Avatar username={displayName(c.user)} avatar={c.user.avatar} size={36} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-semibold text-ink">{c.user.username}</span>
+                  <span className="text-sm font-semibold text-ink">{displayName(c.user)}</span>
                   {c.user.id === article.authorId && (
                     <span className="chip chip-active !h-[18px] !px-1.5 !text-[10px]">作者</span>
                   )}

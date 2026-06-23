@@ -2,7 +2,7 @@ import { http } from './http'
 import type { PublicUser, User } from '@/types/api'
 
 export interface UpdateMeInput {
-  username?: string
+  nickname?: string
   bio?: string | null
   avatar?: string | null
 }

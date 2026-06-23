@@ -18,6 +18,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings'
 import { cn } from '@/utils/cn'
 import { Avatar } from '@/components/Avatar'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { displayName } from '@/utils/displayName'
 
 const navSections: {
   label: string
@@ -179,18 +180,18 @@ export function AdminLayout() {
               >
                 <button className="inline-flex items-center gap-2.5 pl-1 pr-3 py-1 border border-whisper rounded-full bg-surface hover:border-klein transition">
                   <Avatar
-                    username={user?.username ?? 'A'}
+                    username={user ? displayName(user) : 'A'}
                     avatar={user?.avatar}
                     size={28}
                   />
-                  <span className="text-sm font-medium">{user?.username ?? '管理员'}</span>
+                  <span className="text-sm font-medium">{user ? displayName(user) : '管理员'}</span>
                   <ChevronDown size={14} className="text-steel" />
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-44 bg-surface border border-whisper rounded-lg py-2 shadow-sm">
                     <div className="px-3 py-1.5 border-b border-whisper">
-                      <p className="text-sm font-medium text-ink truncate">{user?.username}</p>
-                      <p className="text-xs text-steel font-mono truncate">{user?.email}</p>
+                      <p className="text-sm font-medium text-ink truncate">{user ? displayName(user) : ''}</p>
+                      <p className="text-xs text-steel font-mono truncate">{user ? `@${user.username}` : ''}</p>
                     </div>
                     <Link to="/me" className="block px-3 py-2 text-sm hover:bg-whisper-soft transition">
                       个人中心

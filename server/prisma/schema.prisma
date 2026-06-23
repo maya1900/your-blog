@@ -27,6 +27,7 @@ enum ArticleStatus {
 model User {
   id           Int      @id @default(autoincrement())
   username     String   @unique
+  nickname     String   @db.VarChar(32)
   email        String   @unique
   passwordHash String
   role         Role     @default(USER)

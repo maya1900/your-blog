@@ -26,12 +26,11 @@ export const ListUsersSchema = z.object({
 
 export const UpdateUserSchema = z
   .object({
-    username: z
+    nickname: z
       .string()
       .trim()
-      .min(3, '用户名至少 3 个字符')
-      .max(32, '用户名最多 32 个字符')
-      .regex(/^[a-zA-Z0-9_\-一-龥]+$/, '只允许字母、数字、下划线、连字符、中文')
+      .min(1, '昵称不能为空')
+      .max(32, '昵称最多 32 个字符')
       .optional(),
     email: z.string().email('邮箱格式不正确').max(120).optional(),
     bio: z.string().max(200, '简介最多 200 字').nullable().optional(),
@@ -126,14 +125,14 @@ export interface AdminStats {
     viewCount: number
     createdAt: Date
     publishedAt: Date | null
-    author: { id: number; username: string; avatar: string | null }
+    author: { id: number; username: string; nickname: string; avatar: string | null }
     category: { id: number; name: string } | null
   }[]
   recentComments: {
     id: number
     content: string
     createdAt: Date
-    user: { id: number; username: string; avatar: string | null }
+    user: { id: number; username: string; nickname: string; avatar: string | null }
     article: { id: number; slug: string; title: string }
   }[]
 }
@@ -193,7 +192,7 @@ export async function getStats(): Promise<AdminStats> {
       take: 6,
       orderBy: [{ createdAt: 'desc' }],
       include: {
-        author: { select: { id: true, username: true, avatar: true } },
+        author: { select: { id: true, username: true, nickname: true, avatar: true } },
         category: { select: { id: true, name: true } },
       },
     }),
@@ -201,7 +200,7 @@ export async function getStats(): Promise<AdminStats> {
       take: 6,
       orderBy: { createdAt: 'desc' },
       include: {
-        user: { select: { id: true, username: true, avatar: true } },
+        user: { select: { id: true, username: true, nickname: true, avatar: true } },
         article: { select: { id: true, slug: true, title: true } },
       },
     }),
@@ -302,6 +301,7 @@ export async function listUsers(input: ListUsersInput) {
   if (input.keyword) {
     where.OR = [
       { username: { contains: input.keyword } },
+      { nickname: { contains: input.keyword } },
       { email: { contains: input.keyword } },
     ]
   }
@@ -317,6 +317,7 @@ export async function listUsers(input: ListUsersInput) {
       select: {
         id: true,
         username: true,
+        nickname: true,
         email: true,
         role: true,
         avatar: true,
@@ -353,12 +354,6 @@ export async function updateUser(
   }
 
   // Uniqueness checks (only when actually changing)
-  if (input.username !== undefined && input.username !== target.username) {
-    const dup = await prisma.user.findFirst({
-      where: { username: input.username, NOT: { id: targetId } },
-    })
-    if (dup) throw new ConflictError('用户名已被占用')
-  }
   if (input.email !== undefined && input.email !== target.email) {
     const dup = await prisma.user.findFirst({
       where: { email: input.email, NOT: { id: targetId } },
@@ -367,7 +362,7 @@ export async function updateUser(
   }
 
   const data: import('@prisma/client').Prisma.UserUpdateInput = {}
-  if (input.username !== undefined) data.username = input.username
+  if (input.nickname !== undefined) data.nickname = input.nickname
   if (input.email !== undefined) data.email = input.email
   if (input.bio !== undefined) data.bio = input.bio || null
   if (input.avatar !== undefined) data.avatar = input.avatar || null
@@ -380,6 +375,7 @@ export async function updateUser(
     select: {
       id: true,
       username: true,
+      nickname: true,
       email: true,
       role: true,
       avatar: true,
@@ -428,7 +424,7 @@ export async function listAllComments(input: ListCommentsInput) {
     prisma.comment.findMany({
       where,
       include: {
-        user: { select: { id: true, username: true, avatar: true } },
+        user: { select: { id: true, username: true, nickname: true, avatar: true } },
         article: { select: { id: true, slug: true, title: true } },
       },
       orderBy: { createdAt: 'desc' },

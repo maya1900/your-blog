@@ -4,6 +4,7 @@ export type ArticleStatus = 'DRAFT' | 'PUBLISHED'
 export interface User {
   id: number
   username: string
+  nickname: string
   email: string
   role: Role
   avatar: string | null
@@ -15,6 +16,7 @@ export interface User {
 export interface AuthorSummary {
   id: number
   username: string
+  nickname: string
   avatar: string | null
 }
 
@@ -22,6 +24,7 @@ export interface AuthorSummary {
 export interface PublicUser {
   id: number
   username: string
+  nickname: string
   avatar: string | null
   bio: string | null
   createdAt: string

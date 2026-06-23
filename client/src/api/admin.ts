@@ -35,14 +35,14 @@ export interface AdminStats {
     viewCount: number
     createdAt: string
     publishedAt: string | null
-    author: { id: number; username: string; avatar: string | null }
+    author: { id: number; username: string; nickname: string; avatar: string | null }
     category: { id: number; name: string } | null
   }[]
   recentComments: {
     id: number
     content: string
     createdAt: string
-    user: { id: number; username: string; avatar: string | null }
+    user: { id: number; username: string; nickname: string; avatar: string | null }
     article: { id: number; slug: string; title: string }
   }[]
 }
@@ -73,7 +73,7 @@ export async function listUsers(params: ListUsersParams = {}): Promise<PagedResu
 }
 
 export interface UpdateUserInput {
-  username?: string
+  nickname?: string
   email?: string
   bio?: string | null
   avatar?: string | null

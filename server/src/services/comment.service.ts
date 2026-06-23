@@ -26,7 +26,7 @@ export type ListCommentsInput = z.infer<typeof ListCommentsSchema>
 
 function commentInclude() {
   return {
-    user: { select: { id: true, username: true, avatar: true } },
+    user: { select: { id: true, username: true, nickname: true, avatar: true } },
   } as const
 }
 

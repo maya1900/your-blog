@@ -22,6 +22,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { formatDate } from '@/utils/format'
 import { Pagination } from '@/components/Pagination'
 import { cn } from '@/utils/cn'
+import { displayName } from '@/utils/displayName'
 import type { Role } from '@/types/api'
 
 export function AdminUsersPage() {
@@ -86,7 +87,7 @@ export function AdminUsersPage() {
               setKeyword(e.target.value)
               if (page !== 1) setPage(1)
             }}
-            placeholder="搜索用户名 / 邮箱…"
+            placeholder="搜索昵称 / 用户名 / 邮箱…"
             className="admin-input pl-9 w-full"
           />
         </div>
@@ -213,9 +214,10 @@ function UserRow({
     <tr>
       <td>
         <div className="flex items-center gap-2.5">
-          <Avatar username={user.username} avatar={user.avatar} size={32} />
+          <Avatar username={displayName(user)} avatar={user.avatar} size={32} />
           <div>
-            <p className="font-medium text-ink">{user.username}</p>
+            <p className="font-medium text-ink">{displayName(user)}</p>
+            <p className="font-mono text-[11px] text-steel">@{user.username}</p>
             {user.bio && (
               <p className="text-[13px] text-steel line-clamp-1 max-w-[220px]">
                 {user.bio}
@@ -315,7 +317,7 @@ function UserEditDialog({
   onClose: () => void
   onSaved: () => void
 }) {
-  const [username, setUsername] = useState(user.username)
+  const [nickname, setNickname] = useState(displayName(user))
   const [email, setEmail] = useState(user.email)
   const [bio, setBio] = useState(user.bio ?? '')
   const [avatar, setAvatar] = useState<string | null>(user.avatar)
@@ -326,7 +328,7 @@ function UserEditDialog({
   const saveMu = useMutation({
     mutationFn: () => {
       const input: UpdateUserInput = {}
-      if (username.trim() !== user.username) input.username = username.trim()
+      if (nickname.trim() !== displayName(user)) input.nickname = nickname.trim()
       if (email.trim() !== user.email) input.email = email.trim()
       if ((bio || '') !== (user.bio ?? '')) input.bio = bio || null
       if ((avatar ?? null) !== (user.avatar ?? null)) input.avatar = avatar || null
@@ -339,7 +341,7 @@ function UserEditDialog({
   })
 
   const dirty =
-    username.trim() !== user.username ||
+    nickname.trim() !== displayName(user) ||
     email.trim() !== user.email ||
     (bio || '') !== (user.bio ?? '') ||
     (avatar ?? null) !== (user.avatar ?? null) ||
@@ -369,7 +371,7 @@ function UserEditDialog({
           <AvatarEditor
             value={avatar}
             onChange={setAvatar}
-            fallback={username}
+            fallback={nickname}
             size="sm"
           />
         </div>
@@ -377,14 +379,14 @@ function UserEditDialog({
         {/* Two-column form */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="field-label" htmlFor="u-username">
-              用户名
+            <label className="field-label" htmlFor="u-nickname">
+              昵称
             </label>
             <input
-              id="u-username"
+              id="u-nickname"
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
               maxLength={32}
               className="input"
             />
@@ -402,6 +404,16 @@ function UserEditDialog({
               className="input font-mono text-[13px]"
             />
           </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="field-label">用户名</p>
+          <p className="font-mono text-sm text-ink bg-whisper-soft border border-whisper rounded-lg px-3.5 py-2.5">
+            @{user.username}
+          </p>
+          <p className="mt-1 font-mono text-xs text-steel">
+            用户名用于登录和个人主页路径,不可修改。
+          </p>
         </div>
 
         <div className="mt-4">
@@ -507,7 +519,7 @@ function UserEditDialog({
             disabled={
               !dirty ||
               saveMu.isPending ||
-              username.trim().length < 3 ||
+              nickname.trim().length < 1 ||
               !email.trim()
             }
             onClick={() => {
@@ -520,7 +532,7 @@ function UserEditDialog({
         </div>
 
         {/* Password reset — separate block, separate mutation */}
-        <PasswordResetSection userId={user.id} username={user.username} />
+        <PasswordResetSection userId={user.id} username={user.username} nickname={displayName(user)} />
       </div>
     </div>
   )
@@ -529,9 +541,11 @@ function UserEditDialog({
 function PasswordResetSection({
   userId,
   username,
+  nickname,
 }: {
   userId: number
   username: string
+  nickname: string
 }) {
   const [next, setNext] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -557,7 +571,8 @@ function PasswordResetSection({
     <div className="mt-6 pt-4 border-t border-whisper">
       <h4 className="text-base font-semibold mb-1">重置密码</h4>
       <p className="text-sm text-steel mb-4">
-        以管理员身份直接为 <span className="font-mono">{username}</span>{' '}
+        以管理员身份直接为 <span className="font-medium text-ink">{nickname}</span>{' '}
+        <span className="font-mono text-xs">@{username}</span>{' '}
         设置新密码,无需对方确认。建议改完通知用户。
       </p>
 

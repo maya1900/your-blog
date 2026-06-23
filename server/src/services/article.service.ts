@@ -83,7 +83,7 @@ async function ensureCategory(categoryId: number) {
 
 function articleInclude() {
   return {
-    author: { select: { id: true, username: true, avatar: true } },
+    author: { select: { id: true, username: true, nickname: true, avatar: true } },
     category: { select: { id: true, name: true, slug: true } },
     tags: { include: { tag: { select: { id: true, name: true } } } },
     _count: { select: { comments: true, likes: true, favorites: true } },
@@ -331,7 +331,7 @@ function serializeArticleToMarkdown(article: {
   updatedAt: Date
   category: { name: string } | null
   tags: { name: string }[]
-  author: { username: string } | null
+  author: { username: string; nickname?: string | null } | null
 }): string {
   const lines: string[] = ['---']
   lines.push(`title: ${yamlScalar(article.title)}`)
@@ -347,7 +347,7 @@ function serializeArticleToMarkdown(article: {
   }
   if (article.summary) lines.push(`excerpt: ${yamlScalar(article.summary)}`)
   if (article.coverUrl) lines.push(`coverImage: ${yamlScalar(article.coverUrl)}`)
-  if (article.author) lines.push(`author: ${yamlScalar(article.author.username)}`)
+  if (article.author) lines.push(`author: ${yamlScalar(article.author.nickname || article.author.username)}`)
   lines.push('---', '', article.content, '')
   return lines.join('\n')
 }

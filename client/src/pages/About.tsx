@@ -1,8 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
+import { lazy, Suspense } from 'react'
 import { Info } from 'lucide-react'
 import { getAbout } from '@/api/site'
-import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { formatDate } from '@/utils/format'
+
+const MarkdownRenderer = lazy(() =>
+  import('@/components/MarkdownRenderer').then((module) => ({
+    default: module.MarkdownRenderer,
+  })),
+)
+
+function AboutContentFallback() {
+  return (
+    <div className="space-y-3 animate-pulse">
+      <div className="h-8 w-56 bg-whisper-soft rounded" />
+      <div className="h-4 w-full bg-whisper-soft rounded" />
+      <div className="h-4 w-5/6 bg-whisper-soft rounded" />
+      <div className="h-4 w-4/6 bg-whisper-soft rounded" />
+    </div>
+  )
+}
 
 export function AboutPage() {
   const { data, isLoading } = useQuery({
@@ -19,15 +36,12 @@ export function AboutPage() {
       </p>
 
       {isLoading ? (
-        <div className="space-y-3 animate-pulse">
-          <div className="h-9 w-48 bg-whisper-soft rounded" />
-          <div className="h-4 w-full bg-whisper-soft rounded" />
-          <div className="h-4 w-5/6 bg-whisper-soft rounded" />
-          <div className="h-4 w-4/6 bg-whisper-soft rounded" />
-        </div>
+        <AboutContentFallback />
       ) : (
         <>
-          <MarkdownRenderer>{data?.content ?? ''}</MarkdownRenderer>
+          <Suspense fallback={<AboutContentFallback />}>
+            <MarkdownRenderer>{data?.content ?? ''}</MarkdownRenderer>
+          </Suspense>
           {data?.updatedAt && (
             <p className="mt-12 pt-6 border-t border-whisper font-mono text-xs text-steel">
               最后更新 · {formatDate(data.updatedAt)}

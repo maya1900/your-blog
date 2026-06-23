@@ -1,12 +1,10 @@
+import { lazy, Suspense, type ComponentType, type ReactElement } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import { PublicLayout } from './layouts/PublicLayout'
-import { AdminLayout } from './layouts/AdminLayout'
+import { RequireAuth } from './components/RequireAuth'
 import { HomePage } from './pages/Home'
 import { LoginPage } from './pages/Login'
 import { RegisterPage } from './pages/Register'
-import { MePage } from './pages/Me'
-import { WritePage } from './pages/Write'
-import { ArticleDetailPage } from './pages/ArticleDetail'
 import { CategoryIndexPage } from './pages/CategoryIndex'
 import { CategoryArchivePage } from './pages/CategoryArchive'
 import { TagIndexPage } from './pages/TagIndex'
@@ -14,15 +12,41 @@ import { TagArchivePage } from './pages/TagArchive'
 import { SearchResultsPage } from './pages/SearchResults'
 import { AboutPage } from './pages/About'
 import { AuthorProfilePage } from './pages/AuthorProfile'
-import { AdminDashboardPage } from './pages/admin/Dashboard'
-import { AdminArticlesPage } from './pages/admin/Articles'
-import { AdminCategoriesPage } from './pages/admin/Categories'
-import { AdminTagsPage } from './pages/admin/Tags'
-import { AdminUsersPage } from './pages/admin/Users'
-import { AdminCommentsPage } from './pages/admin/Comments'
-import { AdminAboutPage } from './pages/admin/About'
-import { AdminSiteInfoPage } from './pages/admin/SiteInfo'
-import { RequireAuth } from './components/RequireAuth'
+
+function lazyNamed<T extends ComponentType<object>>(
+  loader: () => Promise<Record<string, T>>,
+  exportName: string,
+) {
+  return lazy(async () => {
+    const mod = await loader()
+    return { default: mod[exportName]! }
+  })
+}
+
+const MePage = lazyNamed(() => import('./pages/Me'), 'MePage')
+const WritePage = lazyNamed(() => import('./pages/Write'), 'WritePage')
+const ArticleDetailPage = lazyNamed(() => import('./pages/ArticleDetail'), 'ArticleDetailPage')
+const AdminLayout = lazyNamed(() => import('./layouts/AdminLayout'), 'AdminLayout')
+const AdminDashboardPage = lazyNamed(() => import('./pages/admin/Dashboard'), 'AdminDashboardPage')
+const AdminArticlesPage = lazyNamed(() => import('./pages/admin/Articles'), 'AdminArticlesPage')
+const AdminCategoriesPage = lazyNamed(() => import('./pages/admin/Categories'), 'AdminCategoriesPage')
+const AdminTagsPage = lazyNamed(() => import('./pages/admin/Tags'), 'AdminTagsPage')
+const AdminUsersPage = lazyNamed(() => import('./pages/admin/Users'), 'AdminUsersPage')
+const AdminCommentsPage = lazyNamed(() => import('./pages/admin/Comments'), 'AdminCommentsPage')
+const AdminAboutPage = lazyNamed(() => import('./pages/admin/About'), 'AdminAboutPage')
+const AdminSiteInfoPage = lazyNamed(() => import('./pages/admin/SiteInfo'), 'AdminSiteInfoPage')
+
+function RouteLoading() {
+  return (
+    <div className="px-6 py-16 text-center text-steel font-mono text-sm">
+      LOADING…
+    </div>
+  )
+}
+
+function withSuspense(element: ReactElement) {
+  return <Suspense fallback={<RouteLoading />}>{element}</Suspense>
+}
 
 export const router = createBrowserRouter([
   // Auth pages: standalone full-screen layout, no top nav
@@ -34,7 +58,7 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/articles/:slug', element: <ArticleDetailPage /> },
+      { path: '/articles/:slug', element: withSuspense(<ArticleDetailPage />) },
       { path: '/categories', element: <CategoryIndexPage /> },
       { path: '/categories/:slug', element: <CategoryArchivePage /> },
       { path: '/tags', element: <TagIndexPage /> },
@@ -47,9 +71,9 @@ export const router = createBrowserRouter([
       {
         element: <RequireAuth />,
         children: [
-          { path: '/me', element: <MePage /> },
-          { path: '/write', element: <WritePage /> },
-          { path: '/write/:id', element: <WritePage /> },
+          { path: '/me', element: withSuspense(<MePage />) },
+          { path: '/write', element: withSuspense(<WritePage />) },
+          { path: '/write/:id', element: withSuspense(<WritePage />) },
         ],
       },
     ],
@@ -60,16 +84,16 @@ export const router = createBrowserRouter([
     element: <RequireAuth role="ADMIN" />,
     children: [
       {
-        element: <AdminLayout />,
+        element: withSuspense(<AdminLayout />),
         children: [
-          { path: '/admin', element: <AdminDashboardPage /> },
-          { path: '/admin/articles', element: <AdminArticlesPage /> },
-          { path: '/admin/categories', element: <AdminCategoriesPage /> },
-          { path: '/admin/tags', element: <AdminTagsPage /> },
-          { path: '/admin/users', element: <AdminUsersPage /> },
-          { path: '/admin/comments', element: <AdminCommentsPage /> },
-          { path: '/admin/about', element: <AdminAboutPage /> },
-          { path: '/admin/site', element: <AdminSiteInfoPage /> },
+          { path: '/admin', element: withSuspense(<AdminDashboardPage />) },
+          { path: '/admin/articles', element: withSuspense(<AdminArticlesPage />) },
+          { path: '/admin/categories', element: withSuspense(<AdminCategoriesPage />) },
+          { path: '/admin/tags', element: withSuspense(<AdminTagsPage />) },
+          { path: '/admin/users', element: withSuspense(<AdminUsersPage />) },
+          { path: '/admin/comments', element: withSuspense(<AdminCommentsPage />) },
+          { path: '/admin/about', element: withSuspense(<AdminAboutPage />) },
+          { path: '/admin/site', element: withSuspense(<AdminSiteInfoPage />) },
         ],
       },
     ],

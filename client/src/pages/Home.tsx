@@ -7,6 +7,7 @@ import { ArticleList } from '@/components/ArticleList'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState } from '@/components/EmptyState'
 import { useUrlNumberParam } from '@/hooks/useUrlParam'
+import { displayName } from '@/utils/displayName'
 
 const PAGE_SIZE = 6
 
@@ -19,6 +20,10 @@ export function HomePage() {
     queryFn: () => listArticles({ pageSize: PAGE_SIZE, page }),
     placeholderData: (prev) => prev,
   })
+
+  const scrollToLatest = () => {
+    document.getElementById('latest')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <>
@@ -42,14 +47,14 @@ export function HomePage() {
             一个慢工出细活的技术博客。
             <br />
             {user
-              ? `欢迎回来,${user.username}。`
+              ? `欢迎回来,${displayName(user)}。`
               : '这里写代码、写思考、写做错的事。'}
           </p>
           <div className="mt-9 flex items-center gap-3 flex-wrap">
-            <a href="#latest" className="btn-primary">
+            <button type="button" onClick={scrollToLatest} className="btn-primary">
               开始阅读
               <ArrowRight size={16} />
-            </a>
+            </button>
             {user ? (
               <Link to="/write" className="btn-secondary">
                 <PenSquare size={14} />

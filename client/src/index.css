@@ -56,6 +56,11 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html {
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+  }
+
   *,
   *::before,
   *::after {
@@ -269,28 +274,9 @@ html.theme-reveal-contract::view-transition-new(root) {
   z-index: 0;
 }
 
-/* === Route transition (normal navigations) ===
-   Old page fades out, new page fades in with a slight upward drift. */
-html:not(.theme-reveal)::view-transition-old(root) {
-  animation: vt-out 200ms var(--ease-out) both;
-}
+html:not(.theme-reveal)::view-transition-old(root),
 html:not(.theme-reveal)::view-transition-new(root) {
-  animation: vt-in 320ms var(--ease-out) both;
-}
-@keyframes vt-out {
-  to {
-    opacity: 0;
-  }
-}
-@keyframes vt-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  animation: none;
 }
 
 /* === Article list stagger: rows rise in sequence === */
@@ -328,6 +314,11 @@ html:not(.theme-reveal)::view-transition-new(root) {
     animation: reveal-rise linear both;
     animation-timeline: view();
     animation-range: entry 0% entry 35%;
+  }
+  .reveal-on-scroll:target {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
   @keyframes reveal-rise {
     from {

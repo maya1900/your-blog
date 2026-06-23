@@ -1,8 +1,12 @@
 import type { RequestHandler } from 'express'
-import { relative } from 'node:path'
+import { existsSync, mkdirSync } from 'node:fs'
+import { writeFile } from 'node:fs/promises'
+import { extname, join } from 'node:path'
+import sharp from 'sharp'
 import { z } from 'zod'
 import { BadRequestError } from '../utils/errors.js'
 import { env } from '../config/env.js'
+import { nanoid } from '../utils/nanoid.js'
 import {
   downloadImage,
   pickRandomCoverUrl,
@@ -11,20 +15,65 @@ import {
   tryDeleteCoverFile,
 } from '../services/cover.service.js'
 
-export const uploadImage: RequestHandler = (req, res, next) => {
+const SHARP_FORMAT_TO_MIME: Record<string, string> = {
+  png: 'image/png',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+  gif: 'image/gif',
+}
+
+const EXT_TO_FORMAT: Record<string, string> = {
+  '.png': 'png',
+  '.jpg': 'jpeg',
+  '.jpeg': 'jpeg',
+  '.webp': 'webp',
+  '.gif': 'gif',
+}
+
+function monthBucket(): string {
+  const d = new Date()
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+function mimeMatchesDecodedFormat(uploadedMime: string, decodedFormat: string | undefined) {
+  if (!decodedFormat) return false
+  const decodedMime = SHARP_FORMAT_TO_MIME[decodedFormat]
+  if (!decodedMime) return false
+  if (decodedMime === 'image/jpeg') return uploadedMime === 'image/jpeg' || uploadedMime === 'image/jpg'
+  return uploadedMime === decodedMime
+}
+
+export const uploadImage: RequestHandler = async (req, res, next) => {
   try {
-    if (!req.file) {
+    if (!req.file?.buffer) {
       throw new BadRequestError('请选择要上传的文件 (字段名: file)')
     }
-    // multer.diskStorage gives `path` like "<UPLOAD_ROOT>/202605/abc123.png".
-    // Strip the configurable root, then expose under /uploads/* served by nginx (prod) or Express (dev).
-    const rel = relative(env.UPLOAD_ROOT, req.file.path).replace(/\\/g, '/')
-    const url = `/uploads/${rel}`
+    let metadata: sharp.Metadata
+    try {
+      metadata = await sharp(req.file.buffer, {
+        animated: req.file.mimetype === 'image/gif',
+        limitInputPixels: 40_000_000,
+      }).metadata()
+    } catch {
+      throw new BadRequestError('文件内容不是有效图片')
+    }
+    const ext = extname(req.file.originalname).toLowerCase()
+    if (!mimeMatchesDecodedFormat(req.file.mimetype, metadata.format) || EXT_TO_FORMAT[ext] !== metadata.format) {
+      throw new BadRequestError('文件内容不是有效图片')
+    }
+
+    const bucket = monthBucket()
+    const dir = join(env.UPLOAD_ROOT, bucket)
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+
+    const filename = `${nanoid(14)}${ext}`
+    await writeFile(join(dir, filename), req.file.buffer)
+    const url = `/uploads/${bucket}/${filename}`
 
     res.status(201).json({
       data: {
         url,
-        filename: req.file.filename,
+        filename,
         size: req.file.size,
         mimeType: req.file.mimetype,
       },

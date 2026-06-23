@@ -1,10 +1,7 @@
-import { existsSync, mkdirSync } from 'node:fs'
-import { extname, join } from 'node:path'
+import { extname } from 'node:path'
 import type { Request, RequestHandler } from 'express'
 import multer, { MulterError } from 'multer'
-import { nanoid } from '../utils/nanoid.js'
 import { BadRequestError } from '../utils/errors.js'
-import { env } from '../config/env.js'
 
 const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
 
@@ -17,23 +14,6 @@ const ALLOWED_MIME = new Set([
 ])
 
 const ALLOWED_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif'])
-
-function monthBucket(): string {
-  const d = new Date()
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const dir = join(env.UPLOAD_ROOT, monthBucket())
-    if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
-    cb(null, dir)
-  },
-  filename: (_req, file, cb) => {
-    const ext = extname(file.originalname).toLowerCase() || '.bin'
-    cb(null, `${nanoid(14)}${ext}`)
-  },
-})
 
 function fileFilter(
   _req: Request,
@@ -49,7 +29,7 @@ function fileFilter(
 }
 
 const uploader = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: { fileSize: MAX_BYTES, files: 1 },
 })
